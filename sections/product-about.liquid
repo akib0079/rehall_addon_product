@@ -1,0 +1,130 @@
+<div class="product-about-section section-id-{{ section.id }}">
+    <div class="section-container">
+        <div class="product-about__grid">
+            <div class="product-about__content">
+
+                {% if section.settings.subtitle != blank %}
+                    <h5 class="product-about__subtitle">{{ section.settings.subtitle }}</h5>
+                {% endif %}
+                {% if section.settings.desc != blank %}
+                    <div class="product-about__desc">{{ section.settings.desc }}</div>
+                {% endif %}
+                {% if section.settings.btn_text != blank %}
+                    {% render 'btn-global', class: 'black-friday-prefooter__btn btn btn--secondary', url: section.settings.btn_url, label: section.settings.btn_text, icon: true %}
+                {% endif %}
+            </div>
+            <div class="product-about__blocks">
+                {%for block in section.blocks %}
+                    <div class="product-about__block{% if block.settings.overlay %} with-overlay{%endif %}" {{ block.shopify_attributes }}>
+                        {% if block.settings.img != blank %}
+                            {{ block.settings.img | image_url: width: nil | image_tag: class: 'product-about__block_img desktop-only' }}
+                            {{ block.settings.img_mobile | default: block.settings.img | image_url: width: nil | image_tag: class: 'product-about__block_img mobile-only' }}
+                        {% else %}
+                            {{ 'image' | placeholder_svg_tag: 'product-about__block_img placeholder' }}
+                        {% endif %}
+                        <div class="product-about__block_content">
+                            {% if block.settings.subtitle != blank %}
+                                <div class="product-about__block_subtitle">{{ block.settings.subtitle }}</div>
+                            {% endif %}
+                            {% if block.settings.title != blank %}
+                                <div class="product-about__block_title">{{ block.settings.title }}</div>
+                            {% endif %}
+                            <div class="product-about__block_btn-wrap">
+                                {% if block.settings.btn_text_1 != blank %}
+                                    <a class="product-about__block_btn" href="{{ block.settings.btn_url_1 }}">{{ block.settings.btn_text_1 }}</a>
+                                {% endif %}
+                                {% if block.settings.btn_text_2 != blank %}
+                                    <a class="product-about__block_btn" href="{{ block.settings.btn_url_2 }}">{{ block.settings.btn_text_2 }}</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {%endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% schema %}
+  {
+    "name": "Product about",
+    "settings": [
+      {
+        "type": "inline_richtext",
+        "id": "subtitle",
+        "label": "Subtitle",
+        "default": "ABOUT REHALL"
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>desc</p>"
+      },
+    ],
+    "blocks": [
+        {
+            "type": "block",
+            "name": "Card",
+            "settings": [
+                {
+                    "type": "image_picker",
+                    "id": "img",
+                    "label": "Image"
+                },
+                {
+                    "type": "image_picker",
+                    "id": "img_mobile",
+                    "label": "Image mobile"
+                },
+                {
+                    "type": "checkbox",
+                    "id": "overlay",
+                    "label": "Overlay",
+                    "default": true
+                },
+                {
+                    "type": "inline_richtext",
+                    "id": "subtitle",
+                    "label": "Subtitle",
+                    "default": "JOIN THE REHALL CLUB"
+                },
+                {
+                    "type": "inline_richtext",
+                    "id": "title",
+                    "label": "Title",
+                    "default": "Ontvang exclusieve"
+                },
+                {
+                    "type": "text",
+                    "id": "btn_text_1",
+                    "label": "Button text - 1",
+                    "default": "SIGN UP"
+                },
+                {
+                    "type": "url",
+                    "id": "btn_url_1",
+                    "label": "Button URL - 1",
+                    "default": "/collections/all"
+                },
+                {
+                    "type": "text",
+                    "id": "btn_text_2",
+                    "label": "Button text - 2",
+                    "default": "LEES MEER"
+                },
+                {
+                    "type": "url",
+                    "id": "btn_url_2",
+                    "label": "Button URL - 2",
+                    "default": "/collections/all"
+                },
+            ]
+        },
+    ],
+    "presets": [
+      {
+        "name": "Product about"
+      }
+    ]
+  }
+{% endschema %}

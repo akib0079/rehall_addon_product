@@ -1,0 +1,55 @@
+{%- comment -%}
+  Productgalerij: toon maximaal 6 streepjes (Swiper pagination bullets) tegelijk.
+  Elk streepje staat voor 1 sprong van de carousel (op desktop 2 afbeeldingen).
+  Het actieve streepje springt bij elke sprong 1 plek op: 1 > 2 > ... > 6.
+  Na het 6e streepje rouleert de set: de volgende 6 streepjes komen in beeld
+  en het actieve streepje begint weer vooraan.
+  Op mobiel gebruikt het thema al Swiper dynamicBullets; daar doet dit script niets.
+  Gebruik: {% raw %}{% render 'gallery-bullets-limit' %}{% endraw %} in een Custom Liquid blok van de productsectie.
+{%- endcomment -%}
+<script>
+(function () {
+  var MAX = 6;
+
+  function limit(p) {
+    var bullets = p.querySelectorAll('.swiper-pagination-bullet');
+    var dynamic = p.classList.contains('swiper-pagination-bullets-dynamic');
+    var total = bullets.length;
+    var active = 0;
+    bullets.forEach(function (b, i) {
+      if (b.classList.contains('swiper-pagination-bullet-active')) { active = i; }
+    });
+    var start = Math.floor(active / MAX) * MAX;
+    bullets.forEach(function (b, i) {
+      var show = dynamic || total <= MAX || (i >= start && i < start + MAX);
+      b.style.display = show ? '' : 'none';
+    });
+  }
+
+  function watch(p) {
+    if (p.__bulletLimit) { return; }
+    p.__bulletLimit = true;
+    new MutationObserver(function () { limit(p); }).observe(p, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['class']
+    });
+    limit(p);
+  }
+
+  function scan() {
+    document.querySelectorAll('.main-product-swiper .swiper-pagination').forEach(watch);
+  }
+
+  function start() {
+    var con = document.querySelector('.prodcut__images-con');
+    if (con) { new MutationObserver(scan).observe(con, { childList: true }); }
+    scan();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+  window.addEventListener('load', scan);
+})();
+</script>

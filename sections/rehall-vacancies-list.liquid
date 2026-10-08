@@ -1,0 +1,254 @@
+{%- comment -%}
+  Rehall — Vacatures overzicht
+  Overkoepelende sectie met blokken. Elk blok = 1 vacature.
+  Voeg toe / verwijder via het plusje in de theme editor.
+  Het volledige vacatureblok is linkbaar naar de detailpagina.
+  Identiek aan het Figma-ontwerp (node 7821:727).
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+-%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --vac-content-max: {{ s.content_max }}px;
+    --vac-side-pad: {{ s.side_padding }}px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-list {
+    background: {{ s.background }};
+    padding-top: {{ s.padding_top }}px;
+    padding-bottom: {{ s.padding_bottom }}px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-list__inner {
+    width: 100%;
+    margin-inline: auto;
+    max-width: calc(var(--vac-content-max) + (var(--vac-side-pad) * 2));
+    padding-inline: var(--vac-side-pad);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  }
+
+  #shopify-section-{{ section.id }} a.vac-card:hover {
+    border-color: rgba(0,0,0,0.25);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  }
+
+  #shopify-section-{{ section.id }} .vac-card__title {
+    margin: 0;
+    color: #000000;
+    font-weight: 600;
+    line-height: 1.1;
+    font-size: 24px;
+    word-break: break-word;
+  }
+
+  #shopify-section-{{ section.id }} .vac-card__text {
+    margin: 0;
+    max-width: 866px;
+    color: #202020;
+    font-weight: 400;
+    line-height: 1.5;
+    font-size: 14px;
+    word-break: break-word;
+  }
+
+  #shopify-section-{{ section.id }} .vac-card__location {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-card__location svg {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 13px;
+  }
+  #shopify-section-{{ section.id }} .vac-card__location svg path {
+    fill: #000000;
+  }
+
+  #shopify-section-{{ section.id }} .vac-card__location span {
+    color: #000000;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  @media (max-width: 749px) {
+    #shopify-section-{{ section.id }} .vac-list__inner {
+      --vac-side-pad: 16px;
+    }
+    #shopify-section-{{ section.id }} .vac-card {
+      padding: 24px;
+    }
+    #shopify-section-{{ section.id }} .vac-card__title {
+      font-size: 20px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="vac-list">
+  <div class="vac-list__inner">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign b = block.settings
+        assign has_link = false
+        if b.link != blank
+          assign has_link = true
+        endif
+      -%}
+
+      {%- capture card_content -%}
+        {%- if b.title != blank -%}
+          <p class="vac-card__title">{{ b.title | escape }}</p>
+        {%- endif -%}
+
+        {%- if b.description != blank -%}
+          <p class="vac-card__text">{{ b.description | escape | newline_to_br }}</p>
+        {%- endif -%}
+
+        {%- if b.location != blank -%}
+          <div class="vac-card__location">
+            <svg viewBox="0 0 10 13" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <path d="M5 0C2.243 0 0 2.197 0 4.897c0 3.353 4.473 7.778 4.664 7.965a.48.48 0 0 0 .672 0C5.527 12.675 10 8.25 10 4.897 10 2.197 7.757 0 5 0Zm0 7.292c-1.353 0-2.453-1.077-2.453-2.401S3.647 2.49 5 2.49s2.453 1.077 2.453 2.401S6.353 7.292 5 7.292Z"/>
+            </svg>
+            <span>{{ b.location | escape }}</span>
+          </div>
+        {%- endif -%}
+      {%- endcapture -%}
+
+      {%- if has_link -%}
+        <a href="{{ b.link }}" class="vac-card" {{ block.shopify_attributes }}>
+          {{ card_content }}
+        </a>
+      {%- else -%}
+        <div class="vac-card" {{ block.shopify_attributes }}>
+          {{ card_content }}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Vacatures overzicht",
+  "tag": "section",
+  "class": "section-vacatures-overzicht",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Vormgeving"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Achtergrondkleur",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Breedte & ruimte"
+    },
+    {
+      "type": "range",
+      "id": "content_max",
+      "min": 1000,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "label": "Max. breedte content",
+      "default": 1520
+    },
+    {
+      "type": "range",
+      "id": "side_padding",
+      "min": 0,
+      "max": 140,
+      "step": 2,
+      "unit": "px",
+      "label": "Zijmarge (desktop)",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "label": "Ruimte boven",
+      "default": 70
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "label": "Ruimte onder",
+      "default": 70
+    }
+  ],
+  "blocks": [
+    {
+      "type": "vacancy",
+      "name": "Vacature",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titel",
+          "default": "Stagiair(e) Marketing"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Omschrijving",
+          "default": "Korte omschrijving van de vacature."
+        },
+        {
+          "type": "text",
+          "id": "location",
+          "label": "Locatie",
+          "default": "Roermond, Nederland"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link naar vacaturepagina"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vacatures overzicht",
+      "blocks": [
+        { "type": "vacancy" },
+        { "type": "vacancy" },
+        { "type": "vacancy" }
+      ]
+    }
+  ]
+}
+{% endschema %}

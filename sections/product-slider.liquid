@@ -1,0 +1,441 @@
+{% style %}
+  #shopify-section-{{ section.id }}{
+    margin-top: {{section.settings.margin_top}};
+  }
+  .section-id-{{ section.id }} .swiper-slide{
+    width: calc(100% / {{section.settings.grid}});
+  }
+  .section-id-{{ section.id }} .product-slider {
+    margin-left: -{{section.settings.product_gap | divided_by: 2}}px;
+    margin-right: -{{section.settings.product_gap | divided_by: 2}}px;
+  }
+  .section-id-{{ section.id }} .product-block {
+    margin: 0 {{section.settings.product_gap | divided_by: 2}}px;
+  }
+  @media (max-width: 767px){
+    #shopify-section-{{ section.id }}{
+      margin-top: {{section.settings.margin_top_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-id-{{ section.id }} collection-slider-row" data-section-type="product-slider"{% if section.settings.product_recomendation and template.name == 'product' %} data-url="{{ routes.product_recommendations_url }}?section_id={{  section.id }}&limit={{ section.settings.grid }}&product_id={{ product.id }}"{% endif %}>
+  <div class="product-slider__nav-row">
+    {% if section.settings.title != blank %}
+      <h2 class="section-title product-slider__title h1-style{% unless section.settings.show_title %} visually-hidden{% endunless %}">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+    <div class="product-slider__nav-right-col">
+      <div class="product-slider__nav-wrap">
+        <div class="product-slider__nav prev ">
+          {% render 'svg-slider-arrow' %}
+        </div>
+        <div class="product-slider__nav next">
+          {% render 'svg-slider-arrow' %}
+        </div>
+      </div>
+      <a class="product-slider__coll_link" href="{{ section.settings.show_all_link | default: section.settings.collection.url | default: routes.all_products_collection_url }}">
+        {{ settings.show_all_text | default: 'Toon Alles' }}
+      </a>
+    </div>
+  </div>
+
+  <div class="product-slider swiper">
+    <div class="product-list swiper-wrapper">
+      {%- if section.settings.show_title_card -%}
+        <div class="product-block product-block--mobile-wide">
+          <div class="product-list-heading-block{% if section.settings.title_card_link %} scale-on-hover{% endif %} card-scheme card-scheme--{{ section.settings.color_scheme }} card-br-oh height--cover page-header page-header--with-background {% if section.settings.title_card_image %}image-overlay image-overlay--bg-{{ section.settings.overlay_style }}{% endif %}">
+            {%- if section.settings.title_card_image -%}
+              {%- render 'background-image', image: section.settings.title_card_image, extra_classes: 'scale-on-hover__target' -%}
+            {%- endif -%}
+
+            <div class="product-list-heading-block__text">
+              <div class="overlay-text overlay-text--inline overlay--v-bottom align-start image-overlay__over" data-cc-animate data-cc-animate-delay="0.2s">
+                <div class="overlay-text__inner">
+                  <div class="overlay-text__text">
+                    <h2 class="overlay-text__title h1-style" id="{{ section.id }}-Heading">{{ section.settings.title_card_heading }}</h2>
+                    {%- if section.settings.title_card_description != blank -%}
+                      <div class="overlay-text__rte rte cf reading-width">{{ section.settings.title_card_description }}</div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {%- if section.settings.title_card_link -%}
+              <div class="swiper-slide">
+                <a class="product-list-heading-block__link" href="{{ section.settings.title_card_link }}" aria-labelledby="{{ section.id }}-Heading"></a>
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+      {%- liquid 
+        if recommendations.performed and recommendations.products_count > 0
+          assign products = recommendations.products
+        else
+          assign products = section.settings.product_list
+          case section.settings.product_source
+            when 'collection'
+              assign products = section.settings.collection.products
+            when 'latest'
+              assign products = collections.all.products
+          endcase
+        endif
+      -%}
+      {% if products == blank %}
+        {% for i in (1..4) %}
+          {% render 'onboarding-product-block', forloop: forloop %}
+        {% endfor %}
+      {% else %}
+        {%- liquid
+          if settings.prod_thumb_shape == 'portrait-23'
+            assign chosen_aspect_ratio = 0.67
+          elsif settings.prod_thumb_shape == 'portrait-45'
+            assign chosen_aspect_ratio = 0.8
+          elsif settings.prod_thumb_shape == 'square'
+            assign chosen_aspect_ratio = 1.0
+          elsif settings.prod_thumb_shape == 'landscape-54'
+            assign chosen_aspect_ratio = 1.25
+          elsif settings.prod_thumb_shape == 'landscape-32'
+            assign chosen_aspect_ratio = 1.50
+          elsif settings.prod_thumb_shape == 'tallest'
+            assign chosen_aspect_ratio = 99
+            for product in products
+              if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+              endif
+            endfor
+          else
+            assign chosen_aspect_ratio = 0
+            for product in products limit: section.settings.product_count
+              if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+              endif
+            endfor
+          endif
+        -%}
+        {% for product in products limit: section.settings.product_count %}
+          {%liquid
+            if section.settings.hide_sold_out and product.available == false
+             continue
+            endif
+          %}
+          <div class="swiper-slide">
+            {% render 'product-block-alt', product: product, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: true %}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    <div class="swiper-scrollbar" style="--swiper-scrollbar-sides-offset: 0%; --swiper-scrollbar-size: 1px; --swiper-scrollbar-bottom 0px"></div>
+  </div>
+</div>
+{% if section.settings.product_recomendation and template.name == 'product' %}
+<script>
+var loadRelatedProductsIntoSection = function() {
+  // Look for an element with class 'related-products'
+  var relatedProductsSection = document.querySelector('[data-section-type="product-slider"]');
+  if (relatedProductsSection === null) { return; }
+  // Create request and submit it using Ajax
+  var request = new XMLHttpRequest();
+  request.open("GET", relatedProductsSection.dataset.url);
+  request.onload = function() {
+    if (request.status >= 200 && request.status < 300) {
+      var container = document.createElement("div");
+      container.innerHTML = request.response;
+      relatedProductsSection.innerHTML = container.querySelector('[data-section-type="product-slider"]').innerHTML;
+      theme.initAnimateOnScroll();
+      if (window.matchMedia("(min-width: 768px)").matches) {
+        new Swiper('.section-id-{{ section.id }} .product-slider', {
+          slidesPerView: 'auto',
+          freeMode: {
+            enabled: true,
+            sticky: true,
+            momentumRatio: 0.8,
+          },
+          speed: 400,
+          navigation: {
+            nextEl: '.section-id-{{ section.id }} .product-slider__nav.next',
+            prevEl: '.section-id-{{ section.id }} .product-slider__nav.prev',
+          },
+          scrollbar: {
+            el: '.section-id-{{ section.id }} .swiper-scrollbar',
+            draggable: true
+          },
+          breakpoints: {
+            1100: {
+              slidesPerView: {{ section.settings.grid }},
+            },
+            {% comment %} 2500: {
+              slidesPerView: 5,
+            } {% endcomment %}
+          },
+        });
+       }
+    }
+  };
+  request.send();
+};
+// Fetch when section reloads in editor
+document.addEventListener("shopify:section:load", function(event) {
+  if (document.querySelector('[data-section-id="' + event.detail.sectionId + '"][data-section-type="product-slider"]')) {
+    loadRelatedProductsIntoSection();
+  }
+});
+// Fetch the products on page load
+loadRelatedProductsIntoSection();
+</script>
+{% endif %}
+<script>
+  {% if  template.name == 'product' %}
+    if (window.matchMedia("(min-width: 768px)").matches) {
+  {% endif %}
+   document.addEventListener("DOMContentLoaded", () => {
+      const swiper = new Swiper('.section-id-{{ section.id }} .product-slider', {
+        slidesPerView: 'auto',
+        freeMode: {
+          enabled: true,
+          sticky: true,
+          momentumRatio: 0.8,
+        },
+        speed: 400,
+        navigation: {
+          nextEl: '.section-id-{{ section.id }} .product-slider__nav.next',
+          prevEl: '.section-id-{{ section.id }} .product-slider__nav.prev',
+        },
+        scrollbar: {
+          el: '.section-id-{{ section.id }} .swiper-scrollbar',
+          draggable: true
+        },
+        watchOverflow: true,
+        init: false,
+        breakpoints: {
+          1100: {
+            slidesPerView: {{ section.settings.grid }},
+          },
+          {% comment %} 2500: {
+            slidesPerView: 5,
+          } {% endcomment %}
+        },
+      });
+      function updateNavVisibility() {
+        const nav = document.querySelector('.section-id-{{ section.id }} .product-slider__nav-wrap');
+
+        nav.classList.toggle('inactive',swiper.isLocked);
+      }
+      swiper.on('init', updateNavVisibility);
+      swiper.on('lock', updateNavVisibility);
+      swiper.on('unlock', updateNavVisibility);
+      swiper.init();
+  });     
+  {% if template.name == 'product' %}
+    }
+  {% endif %}
+</script>
+
+{% schema %}
+  {
+    "name": "Product Slider",
+    "class": "section-product-slider card",
+    "disabled_on": {
+      "templates": [
+        "password"
+      ],
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Men Collection"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show heading",
+        "info": "A hidden heading will still be readable by search engines and screen readers",
+        "default": true
+      },
+      {
+        "type": "url",
+        "id": "show_all_link",
+        "label": "Show all Link"
+      },
+      {
+        "type": "checkbox",
+        "id": "hide_sold_out",
+        "label": "Hide sold out products",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "margin_top",
+        "label": "Margin top",
+        "default": "82px"
+      },
+      {
+        "type": "text",
+        "id": "margin_top_mobile",
+        "label": "Margin top mobile",
+        "default": "62px"
+      },
+      {
+        "type": "checkbox",
+        "id": "product_recomendation",
+        "label": "Allow product recommendations",
+        "info": "Works only on product page",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "product_source",
+        "label": "Show products by",
+        "default": "list",
+        "options": [
+          {
+            "label": "List",
+            "value": "list"
+          },
+          {
+            "label": "Collection",
+            "value": "collection"
+          },
+          {
+            "label": "Latest",
+            "value": "latest"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "product_count",
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "label": "Product max count",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "product_gap",
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "unit": "px",
+        "label": "Products gap",
+        "default": 10
+      },
+      {
+        "type": "collection",
+        "id": "collection",
+        "label": "Collection",
+        "info": "Only works if show products by - collection is selected"
+      },
+      {
+        "type": "product_list",
+        "id": "product_list",
+        "label": "Product list"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 0.1,
+        "default": 4
+      },
+      {
+        "type": "header",
+        "content": "Title card"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title_card",
+        "label": "Show title card",
+        "default": false
+      },
+      {
+        "type": "image_picker",
+        "id": "title_card_image",
+        "label": "Image"
+      },
+      {
+        "type": "text",
+        "id": "title_card_heading",
+        "label": "Heading",
+        "default": "Heading"
+      },
+      {
+        "type": "text",
+        "id": "title_card_description",
+        "label": "Description"
+      },
+      {
+        "type": "url",
+        "id": "title_card_link",
+        "label": "Link"
+      },
+      {
+        "id": "overlay_style",
+        "type": "select",
+        "label": "Overlay style",
+        "default": "shadow",
+        "options": [
+          {
+            "value": "full",
+            "label": "Tint"
+          },
+          {
+            "value": "shadow",
+            "label": "Text shadow"
+          },
+          {
+            "value": "full image-overlay--bg-shadow",
+            "label": "Text shadow and tint"
+          },
+          {
+            "value": "no_background",
+            "label": "No background"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "info": "Used when there is no image",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Product Slider"
+      }
+    ]
+  }
+{% endschema %}

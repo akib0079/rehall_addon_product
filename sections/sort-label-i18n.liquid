@@ -1,0 +1,15 @@
+{%- comment -%}
+  Vertaalt het hardcoded "Sorteer op :" label (assets/styles.css, .gf-filter-selection::before)
+  voor EN en DE. NL blijft de standaard uit styles.css.
+{%- endcomment -%}
+<style>
+  .collection_main .gf-filter-selection:lang(en)::before { content: "Sort by :" !important; }
+  .collection_main .gf-filter-selection:lang(de)::before { content: "Sortieren nach :" !important; }
+</style>
+
+{% schema %}
+{
+  "name": "Sort label i18n",
+  "settings": []
+}
+{% endschema %}

@@ -1,0 +1,180 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding}};
+  }
+  .section-id-{{ section.id }} .dxr-slider_slider{
+    height: {{section.settings.slider_height}};
+  }
+  .section-id-{{ section.id }} .dxr-slider_title{
+    max-width: {{section.settings.max_width}};
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      padding: {{section.settings.padding_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-dxr-slider section-id-{{ section.id }}" data-cc-animate data-cc-animate-delay="0.2s">
+  <div class="dxr-slider_content-wrap">
+    <h2 class="dxr-slider_title">{{ section.settings.title }}</h2>
+    <div class="dxr-slider_slider-wrap">
+      <div class="dxr-slider_slider swiper">
+        <div class="product-slider__nav-right-col">
+          <div class="product-slider__nav-wrap">
+            <div class="product-slider__nav prev">
+              {% render 'svg-slider-arrow', class: 'mobile-only' %}
+              {% render 'svg-dxr-slider-arrow', class: 'desktop-only' %}
+            </div>
+            <div class="product-slider__nav next">
+              {% render 'svg-slider-arrow', class: 'mobile-only' %}
+              {% render 'svg-dxr-slider-arrow', class: 'desktop-only' %}
+            </div>
+          </div>
+        </div>
+        <div class="swiper-wrapper">
+          {% for block in section.blocks %}
+            {% case block.type %}
+              {% when 'slide' %}
+              <div class="swiper-slide" {{ block.shopify_attributes }}>
+                {% if block.settings.image != blank %}
+                  {{ block.settings.image | image_url: width: nil | image_tag: class: 'dxr-slider_slide_img' }}  
+                {% else %}
+                  {{ 'image' | placeholder_svg_tag: 'dxr-slider_slide_img placeholder' }}
+                {% endif %}
+              </div>
+            {% endcase %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     new Swiper('.section-id-{{ section.id }} .dxr-slider_slider',{
+       slidesPerView: 1.15,
+       spaceBetween: 15,
+       navigation: {
+         nextEl: '.section-id-{{ section.id }} .product-slider__nav.next',
+         prevEl: '.section-id-{{ section.id }} .product-slider__nav.prev',
+       },
+       breakpoints: {
+         768: {
+           slidesPerView: 2,
+         },
+         2500: {
+           slidesPerView: 3,
+         }
+       }
+     })
+     
+     if (window.matchMedia("(min-width: 768px)").matches) {
+       const sliderWrap = document.querySelector('.dxr-slider_slider-wrap');
+       const slider = sliderWrap.querySelector('.dxr-slider_slider');
+       const sliderMid = slider.offsetWidth /2 + slider.getBoundingClientRect().left;
+       const navigation = document.querySelector('.dxr-slider_slider .product-slider__nav-right-col')
+       const navigationInner = navigation.querySelector('.product-slider__nav-wrap')
+       const navigationPrev = navigation.querySelector('.product-slider__nav.prev')
+       const navigationNext = navigation.querySelector('.product-slider__nav.next')
+       const tween = gsap.fromTo(navigationInner, {opacity: 0}, {opacity: 1, duration: 0.3 , paused: true, 
+          onStart: () => {
+            navigation.style.display = "flex";
+          },
+          onReverseComplete: () => {
+            navigation.style.display = "none";
+          },
+       })
+       sliderWrap.addEventListener("mouseenter", (e) => {
+         tween.play()
+       })
+       sliderWrap.addEventListener("mouseleave", (e) => {
+         tween.reverse()
+       })
+       sliderWrap.addEventListener("mousemove", (e) => {
+         const sliderWrapBoundLeft = sliderWrap.getBoundingClientRect().left + 50;
+         const sliderWrapBoundRight = sliderWrap.offsetWidth - 50 + sliderWrap.getBoundingClientRect().left;
+         const sliderWrapBoundTop = sliderWrap.getBoundingClientRect().top + 50;
+         const sliderWrapBoundBottom = sliderWrap.offsetHeight - 50 + sliderWrap.getBoundingClientRect().top;
+         navigationInner.style.top = Math.min(Math.max(e.clientY, sliderWrapBoundTop), sliderWrapBoundBottom) + 'px';
+         navigationInner.style.left = Math.min(Math.max(e.clientX, sliderWrapBoundLeft), sliderWrapBoundRight) + 'px';
+         if(!navigationPrev.classList.contains('swiper-button-disabled') && !navigationPrev.classList.contains('active') && (e.clientX < sliderMid || navigationNext.classList.contains('swiper-button-disabled'))){
+           navigationNext.classList.remove('active')
+           navigationPrev.classList.add('active')
+         } else if (!navigationNext.classList.contains('swiper-button-disabled') && !navigationNext.classList.contains('active') && (e.clientX > sliderMid || navigationPrev.classList.contains('swiper-button-disabled'))){
+           navigationPrev.classList.remove('active')
+           navigationNext.classList.add('active')
+         }
+         
+       })
+       sliderWrap.addEventListener("click", (e) => {
+         const activeNav = navigationInner.querySelector('.active')
+         if(activeNav){
+           activeNav.click();
+           if(activeNav.classList.contains('swiper-button-disabled')){
+             navigationInner.querySelector('.product-slider__nav:not(.active)').classList.add('active')
+             activeNav.classList.remove('active')
+           }
+         }
+       })
+     }
+   })
+</script>
+{% schema %}
+  {
+    "name": "DXR Slider",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "This waterproof & breathable 20K/20K Rehall DXR collection manufactured with Dermizax outershell fabric in combination with full taped seams and ergonomic fitting, will keep you dry and warm under all circumstances. The Dermizax shell makes steam and sweat go out, while water is prevented from coming in. The perfect combination to Enjoy Your Rides!"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "text",
+        "id": "max_width",
+        "label": "Max title width",
+        "default": "503px"
+      },
+      {
+        "type": "text",
+        "id": "slider_height",
+        "label": "Slider height",
+        "default": "685px"
+      },
+      {
+        "type": "text",
+        "id": "padding",
+        "label": "Padding",
+        "default": "90px 0"
+      },
+      {
+        "type": "text",
+        "id": "padding_mobile",
+        "label": "Padding Mobile",
+        "default": "64px 0 45px"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "slide",
+        "name": "Slide",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "DXR Slider"
+      }
+    ]
+  }
+{% endschema %}

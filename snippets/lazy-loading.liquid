@@ -1,0 +1,143 @@
+{%- comment -%} DEED: filter dat alleen puur witte foto-achtergronden grijs maakt {%- endcomment -%}
+{%- render 'deed-white-bg-filter' -%}
+<script>
+  theme.getOffsetTopFromDoc = (el) => {
+    return el ? theme.getOffsetTopFromDoc(el.offsetParent) + el.offsetTop : 0;
+  }
+
+  theme.lazy = {
+    _imageSizesBatch: [],
+
+    _computeSizes: (el) => {
+      if (el.offsetParent) {
+        if (getComputedStyle(el).objectFit == 'cover') {
+          const ari = el.getAttribute('width') / el.getAttribute('height'),
+                arc = el.offsetWidth / el.offsetHeight;
+          if (ari > arc) {
+            return Math.round(el.offsetHeight * ari) + 'px';
+          } else {
+            return Math.round(el.offsetWidth) + 'px';
+          }
+        } else {
+          return Math.round(el.offsetWidth) + 'px';
+        }
+      }
+      return false;
+    },
+
+    _flushImageSizesBatch() {
+      for (let i = 0; i < theme.lazy._imageSizesBatch.length; i++) {
+        const item = theme.lazy._imageSizesBatch[i];
+        item.el.src = ''; // reset element - assume attrs will be rectified below
+
+        if (item.onload) {
+          item.el.addEventListener('load', () => { item.el.classList.add('loaded')});
+        }
+        if (item.sizes) {
+          item.el.setAttribute('sizes', item.sizes);
+        }
+        if (item.srcset) {
+          item.el.setAttribute('srcset', item.srcset);
+        }
+        if (item.src) {
+          item.el.setAttribute('src', item.src);
+          item.el.removeAttribute('data-src');
+        }
+        if (item.loading) {
+          item.el.setAttribute('loading', item.loading);
+        }
+      }
+      theme.lazy._imageSizesBatch = [];
+    },
+
+    _loadSrcSets: (setEager) => {
+      document.querySelectorAll('[data-src]:not(.jdgm-gallery__thumbnail,.jdgm-rev__pic-img)').forEach((el) => {
+        let batchItem = { el: el };
+        if (el.dataset.srcset) {
+          // stop if size not calculable
+          let sizes = theme.lazy._computeSizes(el);
+          if (sizes === false) return;
+
+          batchItem.sizes = sizes;
+          batchItem.srcset = el.dataset.srcset;
+
+          if (setEager && el.loading && el.loading === 'lazy' && theme.getOffsetTopFromDoc(el) < window.innerHeight) {
+            batchItem.loading = 'eager';
+          }
+        }
+        if (el.dataset.src) {
+          batchItem.src = el.dataset.src;
+        }
+        if (el.dataset.onload) {
+          batchItem.onload = el.dataset.onload;
+        }
+        theme.lazy._imageSizesBatch.push(batchItem);
+      });
+      theme.lazy._flushImageSizesBatch();
+    },
+
+    updateImgSizes: () => {
+      document.querySelectorAll('[data-srcset]').forEach((el) => {
+        let sizes = theme.lazy._computeSizes(el);
+        if (sizes === false) return;
+        theme.lazy._imageSizesBatch.push({
+          el: el,
+          sizes: sizes
+        });
+      });
+      theme.lazy._flushImageSizesBatch();
+    },
+
+    loadSrcSets: (runNow, firstRun) => {
+      if (runNow) {
+        clearTimeout(theme.lazy.loadSrcSetsThrottleTimeoutId);
+        theme.lazy._loadSrcSets(firstRun);
+      } else {
+        clearTimeout(theme.lazy.loadSrcSetsThrottleTimeoutId);
+        theme.lazy.loadSrcSetsThrottleTimeoutId = setTimeout(theme.lazy._loadSrcSets, 10);
+      }
+    },
+
+    initLoadObserver: () => {
+      theme.lazy.imgLoadObserver = new MutationObserver(function(mutations) {
+        for (let i = 0; i < mutations.length; i++) {
+          if (mutations[i].addedNodes && mutations[i].addedNodes.length) {
+            theme.lazy.loadSrcSets();
+          }
+        }
+      });
+
+      theme.lazy.imgLoadObserver.observe(document, { attributes: false, childList: true, characterData: false, subtree: true });
+    },
+
+    initScript: (element, callback, threshold = 500) => {
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              if (typeof callback === 'function') {
+                callback();
+                observer.unobserve(entry.target);
+              }
+            }
+          });
+        }, { rootMargin: `0px 0px ${threshold}px 0px` });
+
+        io.observe(element);
+      } else {
+        callback();
+      }
+    }
+  }
+
+  setTimeout(() => {
+    theme.lazy.loadSrcSets(true, true);
+    theme.lazy.initLoadObserver();
+  }, 0);
+
+  {%- if request.design_mode -%}
+    document.addEventListener('shopify:section:load', (evt) => {
+      theme.lazy.loadSrcSets(evt.target);
+    });
+  {%- endif -%}
+</script>

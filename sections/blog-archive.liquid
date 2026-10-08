@@ -1,0 +1,413 @@
+<section class="section blogs-archive-section section-id-{{ section.id }}" data-cc-animate data-cc-animate-delay="0.2s">
+  <div class="section-container">
+    {%- liquid
+      assign pagination_key = 'page'
+      assign search_key = 'q'
+      assign filter_key = 'filter'
+      assign page_size = 6
+      # theme-check-disable
+      capture content_for_query_string
+        echo content_for_header
+      endcapture
+      # theme-check-enable
+    
+      assign page_url = content_for_query_string | split: '"pageurl":"' | last | split: '"' | first | split: '.myshopify.com' | last | replace: '\/', '/' | replace: '%20', ' ' | replace: '\u0026', '&'
+    
+      assign page_query_string = page_url | split: '/' | last
+      assign split_string = page_query_string | split: '?'
+      assign parameters = split_string[1] | downcase | split: '&'
+
+    
+      if pagination_key or search_key or filter_key
+        assign pagination = false
+        assign search = null
+        assign filter = false
+    
+        assign key_downcase = pagination_key | downcase
+        assign search_key_downcase = search_key | downcase
+        assign filter_key_downcase = filter_key | downcase
+    
+        for parameter in parameters
+          assign parameter_arr = parameter | split: '='
+          assign parameter_property = parameter_arr[0] | downcase
+          if parameter_property == key_downcase and pagination == false
+            assign pagination = parameter_arr[1]
+          endif
+          if parameter_property == search_key_downcase and search == null
+            assign search = parameter_arr[1]
+          endif
+          if parameter_property == filter_key_downcase and filter == false
+            assign filter = parameter_arr[1] | url_decode | downcase | strip
+          endif
+        endfor
+        if pagination == false
+          assign pagination = '1'
+        endif
+      endif
+    -%}
+    {% if section.settings.title != blank %}
+      <h1 class="blogs-archive__title hl-style">{{ section.settings.title }}</h1>
+    {% endif %}
+    <div class="blogs-archive__filters">
+      <form class="blogs-archive__search-form" action="/search" method="get" autocomplete="off">
+        <input type="hidden" name="type" value="article">
+        <input type="hidden" name="options[prefix]" value="last">
+        <div class="blogs-archive__input-container">
+          <input class="blogs-archive__input" type="search" name="q" autocomplete="off" placeholder="{{section.settings.placeholder}}" aria-label="{{section.settings.placeholder}}" value="{{ search }}">
+          <button class="blogs-archive__button main-search__button--submit" type="submit" aria-label="Search">{% render 'svg-search-alt' %}<span class="btn--text">{{section.settings.search_btn}}</span></button>
+        </div>
+       </form>
+      <div  class="blogs-archive__categories-wrap-outer{% if search == null %} expanded{% endif %}">
+      <div class="blogs-archive__categories-wrap">
+        <a href="#" class="blogs-archive__category{% unless filter %} active{% endunless %}" data-id-all="true">{{ 'blogs.general.all_article' | t }}</a>
+        {% for link in linklists[section.settings.cat_menu].links %}
+          {% assign title = link.title | downcase | strip %}
+        <a href="#" class="blogs-archive__category{% if filter == title %} active{% endif %}">{{ link.title }}</a>
+        {% endfor %}
+      </div>
+      </div>
+    </div>
+    {%- liquid
+      assign all_articles = null
+      for link in linklists['blog-categories'].links
+        assign blog = link.object
+        assign all_articles = all_articles | concat: blog.articles
+      endfor
+      assign all_articles = all_articles | sort: 'created_at' | reverse
+      if filter
+        for article in all_articles limit: all_articles.size
+          assign tags = article.tags | join: "," | downcase
+          unless tags contains filter
+            assign all_articles = all_articles | reject: "id", article.id
+          endunless
+        endfor
+      endif
+      unless all_articles.size > page_size
+        assign pagination = '1'
+      endunless
+    -%}
+    <div data-ajax-container="blogs">
+    {% if all_articles.size > 0 %}
+    {% if pagination == '1' %}
+      <div class="blogs-archive__articles-featured-wrap">
+        {% for article in all_articles limit: 1 %}
+          {%- liquid
+            assign special_class = blank
+            if forloop.index == 1
+              assign special_class = "first-item"
+            else
+              assign special_class = "second-item"
+            endif
+          -%}
+          <div class="blogs-archive__article{% unless special_class == blank %} {{ special_class }}{% endunless %}">
+            <a class="blogs-archive__article_img-wrap" href="{{ article.url }}">
+                {% if article.image != blank %}
+                  {{ article.image | image_url: width: nil | image_tag: class: 'blogs-archive__article_img'}}
+                {% else %}
+                  {{ 'image' | placeholder_svg_tag: 'placeholder blogs-archive__article_img'}}
+                {% endif %}
+            </a>
+            <div class="blogs-archive__article_content">
+              <a href="{{ article.url }}"><h4 class="blogs-archive__article_title">{{ article.title }}</h4></a>
+              {% if article.tags.size > 0 %}
+                <div class="blogs-archive__article_tags">
+                {% unless filter %}
+                {% for tag in article.tags limit: 2 %}
+                  <div class="blogs-archive__article_tag">
+                    {{tag}}
+                  </div>
+                {% endfor %}
+                {% else %}
+                  <div class="blogs-archive__article_tag">
+                    {{filter}}
+                  </div>
+                {% endunless %}
+                </div>
+              {% endif %}
+              {% if article.excerpt != blank %}
+                <div class="blogs-archive__article_excerpt">{{ article.excerpt }}</div>
+              {% endif %}
+              <a href="{{ article.url }}" class="btn blogs-archive__article_btn"><span>{{ 'blogs.general.read_more' | t }}</span></a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if all_articles.size > 1 and section.settings.recent_title != blank %}
+      <h3 class="blogs-archive__recent-title">{{ section.settings.recent_title }}</h3>
+    {% endif %}
+    <div class="blogs-archive__articles-wrap">
+      {%- liquid
+        if pagination == '1'
+          assign page_size = page_size | minus: 1
+          assign pagination_offset = 1
+        else
+          assign page_size_float = page_size | times: 1.0
+          assign pagination_offset = pagination | minus: 1 | times: page_size| plus: 1
+          if pagination_offset > all_articles.size
+            assign pagination_offset = all_articles.size | divided_by : page_size_float | ceil | minus: 1 | times: page_size
+          endif
+        endif
+        assign showing = pagination_offset | plus: page_size
+        if showing > all_articles.size
+          assign showing = all_articles.size
+        endif
+      -%}
+      {% for article in all_articles offset: pagination_offset, limit: page_size %}
+        <div class="blogs-archive__article">
+          <a class="blogs-archive__article_img-wrap" href="{{ article.url }}">
+              {% if article.image != blank %}
+                {{ article.image | image_url: width: nil | image_tag: class: 'blogs-archive__article_img'}}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'placeholder blogs-archive__article_img'}}
+              {% endif %}
+          </a>
+          <div class="blogs-archive__article_content">
+            {% if article.tags.size > 0 %}
+              <div class="blogs-archive__article_tags">
+              {% unless filter %}
+                {% for tag in article.tags limit: 2 %}
+                  <div class="blogs-archive__article_tag">
+                    {{tag}}
+                  </div>
+                {% endfor %}
+                {% else %}
+                  <div class="blogs-archive__article_tag">
+                    {{filter}}
+                  </div>
+                {% endunless %}
+              </div>
+            {% endif %}
+            <a href="{{ article.url }}"><h4 class="blogs-archive__article_title">{{ article.title }}</h4></a>
+            {% if article.excerpt != blank %}
+              <div class="blogs-archive__article_excerpt">{{ article.excerpt }}</div>
+            {% endif %}
+            <a href="{{ article.url }}" class="blogs-archive__article_btn"><span>{{ section.settings.blogs_btn }}</span> {% render 'svg-blog-arrow' %}</a>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+      {% else %}
+      <div class="blogs-archive__no-reasults-wrap">
+        <h4 class="blogs-archive__no-reasults-notice">{{ 'blogs.general.no_matches' | t }}</h4>
+      </div>
+      {% endif %}
+      {% if all_articles.size > showing%}
+        <div class="blogs-archive__load-wrap">
+          {%- liquid
+              assign next_pagi = pagination | plus: 1
+            if page_url contains '?'
+              assign breaker = pagination_key | append: '='
+              if page_url contains breaker
+                assign next_page_url = page_url | split: breaker
+                assign next_page_url_2 = next_page_url[1] | replace_first: pagination, next_pagi
+                assign next_page_url = next_page_url[0] | append: breaker | append: next_page_url_2
+              else
+                assign next_page_url = page_url | append: '&' | append: pagination_key | append: '=' | append: next_pagi
+              endif
+            else
+              assign next_page_url = page_url | append: '?' | append: pagination_key | append: '=' | append: next_pagi
+            endif
+            assign page_url_parts = next_page_url | split: '/'
+            assign next_page_url = ''
+            for parts in page_url_parts
+              unless forloop.first
+              assign next_page_url = next_page_url | append: '/' | append: parts
+              endunless
+            endfor
+          -%}
+            <a href="{{next_page_url}}" class="blogs-archive__load-btn"><span>{{section.settings.blogs_btn}}</span> {% render 'svg-chevron-right' %}</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>  
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  $('.section-id-{{ section.id }}').each(function () {
+    let abortController;
+    const cats = $(this).find('.blogs-archive__categories-wrap-outer')
+    if(!$(cats).hasClass('expanded'))
+      $(cats).slideUp();
+    this.fetchSearch = function(url = null,pushState = true){
+      if (abortController) {
+          abortController.abort();
+      }
+  
+      abortController = new AbortController();
+      const signal = abortController.signal;
+      // start fetching URL
+      var refreshContainerSelector = '[data-ajax-container]',
+        $ajaxContainers = $(this).find(refreshContainerSelector),fetchUrl;
+      // loading state
+      
+      var val = $('.blogs-archive__input').val();
+      const current_url = new URL(window.location.href);
+      if(val){
+        current_url.searchParams.set("q", val);
+        fetchUrl = theme.routes.search_url+'?q='+val+'&type=article&view=blog'
+        if(url){
+          window.history.replaceState({}, '', url);
+          return;
+        }
+        url = current_url;
+      }else{
+        if(url == null)  current_url.searchParams.delete("q"), url = current_url;
+        fetchUrl = url;
+      }
+      $ajaxContainers.addClass('ajax-loading');
+      fetch(fetchUrl, {signal}).
+        then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.text();
+        }).
+        then((response) => {
+          var $newAjaxContainers = $(`<div>${response}</div>`).find(refreshContainerSelector);
+            $newAjaxContainers.each(function () {
+              $ajaxContainers.filter(`[data-ajax-container="${this.dataset.ajaxContainer}"]`).html($(this).html());
+            });
+          if(pushState)
+          window.history.pushState({}, '', url);
+          $ajaxContainers.removeClass('ajax-loading');
+          theme.initAnimateOnScroll();
+        });
+    }
+    
+    this.querySelectorAll('.blogs-archive__search-form').forEach(form => {
+      const field = form.querySelector('.blogs-archive__input');
+      form.addEventListener('submit', e=>{
+        e.preventDefault();
+        this.fetchSearch();
+      });
+      if(field.value){
+         this.fetchSearch();
+      }
+      field.addEventListener('input', () => {
+        this.fetchSearch();
+        if(field.value){
+           if($(cats).hasClass('expanded'))
+          $(cats).slideUp();
+          $(cats).removeClass('expanded')
+        }
+        else {
+          if(!$(cats).hasClass('expanded'))
+          $(cats).slideDown();
+          $(cats).addClass('expanded')
+        }
+      });
+    })
+    this.querySelectorAll('.blogs-archive__category').forEach(filter => {
+      filter.addEventListener('click', e=>{
+        e.preventDefault();
+        if(filter.classList.contains('active')) return;
+        this.querySelector('.blogs-archive__category.active').classList.remove('active')
+        filter.classList.add('active')
+        const url = new URL(window.location.href);
+        if(filter.dataset.idAll) url.searchParams.delete("filter");
+        else url.searchParams.set("filter", filter.innerText);
+        this.fetchSearch(url);
+      });
+    })
+    $('body').on('click', '.blogs-archive__load-btn', function(e) {
+      e.preventDefault();
+      const btn = this;
+      if(btn.classList.contains('ajax-loading')) return;
+      btn.classList.add('ajax-loading')
+      fetch(btn.href).
+      then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+      }).
+      then((response) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(response, 'text/html');
+        const sourceElement = doc.querySelector('.blogs-archive__articles-wrap');
+        const targetElement = document.querySelector('.blogs-archive__articles-wrap');
+        if (sourceElement && targetElement) {
+          Array.from(sourceElement.children).forEach((child,i) => {
+            const $child = $(child)
+            $child.css({
+              opacity: 0,
+              transform: 'translateY(20px)',
+              transition: 'all 0.4s ease'
+            });
+            targetElement.appendChild(child);
+            setTimeout(() => {
+              $child.css({
+                opacity: 1,
+                transform: 'translateY(0)'
+              });
+            }, 100*i);
+          });
+        }
+        btn.classList.remove('ajax-loading')
+        if(doc.querySelector('.blogs-archive__load-btn')){
+          $('.blogs-archive__load-wrap').replaceWith(($(doc)).find('.blogs-archive__load-wrap'));
+        }
+        else
+          $('.blogs-archive__load-wrap').fadeOut(400, function() {
+            $(this).remove();
+          });
+      });
+    });
+    window.addEventListener('popstate', (event) => {
+      location.reload();
+    });
+  })
+  
+  
+
+})
+</script>
+
+{% schema %}
+  {
+    "name": "Blogs archive",
+    "settings": [
+      {
+        "type": "inline_richtext",
+        "id": "title",
+        "label": "Title",
+        "default": "Lees & leer"
+      },
+      {
+        "type": "text",
+        "id": "placeholder",
+        "label": "Search placeholder",
+        "default": "Hier suchen"
+      },
+      {
+        "type": "text",
+        "id": "search_btn",
+        "label": "Search Button",
+        "default": "ZOEKEN"
+      },
+      {
+        "type": "link_list",
+        "id": "cat_menu",
+        "label": "Filters menu"
+      },
+      {
+        "type": "text",
+        "id": "recent_title",
+        "label": "Recent title",
+        "default": "Recent Blogs"
+      },
+      {
+        "type": "text",
+        "id": "blogs_btn",
+        "label": "Blogs Lees meer button",
+        "default": "Lees meer"
+      },
+    ],
+    "presets": [
+      {
+        "name": "Blogs archive",
+      }
+    ]
+  }
+{% endschema %}

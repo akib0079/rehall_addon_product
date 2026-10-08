@@ -1,0 +1,233 @@
+{% style %}
+  #shopify-section-{{ section.id }}{
+    margin-top: {{section.settings.margin_top}};
+  }
+  @media (max-width: 767px){
+    #shopify-section-{{ section.id }}{
+      margin-top: {{section.settings.margin_top_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="wide-container">
+  <div class="new-collection-wrap">
+    <div class="new-collection__col details-col">
+      {% if section.settings.image != blank %}
+        {{ section.settings.image_wide | default: section.settings.image | image_url: width: nil | image_tag: class: "new-collection__image wide-only" }}
+        {{ section.settings.image | image_url: width: nil | image_tag: class: "new-collection__image desktop-only" }}
+        {{ section.settings.image_mobile | default: section.settings.image | image_url: width: nil | image_tag: class: "new-collection__image mobile-only" }}
+      {% else %}
+        {{ 'image' | placeholder_svg_tag: "new-collection__image placeholder" }}
+      {% endif %}
+      <h2 class="new-collection__title hl-style desktop-only">{{ section.settings.title }}</h2>
+      <p class="new-collection__desc desktop-only">{{ section.settings.description }}</p>
+      <div class="new-collection__nav-row">
+      {% if section.settings.button_text != blank %}
+        <a class="new-collection__btn btn btn--link" href="{{ section.settings.button_url | default: "#" }}"><span class="btn__text">{{ section.settings.button_text }}</span></a>
+      {% endif %}
+        <div class="product-slider__nav-wrap">
+          <div class="product-slider__nav prev">
+            {% render 'svg-slider-arrow' %}
+          </div>
+          <div class="product-slider__nav next">
+            {% render 'svg-slider-arrow' %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="new-collection__col swiper new-collection__swiper">
+      <div class="swiper-wrapper new-collection__products-wrap">
+        <div class="new-collection__slider-image swiper-slide">
+          {% if section.settings.image != blank %}
+            {{ section.settings.image | image_url: width: nil | image_tag: class: "new-collection__image desktop-only" }}
+            {{ section.settings.image_mobile | default: section.settings.image | image_url: width: nil | image_tag: class: "new-collection__image mobile-only" }}
+          {% else %}
+            {{ 'image' | placeholder_svg_tag: "new-collection__image placeholder" }}
+          {% endif %}
+        </div>
+        {%- liquid 
+          assign products = section.settings.product_list
+          case section.settings.product_source
+            when 'collection'
+              assign products = section.settings.collection
+            when 'latest'
+              assign products = collections.all.products
+          endcase
+        -%}
+        {% if products == blank %}
+          {% for i in (1..4) %}
+            {% render 'onboarding-product-block', forloop: forloop, class: "swiper-slide" %}
+          {% endfor %}
+        {% else %}
+          {%- liquid
+            if settings.prod_thumb_shape == 'portrait-23'
+              assign chosen_aspect_ratio = 0.67
+            elsif settings.prod_thumb_shape == 'portrait-45'
+              assign chosen_aspect_ratio = 0.8
+            elsif settings.prod_thumb_shape == 'square'
+              assign chosen_aspect_ratio = 1.0
+            elsif settings.prod_thumb_shape == 'landscape-54'
+              assign chosen_aspect_ratio = 1.25
+            elsif settings.prod_thumb_shape == 'landscape-32'
+              assign chosen_aspect_ratio = 1.50
+            elsif settings.prod_thumb_shape == 'tallest'
+              assign chosen_aspect_ratio = 99
+              for product in products
+                if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                  assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                endif
+              endfor
+            else
+              assign chosen_aspect_ratio = 0
+              for product in products
+                if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                  assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                endif
+              endfor
+            endif
+          -%}
+          {% for product in products %}
+            {%liquid
+              if section.settings.hide_sold_out and product.available == false
+              continue
+              endif
+            %}
+            <div class="swiper-slide">
+              {% render 'product-block-alt', product: product, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: true %}
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <h2 class="new-collection__title hl-style mobile-only" aria-hidden='true'>{{ section.settings.title }}</h2>
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     if (window.matchMedia("(max-width: 1099px)").matches) {
+       document.querySelector('#shopify-section-{{ section.id }} .new-collection__swiper')?.classList.add('prepare');
+       new Swiper('#shopify-section-{{ section.id }} .new-collection__swiper', {
+        slidesPerView: 'auto',
+        spaceBetween: 10,
+        freeMode: {
+          enabled: true,
+          sticky: true,
+          momentumRatio: 0.8,
+        },
+        speed: 400,
+        navigation: {
+          nextEl: '#shopify-section-{{ section.id }} .product-slider__nav.next',
+          prevEl: '#shopify-section-{{ section.id }} .product-slider__nav.prev',
+        },
+      });
+    }
+  });     
+</script>
+{% schema %}
+  {
+    "name": "New collection",
+    "class": "new-collection card",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_mobile",
+        "label": "Mobile image"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_wide",
+        "label": "Wide image"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "NEW IN STORE"
+      },
+      {
+        "type": "text",
+        "id": "description",
+        "label": "Description",
+        "default": "Shop the new collection"
+      },
+      {
+        "type": "text",
+        "id": "button_text",
+        "label": "Button text",
+        "default": "SHOW ALL NEW"
+      },
+      {
+        "type": "url",
+        "id": "button_url",
+        "label": "Button url"
+      },
+      {
+        "type": "checkbox",
+        "id": "hide_sold_out",
+        "label": "Hide sold out products",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "product_source",
+        "label": "Show products by",
+        "default": "list",
+        "options": [
+          {
+            "label": "List",
+            "value": "list"
+          },
+          {
+            "label": "Collection",
+            "value": "collection"
+          },
+          {
+            "label": "Latest",
+            "value": "latest"
+          }
+        ]
+      },
+      {
+        "type": "range",
+        "id": "product_count",
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "label": "Product max count",
+        "default": 4
+      },
+      {
+        "type": "collection",
+        "id": "collection",
+        "label": "Collection",
+        "info": "Only works if show products by - collection is selected"
+      },
+      {
+        "type": "product_list",
+        "id": "product_list",
+        "label": "Product list"
+      },
+      {
+        "type": "text",
+        "id": "margin_top",
+        "label": "Margin top",
+        "default": "192px"
+      },
+      {
+        "type": "text",
+        "id": "margin_top_mobile",
+        "label": "Margin top mobile",
+        "default": "99px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "New Collection"
+      }
+    ]
+  }
+{% endschema %}

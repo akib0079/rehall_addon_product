@@ -1,0 +1,97 @@
+<div class="landing-blog-content__numlist" style="{% if block.settings.margin_top %}--margin-top: {{ block.settings.margin_top }};{%endif %}{% if block.settings.margin_top_mobile %}--margin-top-mobile: {{ block.settings.margin_top_mobile }};{%endif %}"{% if block.settings.scroll %} data-scroll-anchor="{{ block.settings.scroll_title }}"{% endif %}>
+  {% for blk in block.blocks %}
+  <div class="landing-blog-content__numlist_item-wrap">
+    {% if block.settings.numbered %}
+      <div class="landing-blog-content__numlist_item-number">
+        {% liquid
+          if forloop.index < 10
+            echo forloop.index | prepend: '0'
+          else 
+            echo forloop.index
+          endif
+        %}
+      </div>
+    {% endif %}
+    
+    {% render blk %}
+  </div>
+{% endfor %}
+</div>
+{% style %}
+.landing-blog-content__numlist{
+  margin-top: var(--margin-top);
+}
+.landing-blog-content__numlist_item-wrap {
+  display: flex;
+  grid-gap: 126px;
+  padding: 30px 0;
+  border-top: 1px solid #EEE;
+}
+.landing-blog-content__numlist_item-wrap:last-child{
+  border-bottom: 1px solid #EEE;
+}
+.landing-blog-content__numlist_item-number {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 100%;
+    letter-spacing: 0.25px;
+    text-transform: uppercase;
+    color: #757575;
+}
+@media (max-width: 767px) {
+  .landing-blog-content__numlist{
+    margin-top: var(--margin-top-mobile);
+  }
+  .landing-blog-content__numlist_item-wrap{
+    grid-gap: 20px;
+  }
+}
+{%endstyle %}
+{% schema %}
+{
+  "name": "Numbered List",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "numbered",
+      "label": "Numered",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "margin_top",
+      "label": "Margin Top",
+      "default": "0px"
+    },
+    {
+      "type": "text",
+      "id": "margin_top_mobile",
+      "label": "Margin Top - Mobile",
+      "default": "0px"
+    },
+    {
+      "type": "checkbox",
+      "id": "scroll",
+      "label": "Scroll Anchor",
+      "default": false
+    },
+    {
+      "type": "inline_richtext",
+      "id": "scroll_title",
+      "label": "Scroll Title",
+      "default": "Thermal insulation",
+      "visible_if": "{{ block.settings.scroll }}"
+    },
+  ],
+  "blocks": [
+    {
+      "type": "_landing-blog-enumbered-item",
+    }
+  ],
+  "presets": [
+        {
+        "name": "Numbered List"
+        },
+    ]
+}
+{% endschema %}

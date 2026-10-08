@@ -1,0 +1,47 @@
+<shipping-calculator id="shipping-calculator"
+    scripts="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js {{ 'shopify_common.js' | shopify_asset_url }} {{ 'shipping-calculator.v1.0.min.js' | asset_url }}"
+    submit-text="{{ 'cart.shipping_calculator.submit' | t }}"
+    submit-disabled-text="{{ 'cart.shipping_calculator.loading' | t }}"
+    money-format="{% if settings.cart_currency_code_enabled %}{{ shop.money_with_currency_format | escape }}{% else %}{{ shop.money_format | escape }}{% endif %}"
+    {% if shop.customer_accounts_enabled and customer %}logged-in{% endif %}>
+  <div class="inputrow">
+    <label for="address_country">{{ 'cart.shipping_calculator.country' | t }}</label>
+    <span class="lightly-styled-select"><select id="address_country" name="address[country]" data-default="{% if shop.customer_accounts_enabled and customer %}{{ customer.default_address.country }}{% elsif default_country != blank %}{{ default_country | escape }}{% endif %}">{{ country_option_tags }}</select></span>
+  </div>
+  <div id="address_province_container" class="inputrow" style="display:none;">
+    <label for="address_province" id="address_province_label">{{ 'cart.shipping_calculator.province' | t }}</label>
+    <span class="lightly-styled-select"><select id="address_province" class="address_form" name="address[province]" data-default="{% if shop.customer_accounts_enabled and customer and customer.default_address.province != '' %}{{ customer.default_address.province }}{% endif %}"></select></span>
+  </div>
+
+  <div class="inputrow">
+    <label for="address_zip">{{ 'cart.shipping_calculator.zip' | t }}</label>
+    <input type="text" id="address_zip" name="address[zip]"{% if shop.customer_accounts_enabled and customer %} value="{{ customer.default_address.zip }}"{% endif %} />
+  </div>
+
+  <div class="inputrow">
+    <input type="button" class="get-rates btn btn--secondary btn--input-height" value="{{ 'cart.shipping_calculator.submit' | t }}" />
+  </div>
+
+  <div id="wrapper-response"></div>
+
+  <script id="shipping-calculator-response-template" type="text/template">
+    <p id="shipping-rates-feedback" <% if (success) { %> class="success" <% } else { %> class="error" <% } %>>
+      <% if (success) { %>
+        <% if (rates.length > 1) { %>
+          <%= rates.length %> {{ 'cart.shipping_calculator.multiple_rates' | t }} <%= rates[0].price %>.
+        <% } else if (rates.length == 1) { %>
+          {{ 'cart.shipping_calculator.single_rate' | t }} <%= address %>.
+        <% } else { %>
+          {{ 'cart.shipping_calculator.no_rates' | t }}
+        <% } %>
+      <% } else { %>
+        <%= errorFeedback %>
+      <% } %>
+    </p>
+    <ul id="shipping-rates">
+      <% for (var i=0; i<rates.length; i++) { %>
+        <li><%= rates[i].name %> {{ 'cart.shipping_calculator.at' | t }} <%= rates[i].price %></li>
+      <% } %>
+    </ul>
+  </script>
+</shipping-calculator>

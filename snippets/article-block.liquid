@@ -1,0 +1,51 @@
+<div class="article-block{% unless no_grid_classes %} column column--third{% endunless %} {{ extra_classes }}" data-cc-animate {{ attrs }}>
+  <div class="article-block__inner card-scheme card-scheme--{{ section.settings.color_scheme }} card-br-oh">
+    {% if article.image %}
+      <div class="article-image scale-on-hover{% if section.settings.color_scheme == 'none' %} card-br-oh{% endif %}">
+        <a href="{{ article.url }}">
+          {% render 'responsive-image', image: article.image, aspect_ratio: section.settings.crop_ratio, cover: true, extra_classes: 'scale-on-hover__target' %}
+        </a>
+      </div>
+    {% endif %}
+
+    <div class="article-block__text card-content-padding-x padded-row-bottom--medium{% unless article.image %} lightish-spaced-row-above{% endunless %}">
+      <{{ heading_tag | default: 'h3' }} class="h3-style heading-font">{{ article.title | escape | link_to: article.url }}</{{ heading_tag | default: 'h3' }}>
+
+      {%- if section.settings.show_excerpts -%}
+        <div class="rte cf">
+          {%- if article.excerpt.size > 0 -%}
+            {{ article.excerpt }}
+          {%- else -%}
+            {{ article.content | strip_html | truncatewords: 30 }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="article-meta">
+        {% if section.settings.show_date or section.settings.show_author %}
+          <span class="iconmeta time">
+            {% if section.settings.show_date %}
+              {{ article.published_at | date: format: 'month_date_year' }}
+            {% endif %}
+            {% if section.settings.show_author %}
+              {% if section.settings.show_date %}&mdash;{% endif %}
+              <span class="author">{{ article.author }}</span>
+            {% endif %}
+          </span>
+        {% endif %}
+
+        {% if section.settings.show_article_tags %}
+          {% capture tag_markup %}
+            <div class="iconmeta tags">
+              <span class="label">{{ 'blogs.article.tags' | t }}:</span>
+              {% for tag in article.tags %}
+                {{ tag | link_to_tag: tag }}
+              {% endfor %}
+            </div>
+          {% endcapture %}
+          {% if tag_markup contains '</a>' %}{{ tag_markup }}{% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,281 @@
+<div class="section-container">
+    <div id="section-id-{{ section.id }}" class="section-home-banner-v2-wrap{% if section.settings.overlay %} with-overlay{% endif %}" data-cc-animate>
+        <div class="home-banner-v2__content">
+            {% if section.settings.title != blank %}
+                <h2 class="home-banner-v2__title">{{ section.settings.title }}</h2>
+            {% endif %}
+            {% comment %} <div class="home-banner-v2__desc">
+                {% if section.settings.text_1 != blank %}
+                    <span>{{ section.settings.text_1 }}</span>
+                {% endif %}
+                {% if section.settings.icon_1 != blank %}
+                    {{ section.settings.icon_1 | image_url: width: nil | image_tag }}
+                {% endif %}
+                {% if section.settings.text_2 != blank %}
+                    <span>{{ section.settings.text_2 }}</span>
+                {% endif %}
+                {% if section.settings.icon_2 != blank %}
+                    {{ section.settings.icon_2 | image_url: width: nil | image_tag }}
+                {% endif %}
+            </div> {% endcomment %}
+            {% if section.settings.btn_text != blank %}
+            <a class="home-banner-v2__btn" href="{{ section.settings.btn_url }}">
+              <span class="btn__text">{{ section.settings.btn_text | escape }}</span>
+              <span  class="btn__icon">{% render 'svg-arrow-up-left' %}</span>
+            </a>
+            {% endif %}
+        </div>
+        {% if section.settings.image != blank %}
+            {{ section.settings.image | image_url: width: nil | image_tag: class: "home-banner-v2__img desktop-only" }}
+            {{ section.settings.image_mobile | default: section.settings.image | image_url: width: nil | image_tag: class: "home-banner-v2__img mobile-only" }}
+        {% else %}
+            {{ 'collection-1' | placeholder_svg_tag: 'home-banner-v2__img placeholder' }}
+        {% endif %}
+    </div>
+</div>
+{% style %}
+    .section-home-banner-v2-wrap{
+      height: 620px;
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+      z-index: 1;
+    }
+    .section-home-banner-v2-wrap.with-overlay::before{
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 33%;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.80) 100%);
+    }
+    .home-banner-v2__content{
+      padding: 116px 61px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      color: #FFF;
+    }
+    .home-banner-v2__title{
+      color: inherit;
+      font-size: 40px;
+      font-weight: 700;
+      line-height: normal;
+      letter-spacing: -0.8px;
+    }
+    .home-banner-v2__desc {
+      display: flex;
+      grid-gap: 1px 13px;
+      align-items: center;
+      margin-top: 5px;
+      font-size: 12px;
+      line-height: 26px;
+      flex-wrap: wrap;
+    }
+    /* .home-banner-v2__btn{
+      color: inherit;
+      display: flex;
+      padding: 8px 30px;
+      margin-top: 48px;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 98%; /* 17.64px */
+      /* letter-spacing: -0.36px;
+      font-family: 'Roundo', 'Assistant', sans-serif;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10.65px);
+      transition: background 0.3s ease-out;
+    }
+    .home-banner-v2__btn:hover{
+      background: rgba(255, 255, 255, 0.30);
+    }
+    .home-banner-v2__btn svg{
+      width: 25px;
+      height: 24px;
+    } */
+
+
+
+    .home-banner-v2__btn {
+  color: inherit;
+  display: flex;
+  padding: 8px 30px;
+  margin-top: 48px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 98%;
+  letter-spacing: -0.36px;
+  font-family: 'Roundo', 'Assistant', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10.65px);
+  position: relative; /* REQUIRED for the shimmer reflection */
+  overflow: hidden;   /* REQUIRED to keep the light inside the button */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+  /* The light beam */
+  .home-banner-v2__btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+    transform: skewX(-20deg);
+    transition: left 0.55s ease;
+  }
+
+  /* --- HOVER STATE --- */
+  .home-banner-v2__btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .home-banner-v2__btn:hover::after {
+    left: 150%; /* Triggers the light sweep */
+  }
+
+  .home-banner-v2__btn svg {
+    width: 25px;
+    height: 24px;
+    transition: transform 0.3s ease;
+  }
+
+  .home-banner-v2__btn:hover svg {
+    transform: translateX(4px); /* Gently pushes the icon right */
+  }
+
+.home-banner-v2__img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  object-fit: cover;
+}
+    .home-banner-v2__img{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      object-fit: cover;
+    }
+    .home-banner-v2__img.placeholder{
+      background-color: #b5b5b5;
+    }
+    @media (max-width: 767px){
+      .section-home-banner-v2-wrap{
+        height: 500px;
+        align-items: center;
+        justify-content: center;
+      }
+      .home-banner-v2__content{
+        padding: 50px 20px;
+        text-align: center;
+        align-items: center;
+      }
+      .home-banner-v2__title{
+        font-size: 32px;
+      }
+      .home-banner-v2__desc{
+        align-items: center;
+      }
+    }
+  {% endstyle %}
+
+
+{% schema %}
+  {
+    "name": "Our story banner",
+    "class": "section-home-banner-v2",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "id": "title",
+        "type": "inline_richtext",
+        "label": "Title",
+        "default": "END OF SEASON SALE"
+      },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "Shop Alles"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button url",
+        "default": "/collections/all"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "text_1",
+        "label": "Text 1",
+        "default": "Excellent"
+      },
+      {
+        "type": "image_picker",
+        "id": "icon_1",
+        "label": "Icon 1"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "text_2",
+        "label": "Text 2",
+        "default": "436 reviews on"
+      },
+      {
+        "type": "image_picker",
+        "id": "icon_2",
+        "label": "Icon 2"
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Background Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_mobile",
+        "label": "Background Image mobile"
+      },
+      {
+        "type": "checkbox",
+        "id": "overlay",
+        "label": "Overlay",
+        "default": true
+      },
+    ],
+    "presets": [
+      {
+        "name": "Home Banner V2"
+      }
+    ]
+  }
+{% endschema %}

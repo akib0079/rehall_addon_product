@@ -1,0 +1,142 @@
+{% assign visibility = false %}
+{% unless request.design_mode %}
+  {% for block in section.blocks %}
+    {% if block.settings.connection != blank  %}
+      {% assign visibility = true %}
+    {% endif %}
+  {% endfor %}
+{% else %}
+  {% assign visibility = true %}
+{% endunless %}
+<div class="prod-feature-section {{ section.id }}{% unless visibility %} visibility-hidden{% endunless %}">
+  <div class="section-container">
+    <div class="prod-feature__wrap">
+      {% for block in section.blocks %}
+        {% assign liquid_logic = true %}
+        {% assign liquid_logic_text = block.settings.liquid_logic | downcase | strip | strip_html %}
+        {% if block.settings.use_liquid_logic and liquid_logic_text != "true"  %} {% assign liquid_logic = false %}  {% endif %}
+        {% if request.design_mode or liquid_logic and block.settings.connection != blank  %}
+        <div class="prod-feature__single" {{ block.shopify_attributes }}>
+          <div class="prod-feature__single_img-wrap">
+            {% if block.settings.img != blank %}
+              {{ block.settings.img | image_url: width: nil | image_tag: class: 'prod-feature__single_img' }}
+            {% else %}
+              {{ 'image' | placeholder_svg_tag: 'prod-feature__single_img placeholder' }}
+            {% endif %}
+          </div>
+          <div class="prod-feature__single_content">
+            <h4 class="prod-feature__single_title">
+              {% if block.settings.use_liquid_title %}
+                {{ block.settings.liquid_title }}
+              {% else %}
+                {{ block.settings.title }}
+              {% endif %}
+            </h4>
+            <p class="prod-feature__single_desc">
+            {% if block.settings.use_liquid %}
+              {{ block.settings.liquid }}
+            {% else %}
+              {{ block.settings.desc }}
+            {% endif %}
+            </p>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Product feature section",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "For widescreen add blocks to main product section"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "feature",
+        "name": "Product Feature",
+        "settings": [
+          {
+            "type": "text",
+            "id": "connection",
+            "label": "Connected metafield",
+            "info": "set metafield as value, that should control it's visibility, make sure ONLY the metafield is set as value"
+          },
+          {
+            "type": "checkbox",
+            "id": "use_liquid_logic",
+            "label": "Use custom liquid logic",
+            "default": false,
+          },
+          {
+            "type": "liquid",
+            "id": "liquid_logic",
+            "label": "Custom liquid logic",
+            "default": "true",
+          },
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Img"
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "WATERDICHT"
+          },
+          {
+            "type": "checkbox",
+            "id": "use_liquid_title",
+            "label": "use Custom liquid title",
+            "default": false,
+          },
+          {
+            "type": "liquid",
+            "id": "liquid_title",
+            "label": "Custom liquid title",
+            "default": "your liquid code"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "Als je de bergen ingaat, is waterdichte wintersportkleding essentieel. Het houdt regen, sneeuw en smeltwater buiten, zodat je droog blijft, ongeacht de omstandigheden. Met goede waterafstotendheid geniet je van elke afdaling, zelfs als het weer niet meewerkt. Natte kleding verpest je dag niet!"
+          },
+          {
+            "type": "checkbox",
+            "id": "use_liquid",
+            "label": "Use custom liquid",
+            "default": false,
+          },
+          {
+            "type": "liquid",
+            "id": "liquid",
+            "label": "Custom liquid",
+            "default": "your liquid code"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Product feature section",
+        "blocks": [
+          {
+            "type": "feature"
+          },
+          {
+            "type": "feature"
+          },
+          {
+            "type": "feature"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

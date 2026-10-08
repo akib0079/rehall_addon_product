@@ -1,0 +1,101 @@
+<div class="section-wrapper" id="section-id-{{ section.id }}" data-cc-animate>
+  <div class="section-container">
+  <div class="leaopard-blocks__wrap">
+        {% for block in section.blocks %}
+            {% if block.type == 'img' %}
+            <div class="leaopard-blocks__block img" {{ block.shopify_attributes }}>
+                {% if block.settings.image != blank %}
+                {% comment %} {{ block.settings.image_wide | default: block.settings.image | image_url: width: nil | image_tag: class: "leaopard-blocks__single_image wide-only" }} {% endcomment %}
+                {{ block.settings.image | image_url: width: nil | image_tag: class: "leaopard-blocks__single_image desktop-only" }}
+                {{ block.settings.image_mobile | default: block.settings.image | image_url: width: nil | image_tag: class: "leaopard-blocks__single_image mobile-only" }}
+                {% else %}
+                {{ 'product-1' | placeholder_svg_tag: "leaopard-blocks__single_image placeholder" }}
+                {% endif %}
+            </div>
+        {% elsif block.type == "text" %}
+            <div class="leaopard-blocks__block text" {{ block.shopify_attributes }}>
+            {% if block.settings.title != blank %}
+                <h2 class="leaopard-blocks__title">
+                {{ block.settings.title }}
+                </h2>
+            {% endif %}
+            {% if block.settings.btn_text != blank %}
+                {% render 'btn-global', class: 'leaopard-blocks__btn btn btn--secondary', url: block.settings.btn_url, label: block.settings.btn_text, icon: true %}
+            {% endif %}
+            </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    </div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Leopard Blocks",
+    "class": "section-leopard-blocks",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "blocks": [
+        {
+            "type": "img",
+            "name": "Image",
+            "settings": [
+                {
+                    "id": "image",
+                    "type": "image_picker",
+                    "label": "Image",
+                },
+                {
+                    "id": "image_mobile",
+                    "type": "image_picker",
+                    "label": "Image mobile",
+                },
+            ]
+        },
+        {
+            "type": "text",
+            "name": "Text & Button",
+            "settings": [
+                {
+                    "type": "text",
+                    "id": "title",
+                    "label": "Title",
+                    "default": "Fashion Ski"
+                },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "SHOW COLLECTION"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button URL",
+        "default": "/collections/all"
+      },
+            ]
+        }
+    ],
+    "presets": [
+      {
+        "name": "Leopard Blocks",
+        "blocks": [
+            {
+            "type": "img"
+            },
+            {
+            "type": "img"
+            },
+            {
+            "type": "text"
+            },
+        ]
+      }
+    ]
+  }
+{% endschema %}

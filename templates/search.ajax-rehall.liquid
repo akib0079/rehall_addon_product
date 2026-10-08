@@ -1,0 +1,71 @@
+{%- layout none -%}
+<div data-ajax-container="search">
+  {% if search.performed %}
+    <div class="header__search-wrap">
+      <div class="header__search-kewords-wrap">
+        <h5 class="header__search_title">{{ 'general.search.popup_suggestions_label' | t }}</h5>
+        <div class="header__search-kewords" data-native-suggestions>
+          <h4 class="search__empty-notice">{{ 'general.search.popup_empty_suggestions_label' | t }}</h4>
+        </div>
+      </div>
+      <div class="header__search_categories">
+            <div class="header__search_title-wrap">
+              <h5 class="header__search_title">{{ 'general.search.results' | t }}</h5>
+              <a class="header__serach_view-all link-underline" href="{{ routes.search_url }}?q={{search.terms}}&options[unavailable_products]=hide">
+                <span class="link-underline-text">
+                  <span>{{ 'general.search.view_all' | t }}</span>
+                  <span class="highlight"> ‘’{{search.terms}}’’</span>
+                </span>
+              </a>
+            </div>
+            {%- paginate search.results by 4 -%}
+              {% assign results = search.results | where: "object_type", 'product' | where: "available" %}
+              {% if results.size > 0 %}
+                <div class="header__search_res-wrap">
+                {%- for result in results -%}
+                  {%- if result.object_type == 'product' and result.available -%}
+                    {% render 'product-block-alt', product: result, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: true %}
+                  {%- endif -%}
+                {%- endfor -%}
+                </div>
+              {% else %}
+                <h4 class="search__empty-notice">{{ 'general.search.no_results' | t: terms: search.terms }}</h4>
+              {% endif %}
+            {%- endpaginate -%}
+        </div>
+    </div>
+  {% else %}
+    <div class="header__search-wrap  default">
+      <div class="header__search-kewords-wrap">
+        <h5 class="header__search_title">{{ 'general.search.popup_searches_label' | t }}</h5>
+        <div class="header__search-kewords">
+            {% for link in linklists['default-search-suggestion'].links %}
+                <a class="header__search-keyword link-underline" href="{{ link.url }}"data-keyword="{{ link.title }}">
+                    <span class="link-underline-text">{{ link.title }}</span>
+                </a>
+            {% endfor %}
+        </div>
+      </div>
+      {% if linklists['suggested-categories'].links != blank %}
+        <div class="header__search_categories">
+          <h5 class="header__search_title">{{ 'general.search.search_by_category' | t }}</h5>
+          <div class="header__search_categories-wrap">
+            {% for link in linklists['suggested-categories'].links %}
+                {% assign collection = link.object %}
+                <a class="header__search_category link-underline" href="{{ collection.url }}"data-keyword="{{ link.title }}">
+                    {% if collection.metafields.custom.megamenu_image != blank or collection.featured_image != blank %}
+                        {{ collection.metafields.custom.megamenu_image | default: collection.featured_image | image_url: width: 300 | image_tag: class: 'header__search_category-img' }}
+                    {% else %}
+                        {{ 'collection-1' | placeholder_svg_tag: 'header__search_category-img placeholder' }}
+                    {% endif %}
+                    <h5 class="header__search_category-title"><span class="link-underline-text">{{ collection.title | default: link.title }}</span></h5>
+                </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+          <h4 class="search__empty-notice">{{ 'general.search.no_results' | t: terms: search.terms }}</h4>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>

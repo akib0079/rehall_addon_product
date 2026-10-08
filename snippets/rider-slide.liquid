@@ -1,0 +1,11 @@
+{% if rider != blank %}
+<div class="rider-slide">
+  <div class="rider-slider-img">
+    {{ rider.image | image_url: width: nil | image_tag: class:  'rider-slider-img-inner' }}
+  </div>
+  <h4 class="rider-slide-title">{{ rider.name }}</h4>
+  {% if rider.start_date != blank %}
+    <p class="rider-slide-join">{{ joined_text }} {{ rider.start_date | date: "%Y" }}</p>
+  {% endif %}
+</div>
+{% endif %}

@@ -1,0 +1,76 @@
+<section class="duur-zichtbaarheid-section"{% if section.settings.scroller-id != blank %} data-scroller-id="{{ section.settings.scroller-id }}"{% endif %}>
+  <div class="duur-zichtbaarheid-outer-wrap">
+    <div class="duur-zichtbaarheid-container">
+      {% if section.settings.subtitle != blank %}
+        <li class="duur-section-subtitle"><span>{{ section.settings.subtitle }}</span></li>
+      {% endif %}
+      <div class="duur-zichtbaarheid-content-wrap">
+        {% if section.settings.title != blank %}
+          <h2 class="duur-section-title">{{ section.settings.title }}</h2>
+        {% endif %}
+        {% if section.settings.desc != blank %}
+          <div class="duur-zichtbaarheid-desc">
+            {{ section.settings.desc }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="duur-zichtbaarheid-imgs">
+    {% for block in section.blocks %}
+        {% if block.settings.img != blank %}
+          {{ block.settings.img | image_url: width: nil | image_tag: class: 'duur-zichtbaarheid-img'  }}
+        {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% schema %}
+  {
+    "name": "Duurzaamheid Zicht",
+    "settings": [
+      {
+        "type": "text",
+        "id": "scroller-id",
+        "label": "Scroller ID",
+        "default": "zichtbaarheid",
+      },
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "Sub title",
+        "default": "zichtbaarheid",
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Recycle badge",
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Bij Rehall Outerwear</p>"
+      },
+    ],
+    "blocks": [
+      {
+        "type": "img",
+        "name": "Image",
+        "limit": 3,
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image"
+          },
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Duurzaamheid Zichtbaarheid"
+      }
+    ]
+  }
+{% endschema %}

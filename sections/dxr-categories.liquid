@@ -1,0 +1,196 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    min-height: {{section.settings.mnheight}};
+    {% if section.settings.bg != blank %}
+      background-image: url({{section.settings.bg | image_url: width: nil}});
+    {% endif %}
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      min-height: {{section.settings.mnheight_mobile}};
+      {% if section.settings.bg_mobile != blank or section.settings.bg != blank %}
+        background-image: url({{section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil}});
+      {% endif %}
+    }
+  }
+{% endstyle %}
+<div class="section-dxr-categories section-id-{{ section.id }}" data-cc-animate data-cc-animate-delay="0.2s">
+  <div class="dxr-categories_mobile-block mobile-only">
+    <h2 class="dxr-categories_title">{{ section.settings.title | newline_to_br }}</h2>
+    {% if section.settings.btn_text != blank %}
+      {% assign link = section.settings.btn_url | default: '#' %}
+      {% render 'btn-global', class: 'btn dxr-categories_mobile-btn', label: section.settings.btn_text, url: link, icon: true %}
+    {% endif %}
+  </div>
+  <div class="dxr-categories_persons-wrap desktop-only">
+    {% for block in section.blocks %}
+      <div class="dxr-categories_person" style="--img-height: {{ block.settings.height }}; --img-height-wide: {{ block.settings.height_wide | default: block.settings.height }}; --me-wide: {{ block.settings.me_wide }}" {{ block.shopify_attributes }}>
+        <div class="dxr-categories_floating-block" style="--h-offset:{{ block.settings.offset_horizontal }}px;--v-offset:{{ block.settings.offset_vertical }}px;">
+          <h4 class="dxr-categories_floating-title">{{ block.settings.title }}</h4>
+          <p class="dxr-categories_floating-desc">{{ block.settings.desc | newline_to_br }}</p>
+          {% if block.settings.btn_text != blank %}
+            {% assign link = block.settings.btn_url | default: '#' %}
+            {% render 'btn-global', class: 'btn dxr-categories_floating-btn', label: block.settings.btn_text, url: link, icon: true %}
+          {% endif %}
+        </div>
+        {{ block.settings.img | image_url: width: nil | image_tag: class: 'dxr-categories_person-img' }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     if (window.matchMedia("(min-width: 768px)").matches) {
+       document.querySelectorAll('.dxr-categories_person').forEach(el => {
+         const block = el.querySelector('.dxr-categories_floating-block')
+         const tween = gsap.fromTo(block, {opacity: 0}, {opacity: 1, duration: 0.5 , paused: true, 
+            onStart: () => {
+              block.style.display = "block";
+            },
+            onReverseComplete: () => {
+              block.style.display = "none";
+            },
+         })
+         if (Shopify.designMode) {
+           tween.play()
+           return;
+         }
+         el.addEventListener('mouseenter', () => {
+           tween.play()
+         })
+         el.addEventListener('mouseleave', () => {
+           tween.reverse()
+         })
+       })
+     }
+   })
+</script>
+{% schema %}
+  {
+    "name": "DXR categories",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "DXR\nCollection",
+        "info": "For mobile"
+      },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "SHOW COLLECTION",
+        "info": "For mobile"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button URL",
+        "default": "/collections/all",
+        "info": "For mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Background"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Background mobile"
+      },
+      {
+        "type": "text",
+        "id": "mnheight",
+        "label": "Min height",
+        "default": "920px"
+      },
+      {
+        "type": "text",
+        "id": "mnheight_mobile",
+        "label": "Min height mobile",
+        "default": "502px"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "person",
+        "name": "Person",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image"
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "DXR - MENS Jacket"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "Dermizax™, on the other hand, uses a\nnon-porous polyurethane membrane."
+          },
+          {
+            "type": "text",
+            "id": "btn_text",
+            "label": "Button text",
+            "default": "MORE INFO"
+          },
+          {
+            "type": "url",
+            "id": "btn_url",
+            "label": "Button URL"
+          },
+          {
+            "type": "text",
+            "id": "height",
+            "label": "Height",
+            "default": "371px"
+          },
+          {
+            "type": "text",
+            "id": "height_wide",
+            "label": "Height wide",
+            "default": "371px"
+          },
+          {
+            "type": "text",
+            "id": "me_wide",
+            "label": "Margin left wide",
+            "default": "0px"
+          },
+          {
+            "type": "range",
+            "id": "offset_horizontal",
+            "label": "Text horizontal offset",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 0,
+            "unit": "px"
+          },
+          {
+            "type": "range",
+            "id": "offset_vertical",
+            "label": "Text vertical offset",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 0,
+            "unit": "px"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "DXR Categories"
+      }
+    ]
+  }
+{% endschema %}

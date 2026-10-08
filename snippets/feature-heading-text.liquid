@@ -1,0 +1,45 @@
+{%- liquid
+  if item_settings and item_settings.heading_highlight_text != blank
+    assign highlight_class = 'text-highlight'
+
+    if item_settings.heading_highlight_font
+      assign highlight_class = highlight_class | append: ' text-highlight--font'
+    endif
+
+    if item_settings.heading_highlight_stencil
+      assign highlight_class = highlight_class | append: ' text-highlight--stencil'
+    endif
+
+    unless item_settings.heading_highlight_color contains ',0)'
+      assign highlight_class = highlight_class | append: ' text-highlight--color'
+      assign highlight_style = '--color:' | append: item_settings.heading_highlight_color | append: ';'
+    endunless
+
+    if item_settings.heading_highlight_gradient != blank
+      assign highlight_class = highlight_class | append: ' text-highlight--gradient'
+      assign highlight_style = highlight_style | append: '--gradient:' | append: item_settings.heading_highlight_gradient | append: ';'
+    endif
+
+    assign highlight_tag = '<span class="' | append: highlight_class | append: '" style="' | append: highlight_style | append: '">' | replace: ' style=""', ''
+
+    assign terms_to_highlight = item_settings.heading_highlight_text | split: ','
+    for term in terms_to_highlight
+      assign term = term | strip
+      assign replacement_text = '[{[' | append: term | append: ']}]'
+      assign text = text | replace: term, replacement_text
+    endfor
+  endif
+
+  assign split_text = text | split: '<br>'
+
+  for line in split_text
+    unless forloop.first
+      echo '<br>'
+    endunless
+    if item_settings and item_settings.heading_highlight_text != blank
+      echo line | escape | replace: '[{[', highlight_tag | replace: ']}]', '</span>'
+    else
+      echo line | escape
+    endif
+  endfor
+-%}

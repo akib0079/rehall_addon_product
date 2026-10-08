@@ -1,0 +1,154 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    min-height: {{section.settings.mnheight}};
+    {% if section.settings.bg != blank %}
+      background-image: url({{section.settings.bg | image_url: width: nil}});
+    {% endif %}
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      {% if section.settings.bg_mobile != blank or section.settings.bg != blank %}
+        background-image: url({{section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil}});
+      {% endif %}
+    }
+  }
+  {% if section.settings.bg_wide %}
+    @media (max-width: 767px){
+      .section-id-{{ section.id }}{
+        background-image: url({{section.settings.bg_wide | image_url: width: nil}});
+      }
+    }
+  {% endif %}
+          
+{% endstyle %}
+<div class="section-dxr-activity section-id-{{ section.id }}" data-cc-animate data-cc-animate-delay="0.2s">
+<h2 class="dxr-activity_title">{{ section.settings.title | newline_to_br }}</h2>
+{% if section.settings.snowboarder != blank %}
+  {{ section.settings.snowboarder | image_url: width: nil | image_tag: class: 'dxr-activity_snowboarder-img mobile-only' }}
+{% endif %}
+{% for block in section.blocks  %}
+  {% case block.type %}
+    {% when 'mid_img'%}
+      <div class="dxr-activity_mid-block" {{ block.shopify_attributes }}>
+        {% if block.settings.img != blank %}
+          {{ block.settings.img | image_url: width: nil | image_tag: class: 'dxr-activity_mid-img desktop-only' }}  
+          {{ block.settings.img_mobile | default: block.settings.img | image_url: width: nil | image_tag: class: 'dxr-activity_mid-img mobile-only' }}  
+        {% else %}
+          {{ 'image' | placeholder_svg_tag: 'dxr-activity_mid-img placeholder' }}
+        {% endif %}
+        {% render 'svg-decor-dot', class: 'dxr-activity_mid-decor' %}
+      </div>
+    {% when 'r_img'%}
+      <div class="dxr-activity_right-block" {{ block.shopify_attributes }}>
+        {% if block.settings.img != blank %}
+          {{ block.settings.img | image_url: width: nil | image_tag: class: 'dxr-activity_right-img' }}  
+        {% else %}
+          {{ 'image' | placeholder_svg_tag: 'dxr-activity_right-img placeholder' }}
+        {% endif %}
+        <h4 class="dxr-activity_right-title">{{ block.settings.title }}</h4>
+      </div>
+  {% endcase %}
+{% endfor %}
+</div>
+
+{% schema %}
+  {
+    "name": "DXR Activity",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "Activated\nupon physical\nactivity"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Background"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Background mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_wide",
+        "label": "Background wide"
+      },
+      {
+        "type": "image_picker",
+        "id": "snowboarder",
+        "label": "Snowboarder"
+      },
+      {
+        "type": "text",
+        "id": "mnheight",
+        "label": "Min height",
+        "default": "819px"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "mid_img",
+        "name": "Middle Image",
+        "limit": 1,
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image"
+          },
+          {
+            "type": "image_picker",
+            "id": "img_mobile",
+            "label": "Image mobile"
+          },
+          {
+            "type": "text",
+            "id": "width",
+            "label": "Width",
+            "default": "554px"
+          }
+        ]
+      },
+      {
+        "type": "r_img",
+        "name": "Right Image",
+        "limit": 1,
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image"
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "WATERPROOFING"
+          },
+          {
+            "type": "text",
+            "id": "width",
+            "label": "Width",
+            "default": "554px"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "DXR Activity",
+        "blocks": [
+          {
+            "type": "mid_img"
+          },
+          {
+            "type": "r_img"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

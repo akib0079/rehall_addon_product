@@ -1,0 +1,130 @@
+<div class="duur-scrolling-list-wrap">
+  <div class="duur-scrolling-list-inner-wrap swiper">
+    <ul class="duur-scrolling-list swiper-wrapper">
+      {% for block in section.blocks %}
+        {% unless block.settings.identifier == blank or block.settings.title  == blank %}
+          <li class="duur-scrolling-list-item swiper-slide">
+            <a class="duur-scrolling-list-link" href="#" {{ block.shopify_attributes }} data-identifier="{{ block.settings.identifier }}">{{ block.settings.title }}</a>
+          </li>
+        {% endunless %}
+      {% endfor %}
+    </ul>
+    <div class="duur-scrolling-progress">
+      <div class="duur-scrolling-progress_tracker"> </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    gsap.registerPlugin(ScrollTrigger,ScrollToPlugin);
+    const arr = gsap.utils.toArray(".duur-scrolling-list-link");
+    const sections = [];
+    const mobile = (window.matchMedia("(max-width: 767px)").matches);
+    arr.forEach((anchor,i) => {
+      const id = anchor.dataset.identifier;
+      const section = document.querySelector(`section[data-scroller-id="${id}"]`);
+      if(section) {
+        sections.push(section);
+        anchor.addEventListener('click', e => {
+          e.preventDefault();
+          gsap.to(window, { duration: 1.5, scrollTo: {y: section, offsetY:(mobile?178:90), autoKill: !mobile }} );
+        })
+      }else{
+        arr.splice(arr.indexOf(anchor), 1);
+        anchor.remove();
+      }
+    })
+    const outerWrap = document.querySelector(".duurzaamheid-scroll-outer-wrap");
+    const tlBanner = gsap.timeline({
+      scrollTrigger: {
+          trigger: outerWrap,
+          start: 'top bottom',
+          end: 'top top',
+          scrub: 2,
+        },
+        onLeave: () => ScrollTrigger.refresh(),
+    });
+    tlBanner.to(outerWrap, {marginTop: -200,},0)
+    tlBanner.to('.duur-banner-container', {y: -50,},0)
+    const tl = gsap.timeline();
+    const progress = document.querySelector(".duur-scrolling-progress");
+    const progressTrack = progress.querySelector(".duur-scrolling-progress_tracker");
+    let anchorSwiper;
+    if(mobile){
+      anchorSwiper =  new Swiper('.duur-scrolling-list-inner-wrap', {
+        speed: 400,
+        slidesPerView: 'auto',
+      });
+    }
+    const step = (mobile? progress.offsetWidth : progress.offsetHeight) / (arr.length-1);
+    for (let i = 0; i < arr.length; i++) {
+      const anchor = arr[i];
+      tl.to(progressTrack,{
+        scrollTrigger: {
+          trigger: sections[i],
+          endTrigger: i+1 == arr.length? sections[i]: sections[i+1],
+          start: 'top center',
+          end: i+1 == arr.length? 'bottom center':'top center',
+          scrub: true,
+          onEnter: () => {anchor.classList.add('active');if(mobile)anchorSwiper.slideTo(i)},
+          onEnterBack: () => {anchor.classList.remove('post-active');anchor.classList.add('active');if(mobile)anchorSwiper.slideTo(i)},
+          onLeave: () => {anchor.classList.remove('active');anchor.classList.add('post-active');},
+          onLeaveBack: () => {anchor.classList.remove('active');},
+          onUpdate: i+1 == arr.length? null:self => {progress.style.setProperty('--progress', (step * i + self.progress*step).toFixed(2) + 'px');},
+        }
+      })
+    }
+  })
+</script>
+{% schema %}
+  {
+    "name": "Duurzaamheid scroller",
+    "tag": "div",
+    "class": "duur-scrolling-overlay",
+    "settings": [],
+    "blocks": [
+      {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Name",
+            "default": "Onze visie"
+          },
+          {
+            "type": "text",
+            "id": "identifier",
+            "label": "Identifier",
+            "default": "onze-visie"
+          }
+        ]
+      }
+    ],
+    "enabled_on": {
+      "groups": ["custom.duurzaamheid"]
+    },
+    "presets": [
+      {
+        "name": "Duurzaamheid scroller",
+        "blocks": [
+          {
+            "type": "item",
+            "settings": {
+              "title": "Custom",
+              "identifier": "custom",
+            }
+          },
+          {
+            "type": "item",
+            "settings": {
+              "title": "Custom 2",
+              "identifier": "custom-2",
+            }
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

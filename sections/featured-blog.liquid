@@ -1,0 +1,205 @@
+{%- assign blog = blogs[section.settings.blog] -%}
+<div class="card-margin" data-section-type="featured-blog">
+  {% unless blog.empty? %}
+
+    {% if section.settings.title != blank %}
+      <h2 class="section-title{% unless section.settings.show_title %} visually-hidden{% endunless %}"><a href="{{ blog.url }}" data-cc-animate>{{ section.settings.title | escape }}</a></h2>
+    {% endif %}
+
+    {% if blog.articles.size == 0 %}
+
+      <p class="align-center" data-cc-animate>{{ 'onboarding.blog.empty' | t }}</p>
+
+    {% else %}
+
+      {%- if section.settings.enable_carousel -%}
+        <cc-carousel class="cc-carousel cc-carousel--off-edge-mobile card-margin" allow-mouse-drag data-cc-animate="cc-fade-in-up">
+          <div class="cc-carousel-buttons cc-carousel-buttons--overlay-top">
+            <button class="cc-carousel-button cc-carousel-button--prev tap-target" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+            <button class="cc-carousel-button cc-carousel-button--next tap-target" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+          </div>
+          <div class="cc-carousel__scroll-outer">
+      {%- endif -%}
+
+      <div class="{% if section.settings.enable_carousel %}cc-carousel__scroll-area carousel-layout{% else %}flexible-layout{% endif %}">
+        {%- for article in blog.articles limit: section.settings.post_limit -%}
+          {%- capture article_block_attrs -%}data-cc-animate-delay="{{ forloop.index | times: 0.15 }}s"{%- endcapture -%}
+          {%- render 'article-block', article: article, heading_tag: 'h3', attrs: article_block_attrs -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if section.settings.enable_carousel -%}
+          </div>
+        </cc-carousel>
+      {%- endif -%}
+
+    {% endif %}
+
+  {% else %}
+
+    {% if section.settings.title != blank %}
+      <h2 class="section-title{% unless section.settings.show_title %} visually-hidden{% endunless %}" data-cc-animate>{{ section.settings.title | escape }}</h2>
+    {% endif %}
+
+    <div class="flexible-layout">
+      {% for i in (1..section.settings.post_limit) %}
+      <div class="article-block column column--third card-scheme card-scheme--{{ section.settings.color_scheme }} card-br-oh">
+        <div class="article-image">
+          <div class="placeholder-image">{{ 'image' | placeholder_svg_tag }}</div>
+        </div>
+
+        <div class="card-content-padding-x padded-row-bottom--medium">
+          <h3>{{ 'onboarding.article.title' | t }}</h3>
+
+          {%- if section.settings.show_excerpts -%}
+            <div class="rte">
+              {{ 'onboarding.article.excerpt' | t }}
+            </div>
+          {%- endif -%}
+
+          {% if section.settings.show_date or section.settings.show_author %}
+            <div class="article-meta">
+              <span class="iconmeta time">
+                {% if section.settings.show_date %}
+                  {{ 'now' | date: format: 'month_date_year' }}
+                {% endif %}
+                {% if section.settings.show_author %}
+                  {% if section.settings.show_date %}&mdash;{% endif %}
+                  <span class="author">{{ 'onboarding.article.author' | t }}</span>
+                {% endif %}
+              </span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% endunless %}
+</div>
+
+
+{% schema %}
+  {
+    "name": "Blog posts",
+    "class": "section-featured-blog",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Blog posts"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show heading",
+        "info": "A hidden heading will still be readable by search engines and screen readers",
+        "default": false
+      },
+      {
+        "type": "blog",
+        "id": "blog",
+        "label": "Blog"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_carousel",
+        "label": "Enable carousel",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "post_limit",
+        "label": "Posts",
+        "min": 3,
+        "max": 12,
+        "step": 3,
+        "default": 3
+      },
+      {
+        "type": "checkbox",
+        "id": "show_author",
+        "label": "Show author",
+        "default": true
+      },
+	    {
+        "type": "checkbox",
+        "id": "show_date",
+        "label": "Show date",
+        "default": true
+      },
+	    {
+        "type": "checkbox",
+        "id": "show_excerpts",
+        "label": "Show excerpt",
+        "info": "Change excerpts by editing your blog posts. [Learn more](https:\/\/help.shopify.com\/en\/manual\/online-store\/blogs\/writing-blogs#display-an-excerpt-from-a-blog-post)",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "crop_ratio",
+        "label": "Image size",
+        "options": [
+          {
+            "value": "",
+            "label": "Natural (no crop)"
+          },
+          {
+            "value": "0.67",
+            "label": "Portrait (2:3)"
+          },
+          {
+            "value": "1.0",
+            "label": "Square (1:1)"
+          },
+          {
+            "value": "1.33",
+            "label": "Landscape (4:3)"
+          },
+          {
+            "value": "1.78",
+            "label": "Wide (16:9)"
+          }
+        ],
+        "default": "1.78"
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Blog posts",
+        "settings": {
+        }
+      }
+    ]
+  }
+{% endschema %}

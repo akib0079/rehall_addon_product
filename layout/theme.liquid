@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+{%- liquid
+  assign rtl_langs = 'ar,arc,dv,fa,ha,he,khw,ks,ku,ps,ur,yi' | split: ','
+  if rtl_langs contains localization.language.iso_code
+    assign lang_dir = 'rtl'
+  else
+    assign lang_dir = 'ltr'
+  endif
+-%}
+<html lang="{{ request.locale.iso_code }}" dir="{{ lang_dir }}" class="no-js">
+
+<!-- TikTok Pixel Code Start -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+
+  ttq.load('D9B428RC77U5J670FR6G');
+  ttq.page();
+}(window, document, 'ttq');
+</script>
+<!-- TikTok Pixel Code End -->
+
+  <head>
+  <!-- Mode 4.1.0 -->
+
+  <title>
+    {{- page_title }}{% if current_tags %}{% assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags }}{% endif %}{% if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif %}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  </title>
+
+  {% render 'head-tag' %}
+
+  {%- liquid
+    assign base_font = settings.type_base_font
+    assign base_font_bold = base_font | font_modify: 'weight', 'bolder'
+    assign base_font_semibold = base_font | font_modify: 'weight', '600'
+    assign base_font_medium = base_font | font_modify: 'weight', '500'
+    assign base_font_italic = base_font | font_modify: 'style', 'italic'
+    assign base_font_bold_italic = base_font_bold | font_modify: 'style', 'italic'
+    assign heading_font = settings.type_heading_font
+    assign logo_font = settings.type_logo_font
+    assign nav_font = settings.type_nav_font
+    assign nav_font_600 = nav_font | font_modify: 'weight', '600'
+    assign type_highlight_font = settings.type_highlight_font
+  -%}
+{% render 'social-meta-tags' %}
+  <style>
+    {% if template.suffix == 'black-friday' %}
+      @font-face {
+        font-family: Alphaget;
+        src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Alphaget.otf) format("opentype"),
+            url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Alphaget.otf) format("truetype");
+        font-weight: 400;
+        font-display: fallback;
+      }
+    {% endif %}
+    {% if template.suffix == 'leopard' %}
+      @font-face {
+        font-family: FingerPaint;
+        src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/FingerPaint-Regular.ttf) format("truetype");
+        font-weight: 400;
+        font-display: fallback;
+      }
+    {% endif %}
+    {% if template.suffix == 'duurzaamheid' %}
+      @font-face {
+        font-family: Gupter;
+        src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Gupter-Bold.ttf) format("truetype");
+        font-weight: 700;
+        font-display: fallback;
+      }
+      @font-face {
+        font-family: Gupter;
+        src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Gupter-Medium.ttf) format("truetype");
+        font-weight: 500;
+        font-display: fallback;
+      }
+      @font-face {
+        font-family: Gupter;
+        src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Gupter-Regular.ttf) format("truetype");
+        font-weight: 400;
+        font-display: fallback;
+      }
+    {% endif %}
+    {% if settings.roundo_heading_font %}
+    @font-face {
+      font-family: Roundo;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Roundo-Regular.otf);
+      font-weight: 400;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Roundo;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Roundo-Medium.otf);
+      font-weight: 500;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Roundo;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Roundo-SemiBold.otf);
+      font-weight: 600;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Roundo;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Roundo-Bold.otf);
+      font-weight: 700;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Roundo;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Roundo-Light.otf);
+      font-weight: 300;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Roundo;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Roundo-ExtraLight.otf);
+      font-weight: 200;
+      font-display: fallback;
+    }
+    {% endif %}
+    @font-face {
+      font-family: Khand;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Light.otf) format("opentype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Light.woff2) format("woff2"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Light.woff) format("woff"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Light.ttf) format("truetype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Light.eot) format("embedded-opentype");
+      font-weight: 300;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Khand;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Medium.otf) format("opentype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Medium.woff2) format("woff2"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Medium.woff) format("woff"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Medium.ttf) format("truetype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Medium.eot) format("embedded-opentype");
+      font-weight: 500;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Khand;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-SemiBold.otf) format("opentype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-SemiBold.woff2) format("woff2"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-SemiBold.woff) format("woff"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-SemiBold.ttf) format("truetype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-SemiBold.eot) format("embedded-opentype");
+      font-weight: 600;
+      font-display: fallback;
+    } 
+    @font-face {
+      font-family: Khand;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Regular.otf) format("opentype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Regular.woff2) format("woff2"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Regular.woff) format("woff"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Regular.ttf) format("truetype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Regular.eot) format("embedded-opentype");
+      font-weight: 400;
+      font-display: fallback;
+    }
+    @font-face {
+      font-family: Khand;
+      src: url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Bold.otf) format("opentype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Bold.woff2) format("woff2"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Bold.woff) format("woff"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Bold.ttf) format("truetype"),
+           url(https://cdn.shopify.com/s/files/1/0659/2610/3226/files/Khand-Bold.eot) format("embedded-opentype");
+      font-weight: 700;
+      font-display: fallback;
+    }
+    {{ base_font | font_face: font_display: 'fallback' }}
+    {{ base_font_bold | font_face: font_display: 'fallback' }}
+    {{ base_font_semibold | font_face: font_display: 'fallback' }}
+    {{ base_font_medium | font_face: font_display: 'fallback' }}
+    {{ base_font_italic | font_face: font_display: 'fallback' }}
+    {{ base_font_bold_italic | font_face: font_display: 'fallback' }}
+    {{ heading_font | font_face: font_display: 'fallback' }}
+    {{ logo_font | font_face: font_display: 'fallback' }}
+    {{ nav_font | font_face: font_display: 'fallback' }}
+    {{ nav_font_600 | font_face: font_display: 'fallback' }}
+    {{ type_highlight_font | font_face: font_display: 'fallback' }}
+
+    :root{
+      --inner-con-width: 1600px;
+      --inner-container-padding: max(calc((100vw - var(--inner-con-width)) / 2 + 22px), 22px);
+      --brand-primary-color: {{ shop.brand.colors.primary[0].background }};
+      --brand-primary-color-contrast: {{ shop.brand.colors.primary[0].foreground }};
+      --brand-secondary-color: {{ shop.brand.colors.secondary[0].background }};
+      --brand-secondary-color-contrast: {{ shop.brand.colors.secondary[0].foreground }};
+      --brand-secondary-two-color: {{ shop.brand.colors.secondary[1].background }};
+      --header-font-family: {% if settings.roundo_heading_font %}'Roundo', {% endif %}{{ heading_font.family }}, {{ heading_font.fallback_families }};
+    }
+  </style>
+  {% if template.suffix == 'dxr-collection' %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gupter:wght@400;500;700&display=swap" rel="stylesheet">
+  {% endif %}
+
+  
+
+  {{ 'toastr.min.css' | asset_url | stylesheet_tag: defer: true }}
+  {{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag: defer: true }}
+  {{ 'styles.css' | asset_url | stylesheet_tag }}{%# : preload: true %}
+
+  {%- if settings.swatch_enabled and settings.swatch_value_list != blank -%}
+    <link rel="stylesheet" href="{{ 'swatches.css' | asset_url }}" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="{{ 'swatches.css' | asset_url }}"></noscript>
+  {%- endif -%}
+
+  <script>
+    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+    window.theme = window.theme || {};
+    theme.money_format_with_product_code_preference = {% if settings.product_currency_code_enabled %}{{ shop.money_with_currency_format | json }}{% else %}{{ shop.money_format | json }}{% endif %};
+    theme.money_format = {{ shop.money_format | json }};
+    theme.strings = {
+      cart_notify: {{ 'cart.general.notification_title' | t | json }},
+      cart_variant: {{ 'cart.general.notification_variant_title' | t | json }},
+      previous: {{ 'general.accessibility_labels.previous' | t | json }},
+      next: {{ 'general.accessibility_labels.next' | t | json }},
+      addressError: {{ 'map.errors.address_error' | t | json }},
+      addressNoResults: {{ 'map.errors.address_no_results' | t | json }},
+      addressQueryLimit: {{ 'map.errors.address_query_limit_html' | t | json }},
+      authError: {{ 'map.errors.auth_error' | t | json }},
+      icon_labels_left: {{ 'general.icon_labels.left' | t | escape | json }},
+      icon_labels_right: {{ 'general.icon_labels.right' | t | escape | json }},
+      icon_labels_down: {{ 'general.icon_labels.down' | t | escape | json }},
+      icon_labels_close: {{ 'general.icon_labels.close' | t | escape | json }},
+      icon_labels_plus: {{ 'general.icon_labels.plus' | t | escape | json }},
+      imageSlider: {{ 'general.slider.images' | t | json }},
+      cart_terms_confirmation: {{ 'cart.terms.confirmation' | t | json }},
+      cart_general_quantity_too_high: {{ 'cart.general.quantity_too_high' | t: quantity: '[QUANTITY]' | json }},
+      products_listing_from: {{ 'products.listing.from' | t | json }},
+      products_product_add_to_cart: {{ 'products.product.add_to_cart' | t | json }},
+      products_variant_no_stock: {{ 'products.variant.no_stock' | t | json }},
+      products_variant_non_existent: {{ 'products.variant.non_existent' | t | json }},
+      products_product_pick_a: {{ 'products.product.pick_a' | t | json }},
+      general_navigation_menu_toggle_aria_label: {{ 'general.navigation.menu_toggle_aria_label' | t | json }},
+      general_accessibility_labels_close: {{ 'general.accessibility_labels.close' | t | json }},
+      products_product_added_to_cart: {{ 'products.product.added_to_cart' | t | json }},
+      general_quick_search_pages: {{ 'general.quick_search.pages' | t | json }},
+      general_quick_search_no_results: {{ 'general.quick_search.no_results' | t | json }}
+    }
+    theme.rebuy_strings = {
+      title: "{{ 'rebuy.cart.title' | t }}" || "MIJN WINKELWAGEN ($)",
+      free_shipping: "{{ 'rebuy.cart.free_shipping' | t }}" || "Gratis verzending",
+      delivery: "{{ 'rebuy.cart.next_day_delivery' | t }}" || "Recommended for you",
+      recommandation: "{{ 'rebuy.cart.recommandation' | t }}" || "Recommended for you",
+      add: "{{ 'rebuy.cart.add' | t }}" || "+ Add",
+      subtotal: "{{ 'rebuy.cart.subtotal' | t }}" || "SUBTOTAAL",
+      total: "{{ 'rebuy.cart.total' | t }}" || "TOTAAL (incl. BTW)",
+      trustpilot: "{{ 'rebuy.cart.trustpilot' | t }}" || "Beoordeeld met 4.4/5",
+      checkout: "{{ 'rebuy.cart.checkout' | t }}" || "VERDER NAAR BESTELLEN",
+      prod_comp_title: "{{ 'rebuy.product_page.complementary_title' | t }}" || "Complete your outfit",
+    };
+    theme.routes = {
+      search_url: '{{ routes.search_url }}',
+      cart_url: '{{ routes.cart_url }}',
+      cart_add_url: '{{ routes.cart_add_url }}.js',
+      cart_change_url: '{{ routes.cart_change_url }}.js',
+      cart_update_url: '{{ routes.cart_update_url }}.js',
+      predictive_search_url: '{{ routes.predictive_search_url }}'
+    };
+    theme.settings = {
+      cart_type: {{ settings.cart_type | json }},
+      after_add_to_cart: {{ settings.after_add_to_cart | json }},
+      quickbuy_style: {{ settings.quickbuy_style | json }},
+      quickbuy_visibility: {{ settings.quickbuy_visibility | json }},
+      avoid_orphans: {{ settings.avoid_orphans | json }},
+      qb_enable_sticky_cols: {{ settings.qb_enable_sticky_cols | json }},
+      show_search_suggestions: {{ settings.show_search_suggestions | json }}
+    };
+
+    theme.enqueueStyleUpdateQueue = [];
+    theme.enqueueStyleUpdateTimeoutId = null;
+    theme.enqueueStyleUpdate = (cb) => {
+      clearTimeout(theme.enqueueStyleUpdateTimeoutId);
+      theme.enqueueStyleUpdateQueue.push(cb);
+      theme.enqueueStyleUpdateTimeoutId = setTimeout(() => {
+        while (theme.enqueueStyleUpdateQueue.length > 0) {
+          theme.enqueueStyleUpdateQueue.pop()();
+        }
+      }, 0);
+    }
+    {% comment %}
+    // teaser page redirect code
+    {% unless request.design_mode %}
+    {% if  template.name == 'index' %}
+      function setCookie(c_name,value,exdays){var exdate=new Date();exdate.setDate(exdate.getDate() + exdays);var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());document.cookie=c_name + "=" + c_value;}
+
+      function getCookie(c_name){var c_value = document.cookie;var c_start = c_value.indexOf(" " + c_name + "=");if (c_start == -1){c_start = c_value.indexOf(c_name + "=");}if (c_start == -1){c_value = null;}else{c_start = c_value.indexOf("=", c_start) + 1;var c_end = c_value.indexOf(";", c_start);if (c_end == -1){c_end = c_value.length;}c_value = unescape(c_value.substring(c_start,c_end));}return c_value;}
+      
+      checkSession();
+      
+      function checkSession(){
+         var c = getCookie("visited");
+         if (c !== "yes") {
+           let url = "{{shop.url | append: routes.root_url}}";
+           url += url.endsWith("/") ? "" : "/"
+           window.location.replace(url + "pages/teaser");
+         }
+         setCookie("visited", "yes", 1); // expire in 1 day; or use null to never expire
+      }
+    {% endif %}
+    {% endunless %}
+    {% endcomment %}
+  </script>
+
+  {% if template.name == 'product' %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/photoswipe.min.css" integrity="sha512-LFWtdAXHQuwUGH9cImO9blA3a3GfQNkpF2uRlhaOpSbDevNyK1rmAjs13mtpjvWyi+flP7zYWboqY+8Mkd42xA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/umd/photoswipe.umd.min.js" integrity="sha512-BXwwGU7zCXVgpT2jpXnTbioT9q1Byf7NEXVxovTZPlNvelL2I/4LjOaoiB2a19L+g5za8RbkoJFH4fMPQcjFFw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/umd/photoswipe-lightbox.umd.min.js" integrity="sha512-D16CBrIrVF48W0Ou0ca3D65JFo/HaEAjTugBXeWS/JH+1KNu54ZOtHPccxJ7PQ44rTItUT6DSI6xNL+U34SuuQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+  {% endif %}
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/Draggable.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/InertiaPlugin.min.js" defer></script>
+  {% if template.suffix == 'dxr-collection' or template.suffix == 'w2024-collection' or template.name == 'index' or template.suffix == 'duurzaamheid' or template.name == 'product' %}
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollToPlugin.min.js" defer></script>
+  {%- endif -%}
+  <script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'vendor.min.js'  | asset_url }}" defer></script>
+  <script src="{{ 'theme.js'  | asset_url }}" defer></script>
+  {% if template.suffix == 'duurzaamheid' %}
+    <script src="https://unpkg.com/countup.js@2.7.0/dist/countUp.umd.js"></script>
+  {% endif %}
+  
+  <script src="{{ 'toastr.min.js' | asset_url }}" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      toastr.options = {
+        "toastClass": 'toast toast-cart',
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": true,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000 ",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+      }
+    });
+  </script>
+
+  {{ content_for_header }}
+
+  {% render "eyefitu-sizing" %}
+
+
+{%- comment -%} Hreflang (NL / EN / DE) - vlak vóór </head> {%- endcomment -%}
+{%- assign current_path = request.path -%}
+{%- assign clean_path = current_path -%}
+
+{%- comment -%} Verwijder taal-prefixes om clean pad te krijgen {%- endcomment -%}
+{%- if current_path contains '/en/' -%}
+  {%- assign clean_path = current_path | replace_first: '/en/', '/' | replace_first: '/en', '/' -%}
+{%- elsif current_path contains '/de/' -%}
+  {%- assign clean_path = current_path | replace_first: '/de/', '/' | replace_first: '/de', '/' -%}
+{%- elsif current_path == '/en' -%}
+  {%- assign clean_path = '/' -%}
+{%- elsif current_path == '/de' -%}
+  {%- assign clean_path = '/' -%}
+{%- endif -%}
+
+{%- comment -%} Zorg dat lege paden / worden {%- endcomment -%}
+{%- if clean_path == '' -%}
+  {%- assign clean_path = '/' -%}
+{%- endif -%}
+
+{%- comment -%} Hreflang (EN / NL / DE) - EN is default zonder prefix {%- endcomment -%}
+{%- assign current_path = request.path -%}
+{%- assign clean_path = current_path -%}
+
+{%- comment -%} Verwijder taal-prefixes om clean pad te krijgen {%- endcomment -%}
+{%- if current_path contains '/nl/' -%}
+  {%- assign clean_path = current_path | replace_first: '/nl/', '/' -%}
+{%- elsif current_path contains '/de/' -%}
+  {%- assign clean_path = current_path | replace_first: '/de/', '/' -%}
+{%- elsif current_path contains '/nl' -%}
+  {%- assign clean_path = current_path | replace_first: '/nl', '' -%}
+{%- elsif current_path contains '/de' -%}
+  {%- assign clean_path = current_path | replace_first: '/de', '' -%}
+{%- endif -%}
+
+{%- comment -%} Fix lege paden {%- endcomment -%}
+{%- if clean_path == '' or clean_path == blank -%}
+  {%- assign clean_path = '/' -%}
+{%- endif -%}
+
+{%- comment -%} Zorg dat pad begint met slash {%- endcomment -%}
+{%- unless clean_path contains '/' -%}
+  {%- assign clean_path = '/' | append: clean_path -%}
+{%- endunless -%}
+
+{%- comment -%} Check of we op ECHTE homepage zijn {%- endcomment -%}
+{%- assign show_xdefault = false -%}
+{%- if template.name == 'index' -%}
+  {%- if request.path == '/' or request.path == '/nl' or request.path == '/de' or request.path == '/nl/' or request.path == '/de/' -%}
+    {%- assign show_xdefault = true -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- comment -%} Hreflang-tags (EN / NL / DE) - EN is default {%- endcomment -%}
+{%- assign current_path = request.path -%}
+{%- assign clean_path = current_path -%}
+
+{%- comment -%} Verwijder taal-prefixes {%- endcomment -%}
+{%- if current_path contains '/nl/' -%}
+  {%- assign clean_path = current_path | replace_first: '/nl/', '/' -%}
+{%- elsif current_path contains '/de/' -%}
+  {%- assign clean_path = current_path | replace_first: '/de/', '/' -%}
+{%- elsif current_path == '/nl' -%}
+  {%- assign clean_path = '/' -%}
+{%- elsif current_path == '/de' -%}
+  {%- assign clean_path = '/' -%}
+{%- endif -%}
+
+{%- comment -%} Fix lege paden {%- endcomment -%}
+{%- if clean_path == '' or clean_path == blank -%}
+  {%- assign clean_path = '/' -%}
+{%- endif -%}
+
+{%- comment -%} Bouw hreflang tags {%- endcomment -%}
+{%- if clean_path == '/' -%}
+  {%- comment -%} Homepage met trailing slashes {%- endcomment -%}
+  <link rel="alternate" hreflang="en" href="{{ shop.url }}/" />
+  <link rel="alternate" hreflang="nl" href="{{ shop.url }}/nl/" />
+  <link rel="alternate" hreflang="de" href="{{ shop.url }}/de/" />
+  {%- if template.name == 'index' -%}
+  <link rel="alternate" hreflang="x-default" href="{{ shop.url }}/" />
+  {%- endif -%}
+{%- else -%}
+  {%- comment -%} Andere pagina's {%- endcomment -%}
+  <link rel="alternate" hreflang="en" href="{{ shop.url }}{{ clean_path }}" />
+  <link rel="alternate" hreflang="nl" href="{{ shop.url }}/nl{{ clean_path }}" />
+  <link rel="alternate" hreflang="de" href="{{ shop.url }}/de{{ clean_path }}" />
+{%- endif -%}
+
+
+<script async src="https://cdn.rebuyengine.com/onsite/js/storefront-helper.js"></script>
+
+<style>
+    /* Gorgias chat-button overlay fix: zorgt dat het kruisje van de chat-bubble klikbaar blijft */
+      #chat-button,
+        #chat-input {
+            z-index: 2147483636 !important;
+              }
+              </style>
+              
+</head>
+
+<body class="template-{{ template | split: '.' | first | handle }}
+    {%- if template.suffix %} template-suffix-{{ template.suffix }}{% endif -%}
+    {%- if settings.swatch_enabled %} swatch-method-{{ settings.swatch_method }} swatch-style-{{ settings.swatch_style }}{% endif -%}
+    {%- if settings.enable_anims_image_load %} image-load-anim-enabled{% endif -%}
+    {%- if template.suffix == 'black-friday' or template.name == 'index' or template.suffix == 'our-story' or template.suffix == 'w2024-collection' or template.suffix == 'dxr-collection' or template.suffix == 'duurzaamheid' or template.suffix == 'leopard' %} always-fixed-header{% endif -%}
+    {% comment %} {%- if template.suffix == 'black-friday' or template.name == 'index' or template.suffix == 'leopard' %} white-header{% endif -%} {% endcomment %}
+    " data-cc-animate-timeout="0">
+
+  {%- if settings.enable_anims_reveal -%}
+    <script>
+      if ('IntersectionObserver' in window) {
+        document.body.classList.add("cc-animate-enabled");
+      }
+    </script>
+  {%- endif -%}
+
+  <a class="skip-link visually-hidden" href="#content">{{ 'general.accessibility_labels.skip_to_content' | t }}</a>
+
+  {%- sections 'header-group' -%}
+  
+<script>document.addEventListener("startasyncloading",function(){document.querySelectorAll("script[data-src]").forEach(a=>{datasrc=a.dataset.src,null!=datasrc&&(a.src=datasrc), delete a.dataset.src})});</script>  <script>document.addEventListener("startasyncloading",function(){document.querySelectorAll("link[data-href]").forEach(a=>{datahref=a.dataset.href,null!=datahref&&(a.href=datahref), delete a.dataset.href})});</script>
+  
+  {%- sections 'overlay-group' -%}
+
+  <main id="content">
+    <div class="main-container container">
+
+      {{ content_for_layout }}
+      {% if template.suffix == 'duurzaamheid' %}
+        <div class="duurzaamheid-scroll-outer-wrap">
+          {%- sections 'duurzaamheid-group' -%}
+        </div>
+      {% endif %}
+    </div>
+  </main>
+
+  {% if request.path != '/challenge' %}
+    {%- sections 'footer-group' -%}
+  {% endif %}
+<script>document.addEventListener("startasyncloading",function(){document.querySelectorAll("script[type='text/javascripts']").forEach(e=>{var t=document.createElement("script");for(a=0;a<e.attributes.length;a++){var r=e.attributes[a];t.setAttribute(r.name,r.value)}t.type="text/javascript",t.innerHTML=e.innerHTML,e.parentNode.insertBefore(t,e),e.parentNode.removeChild(e)})});</script>
+	 
+  {%- render 'lazy-loading' -%}
+
+  <template id="ModalTemplate">
+    <div class="quickbuy-modal cc-popup cc-popup--right" aria-hidden="true" data-freeze-scroll="true">
+      <div class="cc-popup-background"></div>
+      <div class="cc-popup-modal" role="dialog" aria-modal="true" aria-labelledby="">
+        <div class="cc-popup-container">
+          <button type="button" class="cc-popup-close tap-target" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+            {%- render 'popup-close' -%}
+          </button>
+          <div class="cc-popup-content">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </div>
+  	</div>
+  </template>
+  {% if template.name == 'collection' or template.name == 'search' %}
+  {% comment %} <script>
+      var observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const htmlTag = document.documentElement;
+                    if (htmlTag.classList.contains('spf-status-loaded')) {
+                        onStatusLoaded();
+                    }
+                }
+            }
+        });
+      function onStatusLoaded() {
+        const parentSpan = document.querySelector('.gf-filter-trigger i').parentElement;
+        const newSpan = document.createElement('span');
+        newSpan.className = 'btn-text'; // Add the class 'text'
+        
+        // Move the existing text node into the new span
+        newSpan.textContent = parentSpan.childNodes[1].textContent;
+        
+        parentSpan.childNodes[1].textContent = '';
+        
+        parentSpan.appendChild(newSpan);
+        if(document.querySelector('.btn-coll-filter .button-icon'))
+        parentSpan.querySelector('i').replaceWith(document.querySelector('.btn-coll-filter .button-icon').cloneNode(true))
+
+        observer.disconnect();
+      }
+
+        
+
+        const config = { attributes: true, attributeFilter: ['class'] };
+        observer.observe(document.documentElement, config);
+  </script> {% endcomment %}
+    {% endif %}
+
+  {% render 'rebuy-templates' %}
+  <!-- shopify issue -->
+{%- capture productTemplate -%}{% render 'globo.filter.product', themeTranslation: shop.metafields.globoFilter.themeTranslation.value[request.locale.iso_code] %}{%- endcapture -%}{%- unless productTemplate contains 'Liquid error' -%}<script id="gspfProduct" type="template/html">{{- productTemplate | replace: "script>", "scripttag>" -}}</script>{%- endunless -%} 
+{%- capture treeTemplate -%}{% render 'globo.filter.tree' %}{%- endcapture -%}{%- unless treeTemplate contains 'Liquid error' -%}<script id="gspfFilterTree" type="template/html">{{- treeTemplate | replace: "script>", "scripttag>" -}}</script>{%- endunless -%} 
+{%- capture sortTemplate -%}{% render 'globo.filter.sort' %}{%- endcapture -%}{%- unless sortTemplate contains 'Liquid error' -%}<script id="gspfFilterSort" type="template/html">{{- sortTemplate | replace: "script>", "scripttag>" -}}</script>{%- endunless -%} 
+{%- capture searchTemplate -%}{% render 'globo.filter.search' %}{%- endcapture -%}{%- unless searchTemplate contains 'Liquid error' -%}<script id="gspfSearchResult" type="template/html">{{- searchTemplate | replace: "script>", "scripttag>" -}}</script>{%- endunless -%} 
+{%- capture paginationTemplate -%}{% render 'globo.filter.pagination' %}{%- endcapture -%}{%- unless paginationTemplate contains 'Liquid error' -%}<script id="gspfPagination" type="template/html">{{- paginationTemplate | replace: "script>", "scripttag>" -}}</script>{%- endunless -%} 
+{%- capture YMMTemplate -%}{% render 'globo.filter.form' %}{%- endcapture -%}{%- unless YMMTemplate contains 'Liquid error' -%}<script id="gspfForm" type="template/html">{{- YMMTemplate | replace: "script>", "scripttag>" -}}</script>{%- endunless -%}
+  {{ 'custom.min.js' | asset_url | script_tag }}
+  <script async src="https://cdn.rebuyengine.com/onsite/js/rebuy.js?shop={{ shop.permanent_domain }}"></script>
+
+
+  <!-- Utilize StorefrontHelper to enrich product JSON with locale-aware titles -->
+<script>
+  // update product JSON every time products are loaded or changed
+  document.addEventListener('rebuy.productsChange', (e) => {
+    const widget = e.detail.widget;
+    const storefrontHelper = new ShopifyStorefrontHelper();
+
+    // loop over products in the widget and enrich product json
+    widget.data.products.forEach((product) => storefrontHelper.updateProductJSON(product));
+  });
+</script>
+
+</body>
+</html>

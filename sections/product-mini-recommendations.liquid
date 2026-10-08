@@ -1,0 +1,44 @@
+{%- if recommendations.performed and recommendations.products_count > 0 -%}
+<div class="product-recommendations">
+  <cc-carousel class="cc-carousel" allow-mouse-drag>
+    <div class="cc-carousel-buttons">
+      <button class="cc-carousel-button cc-carousel-button--prev tap-target" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+      <button class="cc-carousel-button cc-carousel-button--next tap-target" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+    </div>
+    <div class="cc-carousel__scroll-outer">
+      <div class="product-mini-list cc-carousel__scroll-area">
+        {%- liquid
+          if settings.prod_thumb_shape == 'portrait-23'
+            assign chosen_aspect_ratio = 0.67
+          elsif settings.prod_thumb_shape == 'portrait-45'
+            assign chosen_aspect_ratio = 0.8
+          elsif settings.prod_thumb_shape == 'square'
+            assign chosen_aspect_ratio = 1.0
+          elsif settings.prod_thumb_shape == 'landscape-54'
+            assign chosen_aspect_ratio = 1.25
+          elsif settings.prod_thumb_shape == 'landscape-32'
+            assign chosen_aspect_ratio = 1.50
+          elsif settings.prod_thumb_shape == 'tallest'
+            assign chosen_aspect_ratio = 99
+            for product in recommendations.products
+              if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+              endif
+            endfor
+          else
+            assign chosen_aspect_ratio = 0
+            for product in recommendations.products
+              if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+              endif
+            endfor
+          endif
+        -%}
+        {%- for product in recommendations.products -%}
+          {% render 'product-mini-block', product: product, custom_aspect_ratio: chosen_aspect_ratio %}
+        {%- endfor -%}
+      </div>
+    </div>
+  </cc-carousel>
+</div>
+{%- endif -%}

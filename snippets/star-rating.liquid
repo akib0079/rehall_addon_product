@@ -1,0 +1,13 @@
+<div class="rating-star-outer {{ class }}">
+  <div class="rating-star-wrap">
+    {% for i in (1..5) %}
+      {% render 'svg-rating-star' %}
+    {% endfor %}
+  </div>
+  {% assign percentRating = rating | times: 20  %} 
+  <div class="rating-star-wrap active" style="clip-path: inset(0px {{ 100 | minus: percentRating }}% 0px 0px);">
+    {% for i in (1..5) %}
+      {% render 'svg-rating-star' %}
+    {% endfor %}
+  </div>
+</div>

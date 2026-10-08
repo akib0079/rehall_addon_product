@@ -1,0 +1,47 @@
+<div class="w2024-video-section section-id-{{ section.id }}">
+  <div class="w2024-video__halo"></div>
+  <div class="section-container">
+    <div class="w2024-video__grid">
+      <div class="w2024-video__left">
+        {% if section.settings.video != blank %}
+          {{ section.settings.video | video_tag: autoplay: true, loop: true, muted: true, class: 'w2024-video__video' }}
+        {% else %}
+          {{ 'image' | placeholder_svg_tag: 'w2024-video__video placeholder' }}
+        {% endif %}
+      </div>
+      <div class="w2024-video__right">
+        <h2 class="w2024-video__title">{{ section.settings.title }}</h2>
+        <p class="w2024-video__desc">{{ section.settings.desc }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "W2024 Video",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Unrivalled Protection for Every Winter Adventure"
+      },
+      {
+        "type": "textarea",
+        "id": "desc",
+        "label": "Description",
+        "default": "At the heart of Rehall’s Winter 24/25 collection is a commitment to performance. Featuring a groundbreaking 20K/20K outer shell, these jackets and pants offer the ultimate protection against the harshest conditions. Whether you’re shredding powder on the highest peaks or carving through urban snowstorms, this gear is built to keep you dry and comfortable with superior waterproofing and breathability."
+      },
+      {
+        "type": "video",
+        "id": "video",
+        "label": "video"
+      }
+    ],
+    "presets": [
+      {
+        "name": "W2024 Video Section"
+      }
+    ]
+  }
+{% endschema %}

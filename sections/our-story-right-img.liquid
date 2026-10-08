@@ -1,0 +1,78 @@
+<div class="section-container">
+  <h2 class="story-ri-title hl-style" style="max-width: {{ section.settings.max_width_title }}">{{ section.settings.title }}</h2>
+  {% if section.settings.founder_text != blank %}
+  <div class="story-ri-founder mobile-only">
+    {{ section.settings.founder_text }}
+  </div>
+  {% endif %}
+  <div class="story-ri-bottom-wrap">
+  {% if section.settings.paragraphs != blank %}
+  <div class="story-ri-paragraphs" style="max-width: {{ section.settings.max_width_para }}">
+    {{ section.settings.paragraphs }}
+  </div>
+  {% endif %}
+  {% if section.settings.founder_text != blank %}
+  <div class="story-ri-founder desktop-only">
+    {{ section.settings.founder_text }}
+  </div>
+  {% endif %}
+  </div>
+{% if section.settings.image != blank %}
+{{ section.settings.image | image_url: width: nil | image_tag: class: "story-ri-img desktop-only" }}
+{{ section.settings.image_mobile | default: section.settings.image | image_url: width: nil | image_tag: class: "story-ri-img mobile-only" }}
+{% endif %}
+</div>
+
+{% schema %}
+  {
+    "name": "Our story right image",
+    "class": "section-story-right-img",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "“We want to provide function and fun by making our outerwear comfortable, affordable and user-friendly.”"
+      },
+      {
+        "type": "richtext",
+        "id": "paragraphs",
+        "label": "Paragraphs",
+        "default": "<p>When I started the Rehall-outerwear company in 1999, I wanted to provide unlimited opportunities to everybody that loves to ride and go out into the snow simply to enjoy themselves! Over the years our collections have grown and we were able to develop our products into what they are today.</p><p>Functional outerwear garments made of high quality materials that provide all the comfort and joy you need while being out there.</p><p>Our Re-tech dry outer shell fabrics will keep you warm on a cold day and will keep you cool and relaxed on a sunny day. These 2-way stretch materials provide the necessary comfort when boarding or skiing. Taped seams and waterproof/breathable fabrics will keep you dry and warm.</p>"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "founder_text",
+        "label": "Founder text",
+        "default": "<strong>Ronald smits</strong> | Founder"
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_mobile",
+        "label": "Image mobile"
+      },
+      {
+        "type": "text",
+        "id": "max_width_title",
+        "label": "Title max width",
+        "default": "669px"
+      },
+      {
+        "type": "text",
+        "id": "max_width_para",
+        "label": "Title max paragraphs",
+        "default": "620px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Our story right image"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,171 @@
+{% style %}
+  #shopify-section-{{section.id}}{
+    margin: {{section.settings.gap}}px 0;
+  }
+  #shopify-section-{{section.id}} .collection-blocks-wrap{
+    grid-gap: {{section.settings.gap}}px;
+  }
+  #shopify-section-{{section.id}} .collection-block__single{
+    height: {{section.settings.height}};
+  }
+  @media (max-width: 767px){
+    #shopify-section-{{section.id}} .collection-block__single{
+      height: {{section.settings.height_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="wide-container" data-cc-animate="cc-fade-in-up">
+  <div class="collection-blocks-wrap">
+    {% for block in section.blocks %}
+      {% style %}
+        .{{block.id}}{
+          padding: {{block.settings.padding}};
+        }
+        @media (max-width: 767px){
+          .{{block.id}}{
+            padding: {{block.settings.padding_mobile}};
+          }
+        }
+      {% endstyle %}
+      <a class="collection-block__single {{ block.id }} {{ block.settings.scheme }} {{ block.settings.scheme_mobile }}" href="{{ block.settings.url | default: "#" }}" {{ block.shopify_attributes }}>
+        {% if block.settings.image != blank %}
+          {{ block.settings.image_wide | default: block.settings.image | image_url: width: nil | image_tag: class: "collection-block__single_image wide-only" }}
+          {{ block.settings.image | image_url: width: nil | image_tag: class: "collection-block__single_image desktop-only" }}
+          {{ block.settings.image_mobile | default: block.settings.image | image_url: width: nil | image_tag: class: "collection-block__single_image mobile-only" }}
+        {% else %}
+          {{ 'collection-1' | placeholder_svg_tag: "collection-block__single_image placeholder" }}
+        {% endif %}
+        <p class="collection-block__single_sub">{{ block.settings.sub_title }}</p>
+        <h3 class="collection-block__single_title hl-style">{{ block.settings.title }}</h3>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Collection blocks",
+    "class": "collection-blocks",
+    "settings": [
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Height",
+        "default": "779px"
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Height mobile",
+        "default": "481px"
+      },
+      {
+        "type": "range",
+        "id": "gap",
+        "label": "Gap",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "px",
+        "default": 10
+      }
+    ],
+    "blocks": [
+      {
+        "type": "collection",
+        "name": "Collection",
+        "settings": [
+          {
+            "type": "url",
+            "id": "url",
+            "label": "Collection url"
+          },
+          {
+            "type": "select",
+            "id": "scheme",
+            "label": "Color scheme",
+            "default": "black",
+            "options": [
+              {
+                "label": "Black",
+                "value": "black"
+              },
+              {
+                "label": "White",
+                "value": "white"
+              }
+            ]
+          },
+          {
+            "type": "select",
+            "id": "scheme_mobile",
+            "label": "Color scheme mobile",
+            "default": "mobile_white",
+            "options": [
+              {
+                "label": "Black",
+                "value": "mobile_black"
+              },
+              {
+                "label": "White",
+                "value": "mobile_white"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "sub_title",
+            "label": "Sub title",
+            "default": "COLLECTION"
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "MEN"
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "image_picker",
+            "id": "image_mobile",
+            "label": "Mobile image"
+          },
+          {
+            "type": "image_picker",
+            "id": "image_wide",
+            "label": "Wide image"
+          },
+          {
+            "type": "text",
+            "id": "padding",
+            "label": "Padding",
+            "default": "35px 123px"
+          },
+          {
+            "type": "text",
+            "id": "padding_mobile",
+            "label": "Padding mobile",
+            "default": "40px 22px"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Collection blocks",
+        "blocks": [
+          {
+            "type": "collection"
+          },
+          {
+            "type": "collection"
+          }
+        ]
+        
+      }
+    ]
+  }
+{% endschema %}

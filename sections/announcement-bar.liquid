@@ -1,0 +1,203 @@
+
+{% if section.blocks.size > 0 or section.settings.show_language_selector or section.settings.show_country_selector or section.settings.menu != blank %}
+  {%- liquid
+    assign longest_announcement = 0
+    assign bar_bg = section.settings.announcement_bar_col
+    assign bar_text = section.settings.announcement_text_col
+    for block in section.blocks
+      if forloop.first
+        assign alpha = block.settings.bg_col | color_extract: 'alpha'
+        if alpha > 0
+          assign bar_bg = block.settings.bg_col
+        endif
+        assign alpha = block.settings.text_col | color_extract: 'alpha'
+        if alpha > 0
+          assign bar_text = block.settings.text_col
+        endif
+      endif
+      assign text = block.settings.text | strip_html
+      if text.size > longest_announcement
+        assign longest_announcement = text.size
+      endif
+    endfor
+  -%}
+  <div class="wide-container" data-cc-animate>
+    <div id="section-id-{{ section.id }}" class="announcement-bar
+        card
+        card--no-mb
+        {%- if section.blocks.size > 0 %} announcement-bar--with-announcement{% endif -%}
+        {%- if longest_announcement > 45 and section.settings.menu != blank %} announcement-bar--tablet-wrap{% endif -%}
+        " data-section-type="announcement-bar">
+      {% style %}
+        #section-id-{{ section.id }} {
+          --announcement-background: {{ bar_bg }};
+          --announcement-text: {{ bar_text }};
+          --link-underline: {{ bar_text | color_modify: 'alpha', 0.6 }};
+          --announcement-font-size: {{ section.settings.message_font_size }}px;
+        }
+      {% endstyle %}
+
+      <div class="announcement-bar__left desktop-only">
+        {% if section.settings.show_social_icons %}
+          {%- if settings.social_custom_url != blank and settings.social_custom_icon_mob_nav != blank -%}
+            <template class="js-replacement-custom-icon">
+              <li>
+                <a aria-label="{{ settings.social_custom_icon_mob_nav.alt | escape }}" class="social-custom-mobile" target="_blank" rel="noopener" href="{{ settings.social_custom_url }}">
+                  <img src="{{ settings.social_custom_icon_mob_nav | img_url: 'x30' }}" alt="{{ settings.social_custom_icon_mob_nav.alt }}" width="{{ settings.social_custom_icon_mob_nav.width }}" height="{{ settings.social_custom_icon_mob_nav.height }}"/>
+                </a>
+              </li>
+            </template>
+          {%- endif -%}
+          {% render 'social-icons', icon_setting: settings.social_custom_icon_ann_bar, icon_size: 'x30' %}
+        {% endif %}
+      </div>
+
+      <div class="announcement-bar__middle">
+        {%- if section.blocks.size > 0 -%}
+          <div class="announcement-bar__announcements">
+            {%- for block in section.blocks -%}
+              {%- liquid
+                assign bg_alpha = block.settings.bg_col | color_extract: 'alpha'
+                assign text_alpha = block.settings.text_col | color_extract: 'alpha'
+              -%}
+              <div class="announcement{% unless forloop.first %} announcement--inactive{% endunless %}"
+                data-bg="{% if bg_alpha > 0 %}{{ block.settings.bg_col }}{% else %}{{ section.settings.announcement_bar_col }}{% endif %}"
+                data-text="{% if text_alpha > 0 %}{{ block.settings.text_col }}{% else %}{{ section.settings.announcement_text_col }}{% endif %}"
+                data-underline="{% if text_alpha > 0 %}{{ block.settings.text_col | color_modify: 'alpha', 0.6 }}{% else %}{{ section.settings.announcement_text_col | color_modify: 'alpha', 0.6 }}{% endif %}" {{ block.shopify_attributes }}>
+                <div class="announcement__text">{{ block.settings.text }}</div>
+              </div>
+            {%- endfor -%}
+          </div>
+
+          {%- if section.blocks.size > 1 -%}
+            <div class="announcement-bar__announcement-controller">
+              <button class="announcement-button announcement-button--previous btn--plain-text" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'svg-chevron-left' %}</button>
+              <button class="announcement-button announcement-button--next btn--plain-text" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}">{% render 'svg-chevron-right' %}</button>
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+
+      <div class="announcement-bar__right desktop-only">
+        {% if section.settings.menu != blank %}
+          <span class="inline-menu">
+            {% for link in linklists[section.settings.menu].links %}
+              <a class="inline-menu__link announcement-bar__link" href="{{ link.url }}">{{ link.title }}</a>
+            {% endfor %}
+          </span>
+        {% endif %}
+        {% if section.settings.show_language_selector or section.settings.show_country_selector %}
+          <div class="header-disclosures js-only">
+            {% render 'localization', input_prefix: 'annbar' %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+
+{% schema %}
+  {
+    "name": "Announcement bar",
+    "class": "section-announcement-bar",
+    "settings": [
+      {
+        "type": "color",
+        "id": "announcement_bar_col",
+        "label": "Bar color",
+        "default": "#4a4a4a"
+      },
+      {
+        "type": "color",
+        "id": "announcement_text_col",
+        "label": "Text color",
+        "info": "Colors set on each announcement will override these",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "message_font_size",
+        "min": 11,
+        "max": 18,
+        "step": 1,
+        "unit": "px",
+        "label": "Announcement font size",
+        "default": 14
+      },
+      {
+        "type": "header",
+        "content": "Links"
+      },
+      {
+        "type": "paragraph",
+        "content": "Links, social media icons, and localization options will show in the menu on mobile"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_social_icons",
+        "label": "Show social media links",
+        "default": true
+      },
+      {
+        "type": "link_list",
+        "id": "menu",
+        "label": "Menu",
+        "info": "This menu won't show dropdown items"
+      },
+      {
+        "type": "header",
+        "content": "Country/Region Selector",
+        "info": "To add a country/region, go to your [payment settings.](/admin/settings/payments)"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_country_selector",
+        "label": "Enable country/region selector",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Language Selector",
+        "info": "To add a language, go to your [language settings.](/admin/settings/languages)"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_language_selector",
+        "label": "Enable language selector",
+        "default": true
+      }
+    ],
+    "blocks": [
+      {
+        "type": "announcement",
+        "name": "Announcement",
+        "limit": 5,
+        "settings": [
+          {
+            "type": "richtext",
+            "id": "text",
+            "label": "Text",
+            "default": "<p>Announce <a href=\"#\">something</a> here</p>"
+          },
+          {
+            "type": "color",
+            "id": "bg_col",
+            "label": "Bar color",
+            "default": "rgba(0,0,0,0)"
+          },
+          {
+            "type": "color",
+            "id": "text_col",
+            "label": "Text color",
+            "default": "rgba(0,0,0,0)"
+          },
+          {
+            "type": "paragraph",
+            "content": "Try giving each announcement its own colors"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

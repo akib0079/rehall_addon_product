@@ -1,0 +1,26 @@
+<div data-native-suggestions-content>
+{%- if predictive_search.performed -%}
+  {%- assign shown = 0 -%}
+  {%- for query in predictive_search.resources.queries limit: 5 -%}
+    <a class="header__search-keyword link-underline" href="{{ query.url }}" data-keyword="{{ query.text | escape }}">
+      <span class="link-underline-text">{{ query.styled_text }}</span>
+    </a>
+    {%- assign shown = shown | plus: 1 -%}
+  {%- endfor -%}
+  {%- for collection in predictive_search.resources.collections limit: 4 -%}
+    <a class="header__search-keyword link-underline" href="{{ collection.url }}">
+      <span class="link-underline-text">{{ collection.title }}</span>
+    </a>
+    {%- assign shown = shown | plus: 1 -%}
+  {%- endfor -%}
+  {%- if shown == 0 -%}
+    <h4 class="search__empty-notice">{{ 'general.search.popup_empty_suggestions_label' | t }}</h4>
+  {%- endif -%}
+{%- endif -%}
+</div>
+{% schema %}
+{
+  "name": "Search Suggestions Native",
+  "settings": []
+}
+{% endschema %}

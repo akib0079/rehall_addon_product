@@ -1,0 +1,80 @@
+<section class="duur-vestiging-section" style="--height:{{ section.settings.height }};--height-mobile:{{ section.settings.height_mobile }};"{% if section.settings.scroller-id != blank %} data-scroller-id="{{ section.settings.scroller-id }}"{% endif %}>
+  <div class="duur-vestiging-outer-wrap">
+    <div class="duur-vestiging-container">
+      {% if section.settings.subtitle != blank %}
+        <li class="duur-section-subtitle"><span>{{ section.settings.subtitle }}</span></li>
+      {% endif %}
+      {% if section.settings.desc != blank %}
+        <div class="duur-vestiging-desc">
+          {{ section.settings.desc }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% if section.settings.bg != blank %}
+    {{ section.settings.bg_wide | default: section.settings.bg | image_url: width: nil | image_tag: class: 'duur-vestiging-bg wide-only'  }}
+    {{ section.settings.bg | image_url: width: nil | image_tag: class: 'duur-vestiging-bg desktop-only'  }}
+    {{ section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil | image_tag: class: 'duur-vestiging-bg mobile-only'  }}
+  {% endif %}
+</section>
+{% schema %}
+  {
+    "name": "Duurzaamheid Vestiging",
+    "settings": [
+      {
+        "type": "text",
+        "id": "scroller-id",
+        "label": "Scroller ID",
+        "default": "onze-vestiging",
+      },
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "Sub title",
+        "default": "Onze vestiging",
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Bij Rehall Outerwear</p>"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Background image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Background image mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_wide",
+        "label": "Background image mobile"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Height",
+        "default": "734px",
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Height mobile",
+        "default": "734px",
+      },
+    ],
+    "presets": [
+      {
+        "name": "Duurzaamheid Vestiging"
+      }
+    ]
+  }
+{% endschema %}

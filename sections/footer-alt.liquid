@@ -1,0 +1,478 @@
+{%- liquid
+  assign s = section.settings
+  #assign sid = section.id
+-%}
+{%- if s.show_newsletter -%}
+    <div class="footer-alt__newsletter-row">
+      <div class="section-container">
+        <div class="footer-alt__newsletter-inner">
+          {%- if s.newsletter_heading != blank -%}
+            <h4 class="footer-alt__newsletter-heading">{{ s.newsletter_heading }}</h4>
+          {%- endif -%}
+          <div class="footer-alt__newsletter-form">
+            {%- form 'customer', id: 'footer_alt_newsletter_signup', class: 'footer-alt__newsletter-form-tag' -%}
+              <input type="hidden" name="contact[tags]" value="newsletter">
+              {%- if form.posted_successfully? -%}
+                <p class="footer-alt__newsletter-feedback footer-alt__newsletter-feedback--success">
+                  {{ s.newsletter_success | default: 'Bedankt voor je aanmelding!' }}
+                </p>
+              {%- else -%}
+                {%- if form.errors -%}
+                  <p class="footer-alt__newsletter-feedback footer-alt__newsletter-feedback--error">
+                    {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+                  </p>
+                {%- endif -%}
+                <input
+                  type="email"
+                  name="contact[email]"
+                  class="footer-alt__newsletter-input"
+                  placeholder="{{ s.newsletter_placeholder | default: 'Enter your email address...' }}"
+                  required
+                  aria-label="{{ s.newsletter_placeholder | default: 'Enter your email address...' }}">
+                <button type="submit" class="footer-alt__newsletter-btn">
+                  {{ s.newsletter_button_label | default: 'Sign up' }}
+                </button>
+              {%- endif -%}
+            {%- endform -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+
+<div class="footer-alt" role="contentinfo" data-section-type="footer">
+    <div class="footer-menus-outer-wrap">
+        <div class="section-container">
+        
+        
+        {% capture toggle_icon %}
+            {% render 'svg-chevron-right' %}
+        {% endcapture %}
+        {% capture accordion_content %}
+            {%- for block in section.blocks -%}
+                <div class="collapsible-tabs__block" {{ block.shopify_attributes }}>
+                    {% if block.type == 'menu' %}
+                    {% capture content %}
+                        {%- if block.settings.menu != blank and linklists[block.settings.menu].links.size > 0 -%}
+                            <ul class="footer-alt__menu-list">
+                            {%- for link in linklists[block.settings.menu].links -%}
+                                <li>
+                                    <a href="{{ link.url }}">
+                                    {{ link.title }}
+                                    </a>
+                                </li>
+                            {%- endfor -%}
+                            </ul>
+                        {%- endif -%}
+                    {% endcapture %}
+                    <div class="collapsible-tabs__tab">
+                    {% render 'accordion-item',
+                        title: block.settings.title,
+                        escape_title: true,
+                        toggle_icon: toggle_icon,
+                        content: content,
+                        add_content_class: 'rte',
+                        item_open: false
+                    %}
+                    </div>
+                {% endif %}
+                </div>
+            {%- endfor -%}
+        {% endcapture %}
+        {%
+            render "accordion",
+            allow_multi_open: true,
+            mobile_only_accordion: true,
+            content: accordion_content
+        %}
+
+        </div>
+    </div>
+    <div class="footer-alt__bottom-row">
+        <div class="section-container">
+            {%- unless shop.enabled_payment_types == empty -%}
+                <div class="payment-methods">
+                    <span class="visually-hidden">{{ 'shopify.checkout.payment.payment_method' | t }}</span>
+                    <ul class="payment-methods__list" role="list">
+                    {%- for type in shop.enabled_payment_types -%}
+                        <li class="payment-methods__item">
+                        {{ type | payment_type_svg_tag: class: 'icon icon--payment' }}
+                        </li>
+                    {%- endfor -%}
+                    </ul>
+                </div>
+            {%- endunless -%}
+            <div class="footer-alt__bottom-right">
+                {% render 'social-icons' %}
+                {%- if section.settings.show_language_selector and localization.available_languages.size > 1 -%}
+                    {% render 'localization', input_prefix: 'footer' %}
+                {%- endif -%}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="footer-alt__sticky-row">
+  {% if section.settings.sticky_img != blank %}
+    <div class="section-container">
+      {{ section.settings.sticky_img | image_url: width: nil | image_tag: class: 'footer-alt_sticky-img desktop-only' }}
+      {{ section.settings.sticky_img_mobile | default: section.settings.sticky_img | image_url: width: nil | image_tag: class: 'footer-alt_sticky-img mobile-only' }}
+    </div>
+  {% endif %} 
+  {% if section.settings.copyright_text != blank %}
+    <div class="footer-alt_copyright">
+      <div class="section-container">
+        <p>{{ section.settings.copyright_text }}</p>
+      </div>
+    </div>
+  {% endif %} 
+</div>
+{% style %}
+  .footer-alt-section{
+    z-index: 1;
+    position: relative;
+  }
+  .footer-alt__newsletter-row{
+      border-top: 1px solid rgba(0, 0, 0, 0.10);
+      background: var(--brand-primary-color-contrast, #FFF);
+      padding: 20px 0px;
+      
+      .footer-alt__newsletter-inner{
+          display: flex;
+          grid-gap: 40px;
+          align-items: center;
+          @media screen and (max-width: 767px) {
+            align-items: flex-start;
+            flex-direction: column;
+            grid-gap: 30px;
+          }
+      }
+      .footer-alt__newsletter-heading{
+          font-size: 20px;
+          font-weight: 500;
+          line-height: normal;
+      }
+      .footer-alt__newsletter-form{
+        flex-grow: 1;
+        max-width: 330px;
+        @media screen and (max-width: 767px) {
+          max-width: 100%;
+          width: 100%;
+        }
+      }
+      .footer-alt__newsletter-form-tag {
+          display: flex;
+          align-items: center;
+          height: 45px;
+          font-family: Roundo;
+          font-size: 14px;
+          width: 100%;
+      }
+      .footer-alt__newsletter-input {
+          border-radius: 0;
+          border: 1px solid #E5E5E5;
+          background: #FFF;
+          height: 100%;
+          padding: 10px;
+          min-height: 0;
+          flex-grow: 1;
+          font-family: inherit;
+          font-size: 14px;
+          &::placeholder{
+            color: rgba(0, 0, 0, 0.50);
+          }
+      }
+      .footer-alt__newsletter-btn{
+          padding: 1px 20px;
+          height: 100%;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 500;
+      }
+  }
+  .footer-alt {
+      background: var(--brand-primary-color-contrast, #FFF);
+      .footer-menus-outer-wrap{
+          padding: 50px 0px 30px;
+          border-top: 1px solid #E5E5E5;
+          font-family: Roundo;
+          font-size: 14px;
+          @media screen and (max-width: 767px) {
+            padding: 0px 0px 20px;
+          }
+      }
+      .cc-accordion{
+          display: flex;
+          grid-gap: 30px;
+          border-top: 0;
+          margin: 0;
+          @media screen and (max-width: 767px) {
+            flex-direction: column;
+            grid-gap: 0;
+          }
+      }
+      .collapsible-tabs__block {
+          flex-basis: 100%;
+          @media screen and (max-width: 767px) {
+            &:not(:last-child){
+              border-bottom: 1px solid #E5E5E5;
+            }
+          }
+      }
+      .collapsible-tabs__tab {
+          border-bottom: 0;
+      }
+      .cc-accordion-item{
+          border-bottom: 0;
+      }
+      .cc-accordion-item__title{
+          padding: 0;
+          font-weight: 600;
+          line-height: 100%;
+          font-family: var(--header-font-family);
+          font-size: 14px;
+          text-transform: uppercase;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          &::before, &::after{
+            content: unset;
+          }
+          svg{
+            transition: transform 0.1s ease-out;
+            .cc-accordion-item.is-open &{
+              transform: rotate(90deg);
+            }
+            @media screen and (min-width: 768px) {
+              display: none;
+            }
+          }
+          @media screen and (min-width: 768px) {
+            cursor: auto;
+          }
+          @media screen and (max-width: 767px) {
+            padding: 20px 0;
+            margin-bottom: 0;
+          }
+      }
+      .cc-accordion-item__panel{
+          .cc-accordion-item__content{ 
+              padding: 0;
+          }
+          .footer-alt__menu-list{
+              padding: 0;
+              margin: 0;
+              display: flex;
+              flex-direction: column;
+              grid-gap: 16px;
+              line-height: 1.428em;
+              @media screen and (max-width: 767px) {
+                padding: 0 0 20px;
+              }
+          }
+          li{
+              list-style: none;
+              a{
+                  text-decoration: none;
+                  color: inherit;
+                  background-image: linear-gradient(currentColor, currentColor);
+                  background-size: 0% 1px;
+                  background-position: 0 100%;
+                  background-repeat: no-repeat;
+                  transition: background-size .25s ease;
+                  &:hover{
+                      background-size: 100% 1px;
+                  }
+              }
+          }
+      }
+  }
+  .footer-alt__bottom-row{
+    padding: 30px 0;
+    border-top: 1px solid #E5E5E5;
+    @media screen and (max-width: 767px) {
+      padding: 20px 0;
+    }
+    .section-container{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      @media screen and (max-width: 767px) {
+        align-items: flex-start;
+        flex-direction: column;
+        grid-gap: 30px;
+      }
+    }
+    .payment-methods__list{
+        display: flex;
+        grid-gap: 12px;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        flex-wrap: wrap;
+        .payment-methods__item{
+            list-style: none;
+            display: inline-flex;
+            svg{
+                height: 20px;
+                width: auto;
+            }
+        }
+    }
+    .footer-alt__bottom-right{
+        display: flex;
+        grid-gap: 40px;
+        align-items: center;
+        @media screen and (max-width: 767px) {
+          justify-content: space-between;
+          align-self: stretch;
+        }
+        #localization_form_footer{
+          margin-top: 0;
+        }
+        .disclosure__toggle {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            margin: 0;
+            padding: 3px 0;
+            vertical-align: middle;
+            font-weight: 400;
+        }
+        .disclosure-list{
+          right: 0;
+        }
+    }
+    .social-links a{
+      padding: 0px 7px;
+      svg{
+        width: 20px;
+        height: 20px;
+      }
+      &::after{
+        width: 34px;
+        left: calc(50% - 17px);
+      }
+    }
+  }
+  .footer-alt__sticky-row{
+    position: sticky;
+    bottom: 0;
+    z-index: -1;
+    .footer-alt_sticky-img{
+      width: 100%;
+      padding: 20px 0;
+    }
+    .footer-alt_copyright{
+      padding: 20px 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.50);
+      font-family: var(--header-font-family);
+      font-size: 12px;
+      line-height: 1.33em;
+      p{
+        margin: 0;
+      }
+    }
+  }
+{% endstyle %}
+{% schema %}
+{
+  "name": "Footer Alt",
+  "tag": "footer",
+  "class": "footer-alt-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "label": "Show newletter",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Newsletter title",
+      "default": "ENJOY YOUR RIDES"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "Newsletter placeholder",
+      "default": "Enter your email address..."
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button_label",
+      "label": "Newsletter button label",
+      "default": "Sign up"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_success",
+      "label": "Newletter success message",
+      "default": "Bedankt voor je aanmelding!"
+    },
+    {
+    "type": "checkbox",
+    "id": "show_language_selector",
+    "label": "Enable language selector",
+    "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "sticky_img",
+      "label": "Sticky Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "sticky_img_mobile",
+      "label": "Sticky Logo - Mobile"
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright text",
+      "default": "© ALL RIGHTS RESERVED REHALL/RSD CLOTHING, THE NETHERLANDS"
+    },
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menukolom",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titel",
+          "info": "De naam die boven de kolom of accordeon verschijnt (bv. Collections)."
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "info": "Koppel hier het menu dat onder deze kolom/accordeon getoond wordt."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Footer Alt",
+      "blocks": [
+        { "type": "menu", "settings": { "title": "Collections" } },
+        { "type": "menu", "settings": { "title": "Support" } },
+        { "type": "menu", "settings": { "title": "Discover" } },
+        { "type": "menu", "settings": { "title": "Riders" } },
+        { "type": "menu", "settings": { "title": "Legal" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

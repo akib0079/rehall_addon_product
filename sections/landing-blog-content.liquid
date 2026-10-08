@@ -1,0 +1,107 @@
+<div class="landing-blog-content-section section-id-{{ section.id }}">
+    <div class="section-container">
+        <div class="landing-blog-content-row">
+            <div class="landing-blog-content-left">
+              {% if section.settings.scroller_title != blank %}
+                <h4 class="landing-blog-scroller-title">{{ section.settings.scroller_title }}</h4>
+              {% endif %}
+              <div class="landing-blog-scroller--wrap swiper">
+                <ul class="landing-blog-scroller--list swiper-wrapper">
+                </ul>
+              <div class="landing-blog-scroller--progress">
+                <div class="landing-blog-scroller--progress_tracker"> </div>
+              </div>
+              </div>
+            </div>
+            <div class="landing-blog-content-right">
+                {% content_for "blocks" %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    gsap.registerPlugin(ScrollTrigger,ScrollToPlugin);
+    const arr = [];
+    const swiper = document.querySelector(".section-id-{{ section.id }} .landing-blog-scroller--wrap")
+    const swiperWrap = swiper.querySelector(".swiper-wrapper")
+    const sections = gsap.utils.toArray("[data-scroll-anchor]");
+    const mobile = (window.matchMedia("(max-width: 767px)").matches);
+    sections.forEach((section,i) => {
+      const title = section.dataset.scrollAnchor;
+      const item = document.createElement('li');
+      item.className = "landing-blog-scroller--list_item swiper-slide";
+      const anchor = document.createElement('a');
+      anchor.className = "landing-blog-scroller--list_link";
+      anchor.innerHTML = title;
+      anchor.href="#";
+      item.append(anchor);
+      swiperWrap.append(item);
+      arr.push(anchor);
+      {% comment %} const section = document.querySelector(`section[data-scroller-id="${id}"]`); {% endcomment %}
+      if(section) {
+        anchor.addEventListener('click', e => {
+          e.preventDefault();
+          gsap.to(window, { duration: 1.5, scrollTo: {y: section, offsetY:(mobile?178:90), autoKill: !mobile }} );
+        })
+      }
+    })
+    const tl = gsap.timeline();
+    const progress = document.querySelector(".landing-blog-scroller--progress");
+    const progressTrack = progress.querySelector(".landing-blog-scroller--progress_tracker");
+    let anchorSwiper;
+    if(mobile){
+      anchorSwiper =  new Swiper('.landing-blog-scroller--wrap', {
+        speed: 400,
+        slidesPerView: 'auto',
+      });
+    }
+    const step = (mobile? progress.offsetWidth : progress.offsetHeight) / (arr.length-1);
+    for (let i = 0; i < arr.length; i++) {
+      const anchor = arr[i];
+      tl.to(progressTrack,{
+        scrollTrigger: {
+          trigger: sections[i],
+          endTrigger: i+1 == arr.length? sections[i]: sections[i+1],
+          start: 'top center',
+          end: i+1 == arr.length? 'bottom center':'top center',
+          scrub: true,
+          onEnter: () => {anchor.classList.add('active');if(mobile)anchorSwiper.slideTo(i)},
+          onEnterBack: () => {anchor.classList.remove('post-active');anchor.classList.add('active');if(mobile)anchorSwiper.slideTo(i)},
+          onLeave: () => {anchor.classList.remove('active');anchor.classList.add('post-active');},
+          onLeaveBack: () => {anchor.classList.remove('active');},
+          onUpdate: i+1 == arr.length? null:self => {progress.style.setProperty('--progress', (step * i + self.progress*step).toFixed(2) + 'px');},
+        }
+      })
+    }
+  })
+</script>
+{% schema %}
+  {
+    "name": "Landing - Blog Content",
+    "settings": [
+      {
+        "type": "inline_richtext",
+        "id": "scroller_title",
+        "label": "Scroller Title",
+        "default": "Conquer the mountain"
+      },
+    ],
+    "blocks": [
+        {
+            "type": "_landing-blog-image"
+        },
+        {
+            "type": "_landing-blog-text"
+        },
+        {
+            "type": "_landing-blog-enumbered"
+        }
+    ],
+    "presets": [
+      {
+        "name": "Landing - Blog Content"
+      }
+    ]
+  }
+{% endschema %}

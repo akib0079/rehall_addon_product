@@ -1,0 +1,81 @@
+<div class="landing-blog-content__text" style="{% if block.settings.margin_top %}--margin-top: {{ block.settings.margin_top }};{%endif %}{% if block.settings.margin_top_mobile %}--margin-top-mobile: {{ block.settings.margin_top_mobile }};{%endif %}"{% if block.settings.scroll %} data-scroll-anchor="{{ block.settings.title }}"{% endif %}>
+{% if block.settings.title != blank %}
+    <h3 class="landing-blog-content__text_title">{{ block.settings.title }}</h3>
+{% endif %}
+{% if block.settings.desc != blank %}
+    <div class="landing-blog-content__text_desc">{{ block.settings.desc }}</div>
+{% endif %}
+</div>
+{% style %}
+.landing-blog-content__text{
+  margin-top: var(--margin-top);
+}
+.landing-blog-content__text_title{
+    font-size: 40px;
+    line-height: 100%;
+    letter-spacing: 0.25px;
+}
+.landing-blog-content__text_desc{
+    font-size: 16px;
+    line-height: 175%;
+    letter-spacing: 0.25px;
+    /* font-family: var(--header-font-family); */
+}
+.landing-blog-content__text_title + .landing-blog-content__text_desc{
+    margin-top: 37px;
+}
+@media (max-width: 767px) {
+  .landing-blog-content__text{
+    margin-top: var(--margin-top-mobile);
+  }
+  .landing-blog-content__text_title{
+    font-size: 26px;
+  }
+    .landing-blog-content__text_desc {
+        font-size: 14px;
+    }
+}
+{%endstyle %}
+    
+{% schema %}
+{
+  "name": "Text",
+  "settings": [
+    {
+    "type": "inline_richtext",
+    "id": "title",
+    "label": "Title",
+    "default": "redefined new style go!"
+    },
+    {
+    "type": "richtext",
+    "id": "desc",
+    "label": "Description",
+    "default": "<p>Description</p>"
+    },
+    {
+      "type": "text",
+      "id": "margin_top",
+      "label": "Margin Top",
+      "default": "0px"
+    },
+    {
+      "type": "text",
+      "id": "margin_top_mobile",
+      "label": "Margin Top - Mobile",
+      "default": "0px"
+    },
+    {
+      "type": "checkbox",
+      "id": "scroll",
+      "label": "Scroll Anchor",
+      "default": false
+    },
+  ],
+  "presets": [
+        {
+        "name": "Text"
+        },
+    ]
+}
+{% endschema %}

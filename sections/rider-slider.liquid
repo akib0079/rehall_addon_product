@@ -1,0 +1,186 @@
+{% style %}
+  #shopify-section-{{ section.id }}{
+    margin-top: {{section.settings.margin_top}};
+  }
+  .section-id-{{ section.id }} .swiper-slide{
+    width: calc(100% / {{section.settings.grid}});
+  }
+  .section-id-{{ section.id }} .rider-slider {
+    margin-left: -{{section.settings.rider_gap | divided_by: 2}}px;
+    margin-right: -{{section.settings.rider_gap | divided_by: 2}}px;
+  }
+  .section-id-{{ section.id }} .rider-slide {
+    margin: 0 {{section.settings.rider_gap | divided_by: 2}}px;
+  }
+  @media (max-width: 767px){
+    #shopify-section-{{ section.id }}{
+      margin-top: {{section.settings.margin_top_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-id-{{ section.id }} collection-slider-row" >
+  <div class="product-slider__nav-row">
+    {% if section.settings.title != blank %}
+      <h2 class="section-title product-slider__title hl-style{% unless section.settings.show_title %} visually-hidden{% endunless %}">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+    <div class="product-slider__nav-right-col">
+      <div class="product-slider__nav-wrap">
+        <div class="product-slider__nav prev">
+          {% render 'svg-slider-arrow' %}
+        </div>
+        <div class="product-slider__nav next">
+          {% render 'svg-slider-arrow' %}
+        </div>
+      </div>
+      <a class="product-slider__coll_link" href="{{ section.settings.all_page_url | default: '#' }}">{{ section.settings.all_page_text }}</a>
+    </div>
+  </div>
+
+  <div class="rider-slider swiper">
+    <div class="product-list swiper-wrapper">
+      {% assign riders = shop.metaobjects.riders.values %}
+      {% if riders == blank %}
+        {% for i in (1..4) %}
+          {% render 'onboarding-product-block', forloop: forloop %}
+        {% endfor %}
+      {% else %}
+        {% for rider in riders %}
+          <a class="swiper-slide" href="{{ section.settings.all_page_url | default: '#' }}">
+            {% render 'rider-slide', rider: rider, joined_text: section.settings.join_text %}
+          </a>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+      new Swiper('.section-id-{{ section.id }} .rider-slider', {
+        slidesPerView: 'auto',
+        freeMode: {
+          enabled: true,
+          sticky: true,
+          momentumRatio: 0.8,
+        },
+        speed: 400,
+        navigation: {
+          nextEl: '.section-id-{{ section.id }} .product-slider__nav.next',
+          prevEl: '.section-id-{{ section.id }} .product-slider__nav.prev',
+        },
+        breakpoints: {
+          1100: {
+            slidesPerView: {{ section.settings.grid }},
+          },
+          2500: {
+            slidesPerView: 5,
+          },
+        },
+      });
+  });     
+</script>
+
+{% schema %}
+  {
+    "name": "Rider Slider",
+    "class": "section-rider-slider card",
+    "disabled_on": {
+      "templates": [
+        "password"
+      ],
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "OUR RIDERS"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show heading",
+        "info": "A hidden heading will still be readable by search engines and screen readers",
+        "default": true
+      },
+      {
+        "type": "url",
+        "id": "all_page_url",
+        "label": "All rider page url"
+      },
+      {
+        "type": "text",
+        "id": "all_page_text",
+        "label": "All rider page text",
+        "default": "SHOW ALL RIDERS"
+      },
+      {
+        "type": "text",
+        "id": "join_text",
+        "label": "Joined year text",
+        "default": "Rehall Rider Since"
+      },
+      {
+        "type": "range",
+        "id": "product_count",
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "label": "Rider max count",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "rider_gap",
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "unit": "px",
+        "label": "Rider gap",
+        "default": 10
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 0.1,
+        "default": 4
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "info": "Used when there is no image",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Rider Slider"
+      }
+    ]
+  }
+{% endschema %}

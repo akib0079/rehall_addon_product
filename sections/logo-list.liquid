@@ -1,0 +1,181 @@
+<div id="section-id-{{ section.id }}" class="fully-padded-row--medium card card-scheme card-scheme--{{ section.settings.color_scheme }}" data-section-type="logo-list">
+  {%- style -%}
+    #section-id-{{ section.id }} .logo-list__logo-image {
+      opacity: {{ section.settings.image_opacity }}%;
+    }
+    #section-id-{{ section.id }} .logo-list__link:hover .logo-list__logo-image {
+      opacity: {{ section.settings.image_opacity | times: 1.2 | at_most: 100 }}%;
+    }
+    {%- for block in section.blocks -%}
+      #section-id-{{ section.id }} .logo-list__logo-{{ forloop.index }} .logo-list__logo-image {
+        max-width: {{ block.settings.image_width }}px;
+      }
+    {%- endfor -%}
+  {%- endstyle -%}
+
+  <div class="card-content-padding">
+    {% if section.settings.title != blank %}
+      <h2 class="section-title section-title--in-card{% unless section.settings.show_title %} visually-hidden{% endunless %}" data-cc-animate data-cc-animate-delay="0.15s">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+
+    <div class="logo-list-container">
+      <div class="logo-list logo-list--count-{{ section.blocks.size }}">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.link != blank -%}
+            <a class="logo-list__logo logo-list__logo-{{ forloop.index }} logo-list__link focus-inset" href="{{ block.settings.link }}" {{ block.shopify_attributes }} data-cc-animate="cc-fade-in-up" data-cc-animate-delay="{{ forloop.index | times: 0.15 }}s">
+          {%- else -%}
+            <div class="logo-list__logo logo-list__logo-{{ forloop.index }}" {{ block.shopify_attributes }} data-cc-animate="cc-fade-in-up" data-cc-animate-delay="{{ forloop.index | times: 0.15 }}s">
+          {%- endif -%}
+
+            <div class="logo-list__logo-image{% if block.settings.link != blank %} scale-on-hover{% endif %}">
+              {%- if block.settings.image != blank -%}
+                <div class="inline-image"
+                  style="--ar-padding: {{ 1 | divided_by: block.settings.image.aspect_ratio | times: 100 }}%;
+                         width: {{ block.settings.image_width }}px">
+                  <div class="inline-image__pad scale-on-hover__target">
+                    {%- capture widths -%}{{ block.settings.image_width }},{{ block.settings.image_width | times: 2 | at_most: block.settings.image.width }}{%- endcapture -%}
+                    {%- assign image_width = block.settings.image.width | at_most: 5760 -%}
+                    {%- assign img_sizes = block.settings.image_width | append: 'px' -%}
+                    {{- block.settings.image | image_url: width: image_width | image_tag: widths: widths, sizes: img_sizes, class: 'inline-image__image load-trans', loading: 'lazy', onload: 'this.classList.add("loaded")' -}}
+                  </div>
+                </div>
+              {%- else -%}
+                <div class="placeholder-image">
+                  {{- 'logo' | placeholder_svg_tag: 'placeholder-svg' -}}
+                </div>
+              {%- endif -%}
+            </div>
+
+            {%- if block.settings.title != blank -%}
+              <div class="logo-list__logo-title">
+                {{ block.settings.title }}
+              </div>
+            {%- endif -%}
+
+          {%- unless block.settings.link != blank -%}
+            </div>
+          {%- else -%}
+          </a>
+          {%- endunless -%}
+        {%- endfor -%}
+
+        {% if section.blocks.size == 0 %}
+          {%- for i in (1..4) -%}
+            <div class="logo-list__logo">
+              <div class="logo-list__logo-image">
+                <div class="placeholder-image">
+                  {{- 'logo' | placeholder_svg_tag: 'placeholder-svg' -}}
+                </div>
+              </div>
+            </div>
+          {%- endfor -%}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% schema %}
+{
+  "name": "Logo list",
+  "class": "section-logo-list",
+  "disabled_on": {
+    "groups": [
+      "aside"
+    ]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Logo list"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show heading",
+      "info": "A hidden heading will still be readable by search engines and screen readers",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "image_opacity",
+      "label": "Logo opacity",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 75
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Card 1"
+        },
+        {
+          "value": "2",
+          "label": "Card 2"
+        },
+        {
+          "value": "3",
+          "label": "Card 3"
+        },
+        {
+          "value": "none",
+          "label": "No card"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "label": "Logo width",
+          "min": 40,
+          "max": 280,
+          "step": 10,
+          "unit": "px",
+          "default": 160
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "info": "Optional"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Logo list",
+      "settings": {
+      },
+      "blocks": [
+      ]
+    }
+  ]
+}
+{% endschema %}

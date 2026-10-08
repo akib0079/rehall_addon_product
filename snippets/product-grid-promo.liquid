@@ -1,0 +1,77 @@
+{%- liquid
+  if block.settings.column_width == 'single-desk-and-mob'
+    assign block_size_class = 'product-block--columns-1'
+  elsif block.settings.column_width == 'single-desk-wide-mob'
+    assign block_size_class = 'product-block--columns-1 product-block--mobile-wide'
+  elsif block.settings.column_width == 'double'
+    assign block_size_class = 'product-block--columns-2'
+  else
+    assign block_size_class = 'product-block--columns-full'
+  endif
+
+  if block.settings.show_icon or block.settings.title != blank or block.settings.text != blank or block.settings.button_label != blank
+    assign has_overlay = true
+  endif
+-%}
+<div class="product-block {{ block_size_class }}" {% if animate %}data-cc-animate{% endif %} {{ block.shopify_attributes }}>
+  <div class="product-promotion"
+    {% if block.settings.color_scheme == 'custom' %}
+      {%- liquid
+        if settings.text_lighter_than_heading
+          assign card_custom_text = block.settings.card_custom_text | color_mix: block.settings.card_custom_bg, 80
+        else
+          assign card_custom_text = block.settings.card_custom_text
+        endif
+      -%}
+      style="
+      --bg: {{ block.settings.card_custom_bg_grad | default: block.settings.card_custom_bg }};
+      --text: {{ card_custom_text | color_extract: "red" }}, {{ card_custom_text | color_extract: "green" }}, {{ card_custom_text | color_extract: "blue" }};
+      --headings: {{ block.settings.card_custom_text }};
+      --btn-bg: {{ card_custom_text | color_mix: card_custom_bg, 8 }}"
+    {%- endif -%}
+  >
+    {%- if block.settings.link != blank -%}
+      <a class="image-overlay__image-link focus-inset" href="{{ block.settings.link }}">
+    {%- endif -%}
+
+    <div class="product-promotion__inner card-scheme card-scheme--{{ block.settings.color_scheme }} card-br-oh {% if has_overlay %}height--cover fully-padded-row--medium card-content-padding-x{% else %}height--adapt{% endif %}{% if block.settings.image %} image-overlay image-overlay--bg-{{ block.settings.overlay_style }}{% endif %}{% if block.settings.link %} scale-on-hover{% endif %}">
+      {%- if block.settings.image -%}
+        {%- render 'background-image', image: block.settings.image, extra_classes: 'scale-on-hover__target card-br-oh' -%}
+      {%- endif -%}
+
+      {%- if has_overlay %}
+        <div class="overlay-text overlay-text--inline overlay--v-{{ block.settings.text_alignment | split: ' ' | first }} overlay--h-{{ block.settings.text_alignment | split: ' ' | last }} image-overlay__over">
+          <div class="overlay-text__inner">
+            <div class="overlay-text__text">
+              {%- if block.settings.show_icon -%}
+                <div class="lightly-spaced-row">
+                  <span class="large-light-icon">
+                    {% render 'icon', icon: block.settings.icon, size: 'medium' %}
+                  </span>
+                </div>
+              {%- endif -%}
+
+              {%- if block.settings.title != blank -%}
+                <div class="overlay-text__title h3-style heading-font">{{ block.settings.title | escape }}</div>
+              {%- endif -%}
+
+              {%- if block.settings.text != blank -%}
+                <div class="overlay-text__rte rte">{{ block.settings.text }}</div>
+              {%- endif -%}
+
+              {%- if block.settings.button_label != blank -%}
+                <div class="text-column__button-row text-column__button-row--{{ block.settings.button_style }}">
+                  <span class="text-column__button {% if block.settings.button_style != 'link' %}btn btn--{{ block.settings.button_style }} btn--link{% else %}feature-link{% endif %}"><span class="btn__text">{{ block.settings.button_label }}</span></span>
+                </div>
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- if block.settings.link -%}
+      </a>
+    {%- endif -%}
+  </div>
+</div>

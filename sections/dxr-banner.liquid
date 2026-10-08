@@ -1,0 +1,223 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding}};
+    min-height: {{section.settings.mnheight}};
+  }
+  .section-id-{{ section.id }} .dxr-banner_floating-links-wrap{
+    bottom: {{section.settings.fl_bottom}};
+    right: {{section.settings.fl_right}};
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      padding: {{section.settings.padding_mobile}};
+    }
+    .section-id-{{ section.id }} .dxr-banner_floating-links-wrap{
+      bottom: {{section.settings.fl_bottom_mobile}};
+      right: {{section.settings.fl_right_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-dxr-banner section-id-{{ section.id }}" data-cc-animate>
+  {% if section.settings.bg != blank %}
+    {{ section.settings.bg_wide | default: section.settings.bg | image_url: width: nil | image_tag: class: 'dxr-banner_bg wide-only' }}  
+    {{ section.settings.bg | image_url: width: nil | image_tag: class: 'dxr-banner_bg desktop-only', loading: 'eager' }}  
+    {{ section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil | image_tag: class: 'dxr-banner_bg mobile-only', loading: 'eager' }}  
+  {% else %}
+    {{ 'lifestyle-1' | placeholder_svg_tag: 'dxr-banner_bg' }}
+  {% endif %}
+  {% if section.settings.overlay != blank %}
+    {{ section.settings.overlay_wide | default: section.settings.overlay | image_url: width: nil | image_tag: class: 'dxr-banner_bg wide-only overlay' }}  
+    {{ section.settings.overlay | image_url: width: nil | image_tag: class: 'dxr-banner_bg desktop-only overlay' }}  
+    {{ section.settings.overlay_mobile | default: section.settings.overlay | image_url: width: nil | image_tag: class: 'dxr-banner_bg mobile-only overlay' }}  
+  {% endif %}
+  <div class="section-container">
+    <h1 class="dxr-banner_title">{{ section.settings.title | newline_to_br }}</h1>
+  </div>
+  <div class="dxr-banner_floating-links-wrap">
+    {% for block in section.blocks %}
+      {% case block.type %}
+        {% when 'floating_link' %}
+          <div class="dxr-banner_floating-link {{ block.id }}" {{ block.shopify_attributes }}>
+            <a class="floating-link_img-wrap" href="{{ block.settings.url | default: "#" }}">
+            {% if block.settings.image != blank %}
+              {{ block.settings.image | image_url: width: nil | image_tag: class: 'floating-link_img' }}  
+            {% else %}
+              {{ 'image' | placeholder_svg_tag: 'floating-link_img placeholder' }}
+            {% endif %}
+            </a>
+            <div class="floating-link_link-text">
+              <a href="{{ block.settings.url | default: "#" }}">
+                <span class="desktop-only">
+                  {{ block.settings.title | newline_to_br }}
+                </span>
+                <span class="mobile-only">
+                  {{ block.settings.title_mobile | default: block.settings.title | newline_to_br }}
+                </span>
+              </a>
+            </div>
+          </div>
+      {% endcase %}
+    {% endfor %}
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     if (window.matchMedia("(min-width: 768px)").matches) {
+       document.querySelectorAll('.dxr-banner_floating-link').forEach(el => {
+         const text = el.querySelector('.floating-link_link-text')
+         const tween = gsap.fromTo(text, {opacity: 0}, {opacity: 1, duration: 0.5 , paused: true, 
+            onStart: () => {
+              text.style.display = "block";
+            },
+            onReverseComplete: () => {
+              text.style.display = "none";
+            },
+         })
+         el.addEventListener('mouseenter', () => {
+           tween.play()
+         })
+         el.addEventListener('mouseleave', () => {
+           tween.reverse()
+         })
+       })
+     }
+     gsap.to('.dxr-banner_bg.overlay',
+                 {
+                   y: 100,
+                   scrollTrigger: {
+                     trigger: '.section-dxr-banner',
+                     start: 'top top',
+                     end: 'bottom top',
+                     scrub: 1
+                   }
+                 })
+   })
+</script>
+{% schema %}
+  {
+    "name": "DXR Banner",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "The more you move,\nthe better!"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Background"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Background mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_wide",
+        "label": "Background wide"
+      },
+      {
+        "type": "image_picker",
+        "id": "overlay",
+        "label": "Overlay"
+      },
+      {
+        "type": "image_picker",
+        "id": "overlay_mobile",
+        "label": "Overlay mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "overlay_wide",
+        "label": "Overlay wide"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "text",
+        "id": "mnheight",
+        "label": "Min height",
+        "default": "985px"
+      },
+      {
+        "type": "text",
+        "id": "padding",
+        "label": "Padding",
+        "default": "130px 0 0"
+      },
+      {
+        "type": "text",
+        "id": "padding_mobile",
+        "label": "Padding Mobile",
+        "default": "148px 0 0"
+      },
+      {
+        "type": "header",
+        "content": "Floating links positon"
+      },
+      {
+        "type": "text",
+        "id": "fl_bottom",
+        "label": "Bottom",
+        "default": "358px"
+      },
+      {
+        "type": "text",
+        "id": "fl_bottom_mobile",
+        "label": "Bottom Mobile",
+        "default": "111px"
+      },
+      {
+        "type": "text",
+        "id": "fl_right",
+        "label": "Right",
+        "default": "15vw"
+      },
+      {
+        "type": "text",
+        "id": "fl_right_mobile",
+        "label": "Right Mobile",
+        "default": "50%"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "floating_link",
+        "name": "Floating link",
+        "settings": [
+          {
+            "type": "textarea",
+            "id": "title",
+            "label": "Title",
+            "default": "SHOW WOMEN\nCOLLECTION"
+          },
+          {
+            "type": "text",
+            "id": "title_mobile",
+            "label": "Title mobile",
+            "default": "WOMEN"
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "url",
+            "id": "url",
+            "label": "URL"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "DXR Banner"
+      }
+    ]
+  }
+{% endschema %}

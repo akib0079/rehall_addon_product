@@ -1,0 +1,321 @@
+<div class="w2024-text-cols-section section-id-{{ section.id }}">
+  <div class="section-container">
+    <div class="w2024-tc__img-wrap">
+      {% if section.settings.img != blank %}
+        {{ section.settings.img | image_url: width: nil | image_tag: class: 'w2024-tc__img desktop-only' }}
+        {{ section.settings.img_mobile | default: section.settings.img | image_url: width: nil | image_tag: class: 'w2024-tc__img mobile-only' }}
+      {% else %}
+        {{ 'image' | placeholder_svg_tag: 'w2024-tc__img placeholder' }}
+      {% endif %}
+      {% for block in section.blocks %}
+        {% if block.type == 'hotspot' %}
+          {% if block.settings.product != blank %}
+            {% assign product = block.settings.product %}
+            {% capture variables %}
+              --posX:{{ block.settings.h_pos }}%;
+              --posY:{{ block.settings.v_pos }}%;
+              --dist: {{ block.settings.dist }}px;
+              --angle: {{ block.settings.angle }};
+              {%- if block.settings.repos_mobile %}
+                --posX-mobile:{{ block.settings.h_pos_mobile }}%;
+                --posY-mobile:{{ block.settings.v_pos_mobile }}%;
+                --dist-mobile: {{ block.settings.dist_mobile }}px;
+                --angle-mobile: {{ block.settings.angle_mobile }};
+              {%- endif -%}
+              {%- if block.settings.repos_wide %}
+                --posX-wide:{{ block.settings.h_pos_wide }}%;
+                --posY-wide:{{ block.settings.v_pos_wide }}%;
+                --dist-wide: {{ block.settings.dist_wide }}px;
+                --angle-wide: {{ block.settings.angle_wide }};
+              {%- endif -%}
+            {% endcapture %}
+            <div class="w2024-adjustable__hotspot{% if block.settings.repos_mobile %} mobile-repos{% endif %}{% if block.settings.repos_wide %} wide-repos{% endif %}" style="{{ variables }}" {{ block.shopify_attributes }}>
+              <div class="w2024-adjustable__hotspot_anchor"></div>
+               <div class="w2024-adjustable__hotspot_angle">
+                 <a class="w2024-adjustable__hotspot_wrap" href="{{ product.url }}">
+                   <div class="w2024-adjustable__hotspot_img-wrap">
+                     {% if product.featured_image != blank %}
+                      {{ product.featured_image | image_url: width: 100 | image_tag: class: 'w2024-adjustable__hotspot_img' }}
+                    {% else %}
+                      {{ 'image' | placeholder_svg_tag: 'w2024-adjustable__hotspot_img placeholder' }}
+                    {% endif %}
+                   </div>
+                   <div class="w2024-adjustable__hotspot_text-wrap">
+                     <h4 class="w2024-adjustable__hotspot_title">{{ product.title }}</h4>
+                     <p class="w2024-adjustable__hotspot_price">{{ product.price | money }}</p>
+                     <span class="w2024-adjustable__hotspot_btn">
+                       <span class="w2024-adjustable__hotspot_btn-text">{{ block.settings.btn_text }}</span>
+                       {% render 'svg-arrow-w2024-hotspot' %}
+                     </span>
+                   </div>
+                 </a>
+               </div>
+            </div>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="w2024-tc__texts-wrap">
+      {% for block in section.blocks %}
+        {% if block.type == 'text_block' %}
+          <div class="w2024-tc__text-single" style="--max-width: {{ block.settings.m_width }}" {{ block.shopify_attributes }}>
+            <h4 class="w2024-tc__text_title">{{ block.settings.title }}</h4>
+            {% if block.settings.desc != blank %}
+              <p class="w2024-tc__text_desc">{{ block.settings.desc }}</p>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     // if (window.matchMedia("(min-width: 768px)").matches) {
+       document.querySelectorAll('.section-id-{{ section.id }} .w2024-adjustable__hotspot').forEach(hotspot => {
+         const anchor = hotspot.querySelector('.w2024-adjustable__hotspot_anchor');
+         const hotspotWrap = hotspot.querySelector('.w2024-adjustable__hotspot_wrap');
+         const tween = gsap.fromTo(hotspotWrap, {opacity: 0}, {opacity: 1, duration: 0.5 , paused: true, 
+            onStart: () => {
+              hotspotWrap.style.display = "flex";
+            },
+            onReverseComplete: () => {
+              hotspotWrap.style.display = "none";
+            },
+         })
+         function closeFunction(e) {
+            if(e.target != hotspotWrap && !hotspotWrap.contains(e.target)){
+              // e.stopPropagation();
+              tween.reverse()
+              hotspot.classList.remove('active')
+              document.removeEventListener('click', closeFunction);
+            }
+          }
+         anchor.addEventListener('click', (e) => {
+           // e.stopPropagation();
+           if(hotspot.classList.contains('active')){
+             document.removeEventListener('click', closeFunction);
+             tween.reverse()
+             hotspot.classList.remove('active')
+             return;
+           };
+           document.querySelector('.section-id-{{ section.id }} .w2024-adjustable__hotspot')?.classList.remove('active')
+           tween.play()
+           hotspot.classList.add('active')
+           setTimeout(()=>{
+             document.addEventListener('click', closeFunction);
+           })
+         })
+       })
+     })
+</script>
+{% schema %}
+  {
+    "name": "W2024 Text Cols",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "img",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_mobile",
+        "label": "Image mobile"
+      },
+    ],
+    "blocks": [
+      {
+        "type": "text_block",
+        "name": "Text block",
+        "limit": 3,
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "VENTILATION ZIPPERS"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "Ventilation zippers provide adjustable airflow, keeping you cool during intense activities. Strategically placed for maximum efficiency, they prevent overheating and allow quick temperature regulation on the slopes."
+          },
+          {
+            "type": "text",
+            "id": "m_width",
+            "label": "max_width",
+            "default": "285px"
+          }
+        ]
+      },
+      {
+        "type": "hotspot",
+        "name": "Hotspot",
+        "settings": [
+          {
+            "type": "product",
+            "id": "product",
+            "label": "Product",
+            "info": "Only shows if assigned"
+          },
+          {
+            "type": "text",
+            "id": "btn_text",
+            "label": "Button text",
+            "default": "VIEW PRODUCT"
+          },
+          {
+            "type": "range",
+            "id": "h_pos",
+            "label": "Horizontal Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          
+          {
+            "type": "range",
+            "id": "v_pos",
+            "label": "Vertical Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist",
+            "label": "Distance",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle",
+            "label": "Angle",
+            "default": 150,
+            "info": "in Degree"
+          },
+          {
+            "type": "checkbox",
+            "label": "Enable mobile repositioning",
+            "id": "repos_mobile",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "h_pos_mobile",
+            "label": "Horizontal Position mobile",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "v_pos_mobile",
+            "label": "Vertical Position mobile",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist_mobile",
+            "label": "Distance mobile",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle_mobile",
+            "label": "Angle mobile",
+            "default": 150,
+            "info": "in Degree"
+          },
+          {
+            "type": "checkbox",
+            "label": "Enable wide repositioning",
+            "id": "repos_wide",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "h_pos_wide",
+            "label": "Horizontal Position wide",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "v_pos_wide",
+            "label": "Vertical Position wide",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist_wide",
+            "label": "Distance wide",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle_wide",
+            "label": "Angle wide",
+            "default": 150,
+            "info": "in Degree"
+          },
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "W2024 Text Cols",
+        "blocks": [
+          {
+            "type": "text_block"
+          },
+          {
+            "type": "text_block",
+            "settings": {
+              "title":"ERGONOMIC FIT",
+              "desc": "Designed with an ergonomic fit, offering superior comfort and freedom of movement for skiing and snowboarding. The tailored fit contours to your body, enhancing mobility while reducing bulk, so you can perform at your best."
+            }
+          },
+          {
+            "type": "text_block",
+            "settings": {
+              "title":"REINFORCED SEAMS",
+              "desc": "Equipped with reinforced seams, ensuring enhanced durability and long-lasting performance in harsh weather conditions. These strong seams provide extra protection against tears and wear, making your gear reliable on every adventure."
+            }
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

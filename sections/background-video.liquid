@@ -1,0 +1,337 @@
+<div id="section-id-{{ section.id }}" data-section-type="background-video" data-cc-animate>
+  {% style %}
+    #section-id-{{ section.id }} .video-container {
+      --image-height: {{ section.settings.height_mobile }}px;
+    }
+
+    @media (min-width: 768px) {
+      #section-id-{{ section.id }} .video-container {
+        --image-height: {{ section.settings.height_desktop }}px;
+      }
+    }
+  {% endstyle %}
+
+  {% if section.settings.video_shopify != blank or section.settings.video_external != blank %}
+    <div class="height--fixed video-container video-container--background image-overlay image-overlay--bg-{{ section.settings.overlay_style }} card card-br-oh"
+      {% if section.settings.video_shopify != blank %}
+        data-video-sources="{%- for source in section.settings.video_shopify.sources -%}
+          {{ source.format }} {{ source.mime_type }} {{ source.url }}
+          {%- unless forloop.last -%}|{%- endunless -%}
+        {%- endfor -%}"
+        data-video-type="mp4"
+      {% elsif section.settings.video_external != blank %}
+        data-video-url="{{ section.settings.video_external | escape }}"
+      {% endif %}
+      data-video-autoplay="true"
+      data-video-loop="true"
+      data-cc-animate>
+
+      {% if section.settings.placeholder_image %}
+        {% assign placeholder_image = section.settings.placeholder_image %}
+      {% elsif section.settings.video_shopify %}
+        {% assign placeholder_image = section.settings.video_shopify.preview_image %}
+      {% endif %}
+
+      {% if placeholder_image %}
+        <div class="video-container__fallback">
+          {%- render 'background-image', image: placeholder_image -%}
+        </div>
+      {% endif %}
+      <div class="video-container__video"></div>
+
+      {%- assign show_overlay_text = false -%}
+      {%- if section.settings.title != blank or section.settings.subheading != blank or section.settings.text != blank or section.settings.button_label_1 != blank or section.settings.button_label_2 != blank -%}
+        {%- assign show_overlay_text = true -%}
+      {%- endif -%}
+
+      {%- if show_overlay_text -%}
+        <div class="overlay-text overlay-text--for-banner overlay--v-{{ section.settings.text_alignment | split: ' ' | first }} overlay--h-{{ section.settings.text_alignment | split: ' ' | last }} image-overlay__over">
+          <div class="overlay-text__inner" style="max-width: {{ section.settings.content_max_width }}px">
+            <div class="overlay-text__text" data-cc-animate="cc-fade-in-up" data-cc-animate-delay="0.5s">
+              {%- if section.settings.subheading != blank -%}
+                <div class="overlay-text__subheading subheading subheading--over">{{ section.settings.subheading | escape }}</div>
+              {%- endif -%}
+              {%- if section.settings.title != blank -%}
+                {% if section.settings.use_h1 %}
+                  <h1 class="overlay-text__title {{ section.settings.title_size }}">{% render 'feature-heading-text', text: section.settings.title, item_settings: section.settings %}</h1>
+                {% else %}
+                  <h2 class="overlay-text__title {{ section.settings.title_size }}">{% render 'feature-heading-text', text: section.settings.title, item_settings: section.settings %}</h2>
+                {% endif %}
+              {%- endif -%}
+              {%- if section.settings.text != blank -%}
+                <div class="overlay-text__rte rte {% if section.settings.enlarge_text %}large-text{% endif %}">{{ section.settings.text }}</div>
+              {%- endif -%}
+              {%- if section.settings.button_label_1 != blank or section.settings.button_label_2 != blank -%}
+                <div class="overlay-text__button-row">
+                  {%- if section.settings.button_label_1 != blank -%}
+                    <a class="overlay-text__button btn btn--secondary btn--link" href="{{ section.settings.button_url_1 }}"><span class="btn__text">{{ section.settings.button_label_1 | escape }}</span></a>
+                  {%- endif -%}
+                  {%- if section.settings.button_label_2 != blank -%}
+                    <a class="overlay-text__button btn btn--secondary btn--link" href="{{ section.settings.button_url_2 }}"><span class="btn__text">{{ section.settings.button_label_2 | escape }}</span></a>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  {% elsif request.design_mode %}
+    <div class="fully-padded-row--large align-center">{{ 'homepage.onboarding.no_content' | t }}</div>
+  {% endif %}
+</div>
+
+
+{% schema %}
+  {
+    "name": "Background video",
+    "class": "section-background-video",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Background videos play on loop, with no sound. If you need a video with sound use the Video or Media with text sections."
+      },
+      {
+        "id": "video_shopify",
+        "type": "video",
+        "label": "Video upload",
+        "info": "Hosted by Shopify. Replaces External video if both are set."
+      },
+      {
+        "id": "video_external",
+        "type": "text",
+        "label": "External video",
+        "info": "Supports YouTube and Vimeo. [Read more](https://cleancanvas.co.uk/support/mode/video)",
+        "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc"
+      },
+      {
+        "id": "placeholder_image",
+        "type": "image_picker",
+        "label": "Custom placeholder image",
+        "info": "Shows while the video is loading, or if it cannot autoplay."
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "range",
+        "id": "content_max_width",
+        "min": 500,
+        "max": 1200,
+        "step": 20,
+        "unit": "px",
+        "label": "Maximum content width",
+        "default": 800
+      },
+      {
+        "type": "text",
+        "id": "subheading",
+        "label": "Subheading",
+        "default": "Tell your story"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "info": "Enter <br> for a line-break",
+        "default": "Background video"
+      },
+      {
+        "type": "select",
+        "id": "title_size",
+        "label": "Heading size",
+        "default": "hsl-style",
+        "options": [
+          {
+            "label": "Regular",
+            "value": "h1-style"
+          },
+          {
+            "label": "Impact",
+            "value": "hl-style"
+          },
+          {
+            "label": "Extra impact",
+            "value": "hsl-style"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "use_h1",
+        "label": "Set as primary page heading",
+        "info": "Use <h1> tag. One per page recommended. [Read more](https://cleancanvas.co.uk/support/mode/section-h1-setting)",
+        "default": false
+      },
+      {
+        "type": "richtext",
+        "id": "text",
+        "label": "Text",
+        "default": "<p>Use a video to get a customer's attention<\/p>"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "button_label_1",
+        "label": "Button 1 label"
+      },
+      {
+        "type": "url",
+        "id": "button_url_1",
+        "label": "Button 1 link"
+      },
+      {
+        "type": "text",
+        "id": "button_label_2",
+        "label": "Button 2 label"
+      },
+      {
+        "type": "url",
+        "id": "button_url_2",
+        "label": "Button 2 link"
+      },
+      {
+        "type": "select",
+        "id": "text_alignment",
+        "label": "Text overlay position",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ],
+        "default": "center center"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop fixed height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile fixed height",
+        "default": 500
+      },
+      {
+        "id": "overlay_style",
+        "type": "select",
+        "label": "Overlay style",
+        "default": "shadow",
+        "options": [
+          {
+            "value": "full",
+            "label": "Tint"
+          },
+          {
+            "value": "shadow",
+            "label": "Text shadow"
+          },
+          {
+            "value": "full image-overlay--bg-shadow",
+            "label": "Text shadow and tint"
+          },
+          {
+            "value": "no_background",
+            "label": "No background"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Heading text highlight"
+      },
+      {
+        "type": "text",
+        "id": "heading_highlight_text",
+        "label": "Text to highlight",
+        "info": "Case-sensitive. To highlight words or phrases that are not next to each other, use a comma. For example 'free shipping, returns'"
+      },
+      {
+        "type": "checkbox",
+        "id": "heading_highlight_font",
+        "label": "Enable highlight font",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "heading_highlight_stencil",
+        "label": "Enable stencil",
+        "default": false
+      },
+      {
+        "type": "color",
+        "id": "heading_highlight_color",
+        "label": "Color",
+        "default": "rgba(0,0,0,0)"
+      },
+      {
+        "type": "color_background",
+        "id": "heading_highlight_gradient",
+        "label": "Color gradient",
+        "info": "A gradient stencil is not possible"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Background video"
+      }
+    ]
+  }
+{% endschema %}

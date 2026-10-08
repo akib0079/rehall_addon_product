@@ -1,0 +1,116 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding}};
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      padding: {{section.settings.padding_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-woa-partner section-id-{{ section.id }}">
+  <div class="section-container">
+    <div class="woa-p__grid top">
+      {% if section.settings.logo != blank %}
+        {{ section.settings.logo | image_url: width: nil | image_tag: class: 'woa-p__logo' }}
+      {% endif %}
+      <h1 class="woa-p__title">{{ section.settings.title | newline_to_br }}</h1>
+    </div>
+    <div class="woa-p__grid bottom{% if section.settings.html != blank %} html-content{% endif %}">
+      <div class="woa-p__contents">
+      {% if section.settings.content_1 != blank %}
+        <div>
+          {{ section.settings.content_1 }}
+        </div>
+      {% endif %}
+      {% if section.settings.content_2 != blank %}
+        <div>
+          {{ section.settings.content_2 }}
+        </div>
+      {% endif %}
+      {% if section.settings.html != blank %}
+        <div>
+          {{ section.settings.html }}
+        </div>
+      {% endif %}
+      </div>
+    </div>
+    {% if section.settings.img_wide != blank %}
+      {{ section.settings.img_wide | image_url: width: nil | image_tag: class: 'woa-p__img wide-only' }}
+    {% endif %}
+    {% if section.settings.img != blank %}
+      {{ section.settings.img | image_url: width: nil | image_tag: class: 'woa-p__img desktop-only' }}
+      {{ section.settings.img_mobile | default: section.settings.img | image_url: width: nil | image_tag: class: 'woa-p__img mobile-only' }}
+    {% else %}
+      {{ 'image' | placeholder_svg_tag: 'woa-p__img placeholder' }}
+    {% endif %}
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "WOA Partner Banner",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "official and TRUSTED<br />retailPARTNER"
+      },
+      {
+        "type": "richtext",
+        "id": "content_1",
+        "label": "Content 1",
+        "default": "<p>At Rehall, we’re dedicated to delivering high-quality outerwear that meets the demands of outdoor enthusiasts worldwide. To ensure that you have the best possible shopping experience, when you choose to purchase our products online, you'll be seamlessly redirected to World of Alps — our trusted and official retail partner.</p><p>World of Alps specializes in offering a wide range of Rehall products, ensuring you have access to the latest collections, exclusive deals, and an easy-to-use shopping platform tailored to meet your needs. This partnership allows us to focus on what we do best — designing and innovating premium outerwear — while still providing you with an outstanding, customer-first buying experience.</p>"
+      },
+      {
+        "type": "richtext",
+        "id": "content_2",
+        "label": "Content 2",
+        "default": "<p>Please rest assured that when you shop with World of Alps, you're buying directly from the experts who know and love the Rehall brand and family as much as we do.</p><p>Thank you for being part of the Rehall community. We’re excited to continue this journey with you, and we're looking forward to staying your trusted partner in snowwear, outerwear and bikewear.</p><p>Making sure everyone can Enjoy Their Rides!</p>"
+      },
+      {
+        "type": "html",
+        "id": "html",
+        "label": "Html Content",
+        "placeholder": "Html content like <div></div>"
+      },
+      {
+        "type": "image_picker",
+        "id": "img",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_mobile",
+        "label": "Image mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_wide",
+        "label": "Image wide"
+      },
+      {
+        "type": "text",
+        "id": "padding",
+        "label": "Padding",
+        "default": "39px 0px 98px"
+      },
+      {
+        "type": "text",
+        "id": "padding_mobile",
+        "label": "Padding Mobile",
+        "default": "31px 0px 0px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "WOA Partner Banner"
+      }
+    ]
+  }
+{% endschema %}

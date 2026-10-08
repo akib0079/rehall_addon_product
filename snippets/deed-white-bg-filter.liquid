@@ -1,0 +1,47 @@
+{%- comment -%}
+  DEED: witte achtergrond van productfoto's grijs maken, zonder de rest van de foto aan te passen.
+  Vervangt de thema-instelling "Tint image with card color": die vlakte alles af wat lichter was dan de
+  kaartkleur, waardoor lichte producten, witte logo's en koordjes wegvielen.
+  Dit filter vervangt alleen (vrijwel) puur wit: pixels waarvan rood, groen en blauw alle drie 250 of hoger
+  zijn. Tussen 250 en 254 loopt het geleidelijk over, zodat randen niet kartelen.
+  Grijswaarde aanpassen: flood-color hieronder.
+{%- endcomment -%}
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+  <filter id="deed-white-to-grey" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
+    <feComponentTransfer in="SourceGraphic" result="t">
+      <feFuncR type="linear" slope="63.75" intercept="-62.5"/>
+      <feFuncG type="linear" slope="63.75" intercept="-62.5"/>
+      <feFuncB type="linear" slope="63.75" intercept="-62.5"/>
+    </feComponentTransfer>
+    <feColorMatrix in="t" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1 0 0 0 0" result="mr"/>
+    <feColorMatrix in="t" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 1 0 0 0" result="mg"/>
+    <feColorMatrix in="t" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 1 0 0" result="mb"/>
+    <feComposite in="mr" in2="mg" operator="in" result="m1"/>
+    <feComposite in="m1" in2="mb" operator="in" result="m"/>
+    <feFlood flood-color="#dedede" result="g"/>
+    <feComposite in="g" in2="m" operator="in" result="gm"/>
+    <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="gm"/></feMerge>
+  </filter>
+</svg>
+<style>
+  /* 1. Thema-tint uit op productfoto's (productkaarten en productpagina) */
+  .product-block .image-cont,
+  .product-block .image-cont *,
+  .product-block .image-cont *::before,
+  .product-block .image-cont *::after,
+  .gallery,
+  .gallery *,
+  .gallery *::before,
+  .gallery *::after {
+    mix-blend-mode: normal !important;
+    background-blend-mode: normal !important;
+  }
+
+  /* 2. Alleen puur wit vervangen door grijs */
+  .product-block .image-label-wrap__images img,
+  .product-block .image-label-wrap__images .background-image,
+  .gallery .swiper-slide img,
+  .gallery .product-media--image img {
+    filter: url(#deed-white-to-grey);
+  }
+</style>

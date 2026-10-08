@@ -1,0 +1,244 @@
+<div id="section-id-{{ section.id }}">
+  {% style %}
+    {%- for block in section.blocks -%}
+      {%- if block.settings.image_width != 100 %}
+        #section-id-{{ section.id }} #block-id-{{ block.id }} .text-column__image {
+          margin-top: var(--gutter-content);
+          max-width: {{ block.settings.image_width }}%;
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  {% endstyle %}
+
+  {% if section.settings.title != blank %}
+    <h2 class="section-title{% unless section.settings.show_title %} visually-hidden{% endunless %}" data-cc-animate>{{ section.settings.title | escape }}</h2>
+  {% endif %}
+
+  <div class="flexible-layout flexible-layout--variable-columns flexible-layout--columns-{{ section.blocks.size }} align-{{ section.settings.text_alignment }}">
+    {% for block in section.blocks %}
+      <div id="block-id-{{ block.id }}" class="column text-column card-scheme card-scheme--{{ block.settings.color_scheme }} card-br-oh" {{ block.shopify_attributes }}
+            data-cc-animate="cc-fade-in-up" data-cc-animate-delay="{{ forloop.index | times: 0.15 }}s">
+        {% if block.settings.enable_image %}
+          <div class="text-column__image lightly-spaced-row{% if block.settings.link != blank %} scale-on-hover{% endif %}{% if block.settings.color_scheme == 'none' or block.settings.image_width != 100 %} card-br-oh{% endif %}">
+            {%- if block.settings.link != blank -%}<a class="block-link focus-inset" href="{{ block.settings.link }}">{%- endif -%}
+
+            {%- if block.settings.image != blank -%}
+              {%- render 'responsive-image', image: block.settings.image, extra_classes: 'scale-on-hover__target' -%}
+            {%- else -%}
+              <div class="placeholder-image">
+                {{- 'image' | placeholder_svg_tag: 'placeholder-svg' -}}
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.link != blank -%}</a>{% endif -%}
+          </div>
+        {% endif %}
+
+        <div class="card-content-padding{% if block.settings.enable_image %}-x{% endif %} padded-row-bottom--medium">
+          {% if block.settings.title != blank %}
+            <h3 class="text-column__title {{ block.settings.title_size }}">{{ block.settings.title }}</h3>
+          {% endif %}
+
+          {% if block.settings.text != blank %}
+            <div class="text-column__text rte">{{ block.settings.text }}</div>
+          {% endif %}
+
+          {% if block.settings.button_label != blank %}
+            <div class="text-column__button-row text-column__button-row--{{ section.settings.button_style }}">
+              <a class="text-column__button {% if section.settings.button_style != 'link' %}btn btn--{{ section.settings.button_style }} btn--link{% else %}feature-link{% endif %}" href="{{ block.settings.link }}"><span class="btn__text">{{ block.settings.button_label | escape }}</span></a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+{% schema %}
+{
+  "name": "Multi-column",
+  "class": "section-multi-column",
+  "disabled_on": {
+    "groups": [
+      "aside"
+    ]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Multi-column"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show heading",
+      "info": "A hidden heading will still be readable by search engines and screen readers",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "default": "primary",
+      "options": [
+        {
+          "label": "Button - primary",
+          "value": "primary"
+        },
+        {
+          "label": "Button - secondary",
+          "value": "secondary"
+        },
+        {
+          "label": "Link",
+          "value": "link"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text_block",
+      "name": "Column",
+      "settings": [
+        {
+          "id": "enable_image",
+          "type": "checkbox",
+          "label": "Enable image",
+          "default": true
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "min": 10,
+          "max": 100,
+          "step": 5,
+          "label": "Image width",
+          "unit": "%",
+          "default": 100
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Add a title or tagline"
+        },
+        {
+          "type": "select",
+          "id": "title_size",
+          "label": "Heading size",
+          "default": "h3-style",
+          "options": [
+            {
+              "label": "Extra small",
+              "value": "h3-style"
+            },
+            {
+              "label": "Small",
+              "value": "h2-style"
+            },
+            {
+              "label": "Regular",
+              "value": "h1-style"
+            },
+            {
+              "label": "Impact",
+              "value": "hl-style"
+            },
+            {
+              "label": "Extra impact",
+              "value": "hsl-style"
+            }
+          ]
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Share blog posts, products, or promotions with your customers. Use this text to describe products, share details on availability and style, or as a space to display recent reviews or FAQs.</p>"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "color_scheme",
+          "label": "Color scheme",
+          "default": "1",
+          "options": [
+            {
+              "value": "1",
+              "label": "Card 1"
+            },
+            {
+              "value": "2",
+              "label": "Card 2"
+            },
+            {
+              "value": "3",
+              "label": "Card 3"
+            },
+            {
+              "value": "none",
+              "label": "No card"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Multi-column",
+      "settings": {
+      },
+      "blocks": [
+        {
+          "type": "text_block"
+        },
+        {
+          "type": "text_block"
+        },
+        {
+          "type": "text_block"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

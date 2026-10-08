@@ -1,0 +1,196 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding}};
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      padding: {{section.settings.padding_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-dxr-gallery section-id-{{ section.id }}" data-cc-animate data-cc-animate-delay="0.2s">
+  <div class="section-container">
+    <div class="dxr-gallery_content-wrap">
+      <div class="dxr-gallery_left">
+        <h2 class="dxr-gallery_title mobile-only">{{ section.settings.title_mobile | newline_to_br }}</h2>
+        <div class="dxr-gallery_img-grid desktop-only">
+          {% if section.settings.img_1 != blank %}
+            {{ section.settings.img_1_wide | default: section.settings.img_1 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-1 wide-only' }}  
+            {{ section.settings.img_1 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-1 desktop-only' }}  
+          {% else %}
+            {{ 'image' | placeholder_svg_tag: 'dxr-gallery_img img-1 placeholder' }}
+          {% endif %}
+          {% if section.settings.img_2 != blank %}
+            {{ section.settings.img_2_wide | default: section.settings.img_2 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-2 wide-only' }}  
+            {{ section.settings.img_2 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-2 desktop-only' }}  
+          {% else %}
+            {{ 'image' | placeholder_svg_tag: 'dxr-gallery_img img-2 placeholder' }}
+          {% endif %}
+        </div>
+  
+        <div class="dxr-gallery_slider swiper mobile-only">
+          <div class="product-slider__nav-right-col">
+            <div class="product-slider__nav-wrap">
+              <div class="product-slider__nav prev">
+                {% render 'svg-slider-arrow' %}
+              </div>
+              <div class="product-slider__nav next">
+                {% render 'svg-slider-arrow' %}
+              </div>
+            </div>
+          </div>
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              {% if section.settings.img_3 != blank %}
+                {{ section.settings.img_3 | image_url: width: nil | image_tag: class: 'dxr-gallery_img' }}  
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'dxr-gallery_img placeholder' }}
+              {% endif %}
+            </div>
+            <div class="swiper-slide">
+              {% if section.settings.img_4 != blank %}
+                {{ section.settings.img_4 | image_url: width: nil | image_tag: class: 'dxr-gallery_img' }}  
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'dxr-gallery_img placeholder' }}
+              {% endif %}
+            </div>
+            {% if section.settings.img_1 != blank %}
+              <div class="swiper-slide">
+                {{ section.settings.img_1 | image_url: width: nil | image_tag: class: 'dxr-gallery_img' }}  
+              </div>
+            {% endif %}
+            {% if section.settings.img_2 != blank %}
+              <div class="swiper-slide">
+                {{ section.settings.img_2 | image_url: width: nil | image_tag: class: 'dxr-gallery_img' }}  
+              </div> 
+            {% endif %}
+          </div>
+        </div>
+        <div class="dxr-gallery_desc">{{ section.settings.desc }}</div>
+      </div>
+      
+      <div class="dxr-gallery_right desktop-only">
+        <h2 class="dxr-gallery_title">{{ section.settings.title | newline_to_br }}</h2>
+        <div class="dxr-gallery_img-grid">
+          {% if section.settings.img_3 != blank %}
+            {{ section.settings.img_3_wide | default: section.settings.img_3 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-3 wide-only' }} 
+            {{ section.settings.img_3 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-3 desktop-only' }}  
+          {% else %}
+            {{ 'image' | placeholder_svg_tag: 'dxr-gallery_img img-3 placeholder' }}
+          {% endif %}
+          {% if section.settings.img_4 != blank %}
+            {{ section.settings.img_4_wide | default: section.settings.img_4 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-4 wide-only' }} 
+            {{ section.settings.img_4 | image_url: width: nil | image_tag: class: 'dxr-gallery_img img-4 desktop-only' }}  
+          {% else %}
+            {{ 'image' | placeholder_svg_tag: 'dxr-gallery_img img-4 placeholder' }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     if (window.matchMedia("(max-width: 767px)").matches) {
+       new Swiper('.section-id-{{ section.id }} .dxr-gallery_slider',{
+         slidesPerView: 1.15,
+         spaceBetween: 13,
+         navigation: {
+           nextEl: '.section-id-{{ section.id }} .product-slider__nav.next',
+           prevEl: '.section-id-{{ section.id }} .product-slider__nav.prev',
+         },
+         breakpoints: {
+           768: {
+             slidesPerView: 2,
+           }
+         }
+       })
+     }
+   })
+</script>
+{% schema %}
+  {
+    "name": "DXR Gallery",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "Comfort, durability and\nhigh performance in the\nmost extreme weather\nconditions."
+      },
+      {
+        "type": "textarea",
+        "id": "title_mobile",
+        "label": "Title mobile",
+        "default": "Activated\nupon physical\nactivity"
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Dermizax is a high-performance fabric technology widely recognized for its waterproof, breathable, and stretchable performance. Included in the DXR-collection from Rehall Outerwear to offer skiers and snowboarders the best experience. The fabric offers excellent water resistance and breathability while also being highly durable and flexible. Dermizax is designed to keep moisture out while allowing sweat to evaporate, making it ideal for active outdoor activities in harsh conditions.</p>"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_1",
+        "label": "Image 1"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_1_wide",
+        "label": "Image 1 wide"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_2",
+        "label": "Image 2"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_2_wide",
+        "label": "Image 2 wide"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_3",
+        "label": "Image 3"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_3_wide",
+        "label": "Image 3 wide"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_4",
+        "label": "Image 4"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_4_wide",
+        "label": "Image 4 wide"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "text",
+        "id": "padding",
+        "label": "Padding",
+        "default": "258px 0 166px"
+      },
+      {
+        "type": "text",
+        "id": "padding_mobile",
+        "label": "Padding Mobile",
+        "default": "110px 0 41px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "DXR Gallery"
+      }
+    ]
+  }
+{% endschema %}

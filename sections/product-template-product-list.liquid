@@ -1,0 +1,215 @@
+{% if section.settings.hide_if_empty == false or section.settings.product_list != blank %}
+  <div class="section-id-{{ section.id }} collection-slider-row" data-section-type="featured-collection">
+    {% if section.settings.title != blank %}
+      <h2 class="section-title">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+
+    <cc-carousel class="cc-carousel cc-carousel--off-edge-mobile{% unless section.settings.enable_carousel %} cc-carousel--mobile-only{% endunless %} card-margin" allow-mouse-drag rebuild-on-resize data-cc-animate="cc-fade-in-up">
+      <div class="cc-carousel-buttons cc-carousel-buttons--overlay-top">
+        <button class="cc-carousel-button cc-carousel-button--prev tap-target" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+        <button class="cc-carousel-button cc-carousel-button--next tap-target" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+      </div>
+      <div class="cc-carousel__scroll-outer">
+        <div class="product-list product-list--per-row-{{ section.settings.grid }} product-list--per-row-mob-{{ settings.prod_thumb_mob_per_row }} product-list--image-shape-{{ settings.prod_thumb_shape }} cc-carousel__scroll-area">
+          {%- if section.settings.show_title_card -%}
+            <div class="product-block product-block--mobile-wide">
+              <div class="product-list-heading-block{% if section.settings.title_card_link %} scale-on-hover{% endif %} card-scheme card-scheme--{{ section.settings.color_scheme }} card-br-oh height--cover page-header page-header--with-background {% if section.settings.title_card_image %}image-overlay image-overlay--bg-{{ section.settings.overlay_style }}{% endif %}">
+                {%- if section.settings.title_card_image -%}
+                  {%- render 'background-image', image: section.settings.title_card_image, extra_classes: 'scale-on-hover__target' -%}
+                {%- endif -%}
+
+                <div class="product-list-heading-block__text">
+                  <div class="overlay-text overlay-text--inline overlay--v-bottom align-start image-overlay__over" data-cc-animate data-cc-animate-delay="0.2s">
+                    <div class="overlay-text__inner">
+                      <div class="overlay-text__text">
+                        <h2 class="overlay-text__title h1-style" id="{{ section.id }}-Heading">{{ section.settings.title_card_heading }}</h2>
+                        {%- if section.settings.title_card_description != blank -%}
+                          <div class="overlay-text__rte rte cf reading-width">{{ section.settings.title_card_description }}</div>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {%- if section.settings.title_card_link -%}
+                  <a class="product-list-heading-block__link" href="{{ section.settings.title_card_link }}" aria-labelledby="{{ section.id }}-Heading"></a>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endif -%}
+
+          {% if section.settings.product_list == blank %}
+            {% for i in (1..4) %}
+              {% render 'onboarding-product-block', forloop: forloop %}
+            {% endfor %}
+          {% else %}
+            {%- liquid
+              if settings.prod_thumb_shape == 'portrait-23'
+                assign chosen_aspect_ratio = 0.67
+              elsif settings.prod_thumb_shape == 'portrait-45'
+                assign chosen_aspect_ratio = 0.8
+              elsif settings.prod_thumb_shape == 'square'
+                assign chosen_aspect_ratio = 1.0
+              elsif settings.prod_thumb_shape == 'landscape-54'
+                assign chosen_aspect_ratio = 1.25
+              elsif settings.prod_thumb_shape == 'landscape-32'
+                assign chosen_aspect_ratio = 1.50
+              elsif settings.prod_thumb_shape == 'tallest'
+                assign chosen_aspect_ratio = 99
+                for product in section.settings.product_list
+                  if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                    assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                  endif
+                endfor
+              else
+                assign chosen_aspect_ratio = 0
+                for product in section.settings.product_list
+                  if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                    assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                  endif
+                endfor
+              endif
+            -%}
+            {% for product in section.settings.product_list %}
+              {% render 'product-block', product: product, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: true %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </cc-carousel>
+  </div>
+{% endif %}
+
+
+{% schema %}
+  {
+    "name": "Product list",
+    "class": "section-product-template-product-list",
+    "enabled_on": {
+      "templates": [
+        "product"
+      ]
+    },
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Product list"
+      },
+      {
+        "type": "product_list",
+        "id": "product_list",
+        "label": "Product list"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_carousel",
+        "label": "Enable carousel",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "header",
+        "content": "Title card"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title_card",
+        "label": "Show title card"
+      },
+      {
+        "type": "image_picker",
+        "id": "title_card_image",
+        "label": "Image"
+      },
+      {
+        "type": "text",
+        "id": "title_card_heading",
+        "label": "Heading",
+        "default": "Heading"
+      },
+      {
+        "type": "text",
+        "id": "title_card_description",
+        "label": "Description"
+      },
+      {
+        "type": "url",
+        "id": "title_card_link",
+        "label": "Link"
+      },
+      {
+        "id": "overlay_style",
+        "type": "select",
+        "label": "Overlay style",
+        "default": "shadow",
+        "options": [
+          {
+            "value": "full",
+            "label": "Tint"
+          },
+          {
+            "value": "shadow",
+            "label": "Text shadow"
+          },
+          {
+            "value": "full image-overlay--bg-shadow",
+            "label": "Text shadow and tint"
+          },
+          {
+            "value": "no_background",
+            "label": "No background"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "info": "Used when there is no image",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Product list",
+        "settings": {
+          "title": "Product list"
+        }
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,1119 @@
+{% style %}
+  #shopify-section-{{ section.id }} .product-list{
+    grid-template-columns: repeat({{ section.settings.grid }}, 1fr);
+  }
+  @media (max-width: 767px){
+    #shopify-section-{{ section.id }} .product-list{
+      grid-template-columns: repeat({{ settings.prod_thumb_mob_per_row }}, 1fr);
+    }
+  }
+  /* Sticky Globo filter sidebar (desktop, not in Globo's off-canvas mode). #gf-tree is the grid item, so it
+     sticks within the product grid row whatever Globo nests inside it; the inner sticky from styles.css is
+     switched off so there is a single scroll area. */
+  @media (min-width: 768px){
+    html:not(.gf-offcanvas) #shopify-section-{{ section.id }} #gf-tree{
+      position: sticky;
+      top: calc(var(--theme-sticky-header-height, 85px) + 20px);
+      align-self: start;
+      height: auto;
+      max-height: calc(100vh - var(--theme-sticky-header-height, 85px) - 40px);
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    html:not(.gf-offcanvas) #shopify-section-{{ section.id }} #gf-tree .gf-filter-contents{
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+  }
+
+  /* Minimal filter scrollbars. Blink ignores ::-webkit-scrollbar once scrollbar-width/color are set,
+     so those are reset here and only used where ::-webkit-scrollbar is unsupported (Firefox). */
+  #shopify-section-{{ section.id }} #gf-tree,
+  #shopify-section-{{ section.id }} #gf-tree *{
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  #shopify-section-{{ section.id }} #gf-tree::-webkit-scrollbar,
+  #shopify-section-{{ section.id }} #gf-tree *::-webkit-scrollbar{
+    width: 4px;
+    height: 4px;
+  }
+  #shopify-section-{{ section.id }} #gf-tree::-webkit-scrollbar-track,
+  #shopify-section-{{ section.id }} #gf-tree *::-webkit-scrollbar-track,
+  #shopify-section-{{ section.id }} #gf-tree *::-webkit-scrollbar-corner{
+    background: transparent;
+  }
+  #shopify-section-{{ section.id }} #gf-tree::-webkit-scrollbar-thumb,
+  #shopify-section-{{ section.id }} #gf-tree *::-webkit-scrollbar-thumb{
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+  }
+  #shopify-section-{{ section.id }} #gf-tree:hover::-webkit-scrollbar-thumb,
+  #shopify-section-{{ section.id }} #gf-tree *:hover::-webkit-scrollbar-thumb{
+    background: rgba(0, 0, 0, 0.25);
+  }
+  #shopify-section-{{ section.id }} #gf-tree::-webkit-scrollbar-thumb:hover,
+  #shopify-section-{{ section.id }} #gf-tree *::-webkit-scrollbar-thumb:hover{
+    background: rgba(0, 0, 0, 0.4);
+  }
+  @supports not selector(::-webkit-scrollbar){
+    #shopify-section-{{ section.id }} #gf-tree,
+    #shopify-section-{{ section.id }} #gf-tree *{
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+    }
+  }
+{% endstyle %}
+<div class="card-margin wide-container{% if collection.metafields.custom.blocks != blank %} with-blocks{% endif %}" data-section-id="{{ section.id }}" data-filter-section-id="{{ section.id }}" data-section-type="collection-template" data-ajax-filtering="{{ section.settings.ajax_products }}" data-components="modal,price-range" data-cc-animate>
+  {% if collection.metafields.custom.blocks != blank %}
+    <div class="collection__meta-row">
+      {% for block in collection.metafields.custom.blocks.value %}
+        
+        {% if block.collection != blank %}
+          {% assign coll = collections[block.collection] %}
+          <a href="{{ coll.url }}" class="collection__meta-block">
+          {% else %}
+            <div class="collection__meta-block">
+        {% endif %}
+          {% if block.image != blank %}
+            {{ block.image | image_url: width: nil | image_tag: class: 'collection__meta-img desktop-only' }}
+            {{ block.mobile_image | default: block.image | image_url: width: nil | image_tag: class: 'collection__meta-img mobile-only' }}
+          {% endif %}
+        
+        <h4>
+          <span>{{ block.label }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M16.9807 15.481L16.9807 7.08019L8.45875 7.08031M16.9807 7.08019L7.08125 16.9797" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </h4>
+        
+        {% if block.collection != blank %}
+          </a>
+          {% else %}
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% paginate collection.products by section.settings.coll_num_per_page_int %}
+
+  {%- liquid
+    if section.settings.show_image_behind_heading and collection.image
+      assign header_image_enabled = true
+    else
+      assign header_image_enabled = false
+    endif
+    assign current_sort = collection.sort_by | default: collection.default_sort_by
+
+    assign show_filters = section.settings.enable_filtering
+    if collection.filters == empty
+      assign show_filters = false
+    endif
+    if section.settings.coll_show_sort and collection.products.size > 0
+      assign show_filters = true
+    endif
+  -%}
+
+  {%- capture filter_button -%}
+    {%-# if show_filters -%}
+      <!-- <a href="#" class="btn--icon btn-coll-filter js-only" data-toggle-filters> -->
+      <span class="btn--icon btn-coll-filter js-only" onclick="globofilter.toggleCanvas()">
+        <span class="button-icon">{% render 'svg-filter-lines' %}</span>
+        <span class="button-text">Filter and sort</span>
+        {% comment %}
+        {% liquid
+          assign filter_count = 0
+          for filter in collection.filters
+            assign filter_count = filter_count | plus: filter.active_values.size
+            if filter.type == 'price_range'
+              if filter.min_value.value != nil or filter.max_value.value != nil
+                assign filter_count = filter_count | plus: 1
+              endif
+            endif
+          endfor
+        %}
+        {% if filter_count > 0 %}
+          <span class="toggle-btn__count">({{ filter_count }})</span>
+        {% endif %}
+      {% endcomment %}
+      </span>
+    {%-# endif -%}
+  {%- endcapture -%}
+  <div class="collection__top-row" data-cc-animate>
+    <div class="collection__title-row">
+      {% render 'breadcrumbs' %}
+      <h1 class="collection__title hl-style">{{ collection.metafields.custom.collection_page_title | default: collection.title }}</h1>
+      {% if collection.metafields.custom.short_description != blank %}<div class="collection__short-desc">{{ collection.metafields.custom.short_description | metafield_tag }}</div>{% endif %}
+      {% comment %}
+      {{ filter_button }}
+      {% endcomment %}
+
+      
+    </div>
+    {% if collection.metafields.custom.collections.value != blank %}
+    <div class="collection__button-row swiper">
+      <div class="collection__sub-col-wrap swiper-wrapper">
+        {% for item in collection.metafields.custom.collections.value %}
+          <a class="collection__sub-col-button swiper-slide" href="{{ item.url }}">
+            {{ item.title }}
+          </a>
+        {% endfor %}
+      </div>
+      <div class="swiper-scrollbar" style="--swiper-scrollbar-sides-offset: 0%; --swiper-scrollbar-size: 1px; --swiper-scrollbar-bottom 0px"></div>
+    </div>
+      <script>
+       document.addEventListener("DOMContentLoaded", () => {
+          new Swiper('.collection__button-row', {
+            slidesPerView: 'auto',
+            spaceBetween: 27,
+            freeMode: {
+              enabled: true,
+              sticky: true,
+              momentumRatio: 0.8,
+            },
+            speed: 400,
+            scrollbar: {
+              el: '.swiper-scrollbar',
+              draggable: true
+            },
+            breakpoints: {
+              768: {
+                spaceBetween: 47,
+              }
+            }
+          });
+      });     
+    </script>
+    {% endif %}
+    
+  </div>
+  
+
+  <div class="filter-container" data-ajax-scroll-to>
+    <div class="result-count_row desktop-only">
+      <div class="result-count-item"><span class="result-count" data-ajax-container="count">{{ collection.products_count | minus: paginate.current_offset | at_most: paginate.page_size }}</span> RESULTS</div>
+      {{ filter_button }}
+    </div>
+    {% if show_filters %}
+      <div class="filter-modal cc-popup cc-popup--right" aria-hidden="true" data-freeze-scroll="true">
+        <div class="cc-popup-background"></div>
+        <div class="cc-popup-modal" role="dialog" aria-modal="true" aria-labelledby="FilterHeading">
+          <div class="cc-popup-container">
+            
+            <div class="cc-popup-content" data-ajax-container="filters">
+              {% render 'faceted-filters', filter_context: collection, clear_url: collection.url, current_sort: current_sort %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="filters-adjacent collection-listing" data-ajax-container="products">
+      <div class="product-list{% if collection.products.size == 0 %} empty-list{% endif %} product-list--image-shape-{{ settings.prod_thumb_shape }}">
+
+        {%- if section.settings.heading_layout == 'card' -%}
+          <div class="product-block product-block--mobile-wide">
+            <div class="product-list-heading-block card-scheme card-scheme--{{ section.settings.color_scheme }} card-br-oh card-br-oh--no-isolate height--cover page-header page-header--with-background {% if header_image_enabled %}image-overlay image-overlay--bg-{{ section.settings.overlay_style }}{% endif %}{% if section.settings.heading_card_filter_button %} product-list-heading-block--toggle-btn-button-style{% endif %}">
+              {%- if header_image_enabled -%}
+                {%- render 'background-image', image: collection.image, eager: true -%}
+              {%- endif -%}
+
+              <div class="product-list-heading-block__text{% if show_filters %} product-list-heading-block__text--with-filter{% endif %}">
+                {{ filter_button }}
+
+                <div class="overlay-text overlay-text--inline align-start overlay--v-bottom image-overlay__over" data-cc-animate data-cc-animate-delay="0.2s">
+                  <div class="overlay-text__inner">
+                    <div class="overlay-text__text">
+                      <h1 class="overlay-text__title">{{ collection.title | escape }}</h1>
+
+                      {% if collection.description != blank and section.settings.coll_desc_pos == 'above' and section.settings.show_desc != true %}
+                        <div class="overlay-text__rte rte cf reading-width">{{ collection.description }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {%- endif %}
+
+        {% if collection.products.size == 0 %}
+          <h5 class="align-centre spaced-text-row fully-padded-row-x--medium">{{ 'collections.general.no_matches' | t }}</h5>
+        {% else %}
+          {%- liquid
+            if settings.prod_thumb_shape == 'portrait-23'
+              assign chosen_aspect_ratio = 0.67
+            elsif settings.prod_thumb_shape == 'portrait-45'
+              assign chosen_aspect_ratio = 0.8
+            elsif settings.prod_thumb_shape == 'square'
+              assign chosen_aspect_ratio = 1.0
+            elsif settings.prod_thumb_shape == 'landscape-54'
+              assign chosen_aspect_ratio = 1.25
+            elsif settings.prod_thumb_shape == 'landscape-32'
+              assign chosen_aspect_ratio = 1.50
+            elsif settings.prod_thumb_shape == 'tallest'
+              assign chosen_aspect_ratio = 99
+              for product in collection.products
+                if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                  assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                endif
+              endfor
+            else
+              assign chosen_aspect_ratio = 0
+              for product in collection.products
+                if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                  assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                endif
+              endfor
+            endif
+
+            for product in collection.products
+              assign product_loop_index = forloop.index
+              for block in section.blocks
+                if block.settings.position == product_loop_index
+                  render 'product-grid-promo', block: block, animate: true
+                endif
+              endfor
+
+              render 'product-block-alt', product: product, custom_aspect_ratio: chosen_aspect_ratio, animate: true
+            endfor
+
+            assign current_product_count_plus_one = collection.products.size | plus: 1
+            for block in section.blocks
+              if block.settings.position == current_product_count_plus_one
+                render 'product-grid-promo', block: block, animate: true
+              endif
+            endfor
+          -%}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div data-ajax-container="pagination">{% render 'pagination-control', paginate: paginate %}</div>
+  {% endpaginate %}
+
+  {% if collection.description != blank and section.settings.coll_desc_pos == 'below' and section.settings.show_desc != true %}
+    <div class="container container--reading-width spaced-text-row" data-cc-animate>
+      <div class="rte cf">{{ collection.description }}</div>
+    </div>
+  {% endif %}
+</div>
+{% for block in section.blocks %}
+  {% if block.type == 'collection-block' %}
+<script type="text/template" data-offset="{{ block.settings.offset }}" class="injected-block-template" id="injected-block-template-{{block.id}}">
+<a href="{{ block.settings.d_btn_url | default: block.settings.btn_url }}" class="collection__block{% if block.settings.with_overlay %} with-overlay{% endif %}" {{ block.shopify_attributes }}>
+    <div class="collection__block_row">
+      <div class="collection__block_content">
+        {% if block.settings.title != blank or block.settings.d_title != blank %}
+            <h4 class="collection__block-title">{{ block.settings.d_title | default: block.settings.title }}</h4>
+        {% endif %}
+        {% if block.settings.desc != blank or block.settings.d_desc != blank %}
+            <div class="collection__block-desc desc">{{ block.settings.d_desc | default: block.settings.desc }}</div>
+        {% endif %}
+      </div>
+        <div class="collection__block-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" viewBox="0 0 29 29" fill="none">
+            <path d="M19.3389 11.3755L8.93931 21.7751L7.23047 20.0663L17.6301 9.66667H8.46396V7.25H21.7556V20.5417H19.3389V11.3755Z" fill="white"/>
+          </svg>
+        </div>
+    </div>
+    {% if block.settings.d_img != blank %}
+      {{ block.settings.d_img | image_url: width: nil | image_tag: class: 'collection__block-img bg-img hidden--mobile' }}
+      {{ block.settings.d_img_mobile | default: block.settings.d_img | image_url: width: nil | image_tag: class: 'collection__block-img bg-img hidden--desktop' }}
+    {% elsif block.settings.img != blank %}
+        {{ block.settings.img | image_url: width: nil | image_tag: class: 'collection__block-img bg-img hidden--mobile' }}
+        {{ block.settings.img_mobile | default: block.settings.img | image_url: width: nil | image_tag: class: 'collection__block-img bg-img hidden--desktop' }}
+    {% else %}
+        {{ 'image' | placeholder_svg_tag: 'collection__block-img bg-img placeholder' }}
+    {% endif %}
+</div>
+</script>
+{%endif %}
+{%endfor %}
+
+
+
+{% if section.settings.desc_bottom != blank and section.settings.show_desc %}
+  <div class="collection-alt-desc" data-cc-animate>
+    <div class="collection-alt-desc-wrap">
+      <div class="rte cf">{{ section.settings.desc_bottom }}</div>
+      {% if section.settings.desc_more %}
+        <a class="btn collection-alt-desc_toggle-btn" href="#}">
+          <span class="btn__text">
+            <span class="btn__text-coll-desc-wrap">
+              <span class="btn__text-coll-desc-more">
+                {{ section.settings.desc_more | escape }}
+              </span>
+              <span class="btn__text-coll-desc-less">
+                {{ section.settings.desc_less | default: section.settings.desc_more | escape }}
+              </span>
+            </span>
+          </span>
+          <span class="btn__icon">{% render 'svg-chevron-down' %}</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+  <script>
+    const desc = document.querySelector('.collection-alt-desc-wrap');
+    if(desc){
+      const rte = desc.querySelector('.rte.cf');
+      if(rte.scrollHeight > 300){
+        rte.style.setProperty('--height', rte.scrollHeight + 'px');
+        desc.classList.add('initilized');
+        desc.querySelector('.collection-alt-desc_toggle-btn').addEventListener('click', e => {
+          e.preventDefault();
+          desc.classList.toggle('expanded');
+        })
+      }
+      else
+      desc.querySelector('.collection-alt-desc_toggle-btn').remove();
+    }
+  </script>
+{% endif %}
+
+<script>
+  (function () {
+  const GRID_WRAPPER_SELECTOR = '.collection-listing';
+  const GRID_SELECTOR = '.product-list';
+  const GRID_ITEM_SELECTOR = '.product-grid__item';
+
+  const templates = document.querySelectorAll('.injected-block-template');
+  if (!templates.length) return;
+
+  function injectRepeatedBlocks(grid) {
+    const items = Array.from(grid.querySelectorAll(GRID_ITEM_SELECTOR));
+    if (!items.length) return;
+
+    templates.forEach(template => {
+      const gap = parseInt(template.dataset.offset, 10);
+      const templateId = template.id;
+      const markerAttr = `data-injected-${templateId}`;
+
+      // Skip if already injected into this grid
+      if (grid.querySelector(`[${markerAttr}]`)) return;
+
+      // Only inject once at the gap/offset position
+      const targetItem = items[gap - 1];
+      if (!targetItem) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = template.innerHTML;
+      const block = wrapper.querySelector('.collection__block');
+      block.setAttribute(markerAttr, 'true');
+
+      targetItem.after(block);
+    });
+  }
+
+  function observeGrid(wrapper) {
+    let debounceTimer;
+
+    const observer = new MutationObserver(() => {
+      clearTimeout(debounceTimer);
+
+      debounceTimer = setTimeout(() => {
+        const grid = wrapper.querySelector(GRID_SELECTOR);
+        const gfgrid = wrapper.querySelector('#gf-grid');
+
+        if (grid) {
+          injectRepeatedBlocks(grid);
+        }
+
+      }, 60);
+    });
+
+    observer.observe(wrapper, {
+      childList: true,
+      subtree: true
+    });
+
+    return observer;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const wrapper = document.querySelector(GRID_WRAPPER_SELECTOR);
+    if (!wrapper) return;
+
+    observeGrid(wrapper);
+  });
+})();
+</script>
+
+{% schema %}
+  {
+    "name": "Collection pages",
+    "class": "collection_main  card",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "range",
+        "id": "coll_num_per_page_int",
+        "min": 16,
+        "max": 50,
+        "step": 1,
+        "label": "Number of products to show per page",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendors",
+        "default": false
+      },
+      {
+        "type": "select",
+        "id": "coll_desc_pos",
+        "label": "Description position",
+        "default": "above",
+        "options": [
+          {
+            "value": "above",
+            "label": "With collection title"
+          },
+          {
+            "value": "below",
+            "label": "Below products"
+          }
+        ],
+        "visible_if": "{{ section.settings.show_desc != true }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_desc",
+        "label": "Show description extender",
+        "default": true
+      },
+      {
+        "type": "richtext",
+        "id": "desc_bottom",
+        "label": "Bottom description",
+        "default": "<p>{{collection.description}}</p>",
+        "visible_if": "{{ section.settings.show_desc }}"
+      },
+      {
+        "type": "text",
+        "id": "desc_more",
+        "label": "Expand description",
+        "default": "Toon meer",
+        "visible_if": "{{ section.settings.show_desc }}"
+      },
+      {
+        "type": "text",
+        "id": "desc_less",
+        "label": "Contract description",
+        "default": "Toon minder",
+        "visible_if": "{{ section.settings.show_desc }}"
+      },
+      {
+        "type": "header",
+        "content": "Card heading"
+      },
+      {
+        "type": "checkbox",
+        "id": "heading_card_filter_button",
+        "label": "Enable button style for filter",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_image_behind_heading",
+        "label": "Show collection image",
+        "default": true
+      },
+      {
+        "id": "overlay_style",
+        "type": "select",
+        "label": "Overlay style",
+        "default": "shadow",
+        "options": [
+          {
+            "value": "full",
+            "label": "Tint"
+          },
+          {
+            "value": "shadow",
+            "label": "Text shadow"
+          },
+          {
+            "value": "full image-overlay--bg-shadow",
+            "label": "Text shadow and tint"
+          },
+          {
+            "value": "no_background",
+            "label": "No background"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Filters"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_filtering",
+        "label": "Enable filtering",
+        "info": "[Customize filters](\/admin\/menus)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "coll_show_sort",
+        "label": "Enable sorting",
+        "info": "Shows in the filter drawer",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "coll_show_best_selling_sort",
+        "label": "Show 'Best selling' sort option",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "coll_show_manual_sort",
+        "label": "Show 'Manual' sort option",
+        "default": false
+      },
+      {
+        "type": "select",
+        "id": "collapse_filters_method",
+        "label": "Filter row collapse",
+        "default": "over-12",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "over-6",
+            "label": "Over 6 items"
+          },
+          {
+            "value": "over-12",
+            "label": "Over 12 items"
+          },
+          {
+            "value": "over-18",
+            "label": "Over 18 items"
+          },
+          {
+            "value": "all",
+            "label": "All rows"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "show_filter_counts",
+        "label": "Show filter counts",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_disabled_filters",
+        "label": "Show filters with zero results",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "ajax_products",
+        "label": "Filter and sort collections without loading a new page",
+        "default": true,
+        "info": "Some apps require this to be disabled"
+      },
+      {
+        "type": "checkbox",
+        "id": "filter_two_columns",
+        "label": "Two column filter values",
+        "default": false
+      }
+    ],
+    "blocks": [
+      {
+        "type": "promo",
+        "name": "Promotional cards",
+        "limit": 10,
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "checkbox",
+            "id": "show_icon",
+            "label": "Show icon",
+            "default": false
+          },
+          {
+            "type": "select",
+            "id": "icon",
+            "label": "Icon",
+            "default": "star",
+            "options": [
+              {
+                "value": "award",
+                "label": "Award"
+              },
+              {
+                "value": "box",
+                "label": "Box"
+              },
+              {
+                "value": "briefcase",
+                "label": "Briefcase"
+              },
+              {
+                "value": "calendar",
+                "label": "Calendar"
+              },
+              {
+                "value": "chat_bubble",
+                "label": "Chat bubble"
+              },
+              {
+                "value": "check_mark",
+                "label": "Check mark"
+              },
+              {
+                "value": "check_mark_in_circle",
+                "label": "Check mark in circle"
+              },
+              {
+                "value": "clock",
+                "label": "Clock"
+              },
+              {
+                "value": "credit_card",
+                "label": "Credit card"
+              },
+              {
+                "value": "dollar_sign",
+                "label": "Dollar sign"
+              },
+              {
+                "value": "dryer",
+                "label": "Dryer"
+              },
+              {
+                "value": "eye",
+                "label": "Eye"
+              },
+              {
+                "value": "feather",
+                "label": "Feather"
+              },
+              {
+                "value": "gift",
+                "label": "Gift"
+              },
+              {
+                "value": "heart",
+                "label": "Heart"
+              },
+              {
+                "value": "iron",
+                "label": "Iron"
+              },
+              {
+                "value": "leaf",
+                "label": "Leaf"
+              },
+              {
+                "value": "leather",
+                "label": "Leather"
+              },
+              {
+                "value": "lock",
+                "label": "Lock"
+              },
+              {
+                "value": "map_pin",
+                "label": "Map pin"
+              },
+              {
+                "value": "pants",
+                "label": "Pants"
+              },
+              {
+                "value": "percent",
+                "label": "Percent"
+              },
+              {
+                "value": "plane",
+                "label": "Plane"
+              },
+              {
+                "value": "price_tag",
+                "label": "Price tag"
+              },
+              {
+                "value": "question_mark",
+                "label": "Question mark"
+              },
+              {
+                "value": "return",
+                "label": "Return"
+              },
+              {
+                "value": "ruler",
+                "label": "Ruler"
+              },
+              {
+                "value": "scissors",
+                "label": "Scissors"
+              },
+              {
+                "value": "shirt",
+                "label": "Shirt"
+              },
+              {
+                "value": "shoe",
+                "label": "Shoe"
+              },
+              {
+                "value": "silhouette",
+                "label": "Silhouette"
+              },
+              {
+                "value": "star",
+                "label": "Star"
+              },
+              {
+                "value": "truck",
+                "label": "Truck"
+              },
+              {
+                "value": "washing",
+                "label": "Washing"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Heading",
+            "default": "Promotion heading"
+          },
+          {
+            "type": "richtext",
+            "id": "text",
+            "label": "Text",
+            "default": "<p>Describe your promotion</p>"
+          },
+          {
+            "type": "text",
+            "id": "button_label",
+            "label": "Button label"
+          },
+          {
+            "type": "select",
+            "id": "button_style",
+            "label": "Button style",
+            "default": "primary",
+            "options": [
+              {
+                "label": "Button - primary",
+                "value": "primary"
+              },
+              {
+                "label": "Button - secondary",
+                "value": "secondary"
+              },
+              {
+                "label": "Link",
+                "value": "link"
+              }
+            ]
+          },
+          {
+            "type": "url",
+            "id": "link",
+            "label": "Link"
+          },
+          {
+            "type": "select",
+            "id": "text_alignment",
+            "label": "Text overlay position",
+            "options": [
+              {
+                "value": "top left",
+                "label": "Top left"
+              },
+              {
+                "value": "top center",
+                "label": "Top center"
+              },
+              {
+                "value": "top right",
+                "label": "Top right"
+              },
+              {
+                "value": "center left",
+                "label": "Middle left"
+              },
+              {
+                "value": "center center",
+                "label": "Middle center"
+              },
+              {
+                "value": "center right",
+                "label": "Middle right"
+              },
+              {
+                "value": "bottom left",
+                "label": "Bottom left"
+              },
+              {
+                "value": "bottom center",
+                "label": "Bottom center"
+              },
+              {
+                "value": "bottom right",
+                "label": "Bottom right"
+              }
+            ],
+            "default": "center center"
+          },
+          {
+            "id": "overlay_style",
+            "type": "select",
+            "label": "Overlay style",
+            "default": "shadow",
+            "options": [
+              {
+                "value": "full",
+                "label": "Tint"
+              },
+              {
+                "value": "shadow",
+                "label": "Text shadow"
+              },
+              {
+                "value": "full image-overlay--bg-shadow",
+                "label": "Text shadow and tint"
+              },
+              {
+                "value": "no_background",
+                "label": "No background"
+              }
+            ]
+          },
+          {
+            "type": "header",
+            "content": "Layout"
+          },
+          {
+            "type": "paragraph",
+            "content": "Shows on every page of products."
+          },
+          {
+            "type": "paragraph",
+            "content": "If displayed, the header card will always take first position."
+          },
+          {
+            "type": "paragraph",
+            "content": "Will not show if position does not exist due to lack of products."
+          },
+          {
+            "type": "range",
+            "id": "position",
+            "min": 1,
+            "max": 51,
+            "step": 1,
+            "label": "Position in grid",
+            "default": 3
+          },
+          {
+            "type": "select",
+            "id": "column_width",
+            "label": "Card size",
+            "options": [
+              {
+                "value": "single-desk-and-mob",
+                "label": "Single column - desktop and mobile"
+              },
+              {
+                "value": "single-desk-wide-mob",
+                "label": "Single column desktop, full width mobile"
+              },
+              {
+                "value": "double",
+                "label": "Two columns"
+              },
+              {
+                "value": "full",
+                "label": "Full width"
+              }
+            ],
+            "default": "single-desk-and-mob"
+          },
+          {
+            "type": "select",
+            "id": "color_scheme",
+            "label": "Color scheme",
+            "default": "1",
+            "options": [
+              {
+                "value": "1",
+                "label": "Card 1"
+              },
+              {
+                "value": "2",
+                "label": "Card 2"
+              },
+              {
+                "value": "3",
+                "label": "Card 3"
+              },
+              {
+                "value": "custom",
+                "label": "Custom"
+              },
+              {
+                "value": "none",
+                "label": "No card"
+              }
+            ]
+          },
+          {
+            "type": "header",
+            "content": "Custom color scheme"
+          },
+          {
+            "type": "color",
+            "id": "card_custom_text",
+            "label": "Text",
+            "default": "#333333"
+          },
+          {
+            "type": "color",
+            "id": "card_custom_bg",
+            "label": "Background color",
+            "default": "#f6f6ef"
+          },
+          {
+            "type": "color_background",
+            "id": "card_custom_bg_grad",
+            "label": "Background gradient",
+            "info": "Set to 'none' to use the flat background color"
+          }
+        ]
+      },
+      {
+        "type": "collection-block",
+        "name": "Collection Block",
+        "limit": 5,
+        "settings": [
+            {
+              "type": "inline_richtext",
+              "id": "title",
+              "label": "Title",
+              "default": "Winter Deals!",
+            },
+            {
+              "type": "inline_richtext",
+              "id": "d_title",
+              "label": "Dynamic Title",
+              "default": "Winter Deals!",
+            },
+            {
+                "type": "richtext",
+                "id": "desc",
+                "label": "Description",
+                "default": "<p>30% Discount for black Friday valid till 30th November only for limited time!</p>"
+            },
+            {
+                "type": "richtext",
+                "id": "d_desc",
+                "label": "Dynamic Description",
+                "default": "<p>30% Discount for black Friday valid till 30th November only for limited time!</p>"
+            },
+            {
+                "type": "url",
+                "id": "btn_url",
+                "label": "Button URL",
+                "default": "/collections/all",
+            },
+            {
+                "type": "url",
+                "id": "d_btn_url",
+                "label": "Dynamic Button URL",
+                "default": "/collections/all",
+            },
+            {
+                "type": "image_picker",
+                "id": "img",
+                "label": "Image"
+            },
+            {
+                "type": "image_picker",
+                "id": "img_mobile",
+                "label": "Image mobile"
+            },
+            {
+                "type": "image_picker",
+                "id": "d_img",
+                "label": "Dynamic Image"
+            },
+            {
+                "type": "image_picker",
+                "id": "d_img_mobile",
+                "label": "Dynamic Image mobile"
+            },
+            {
+                "type": "number",
+                "id": "offset",
+                "label": "Product offset",
+                "default": 8
+            },
+            {
+                "type": "checkbox",
+                "id": "with_overlay",
+                "label": "With overlay",
+                "default": true,
+            },
+        ],
+      }
+    ]
+  }
+{% endschema %}

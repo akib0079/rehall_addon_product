@@ -1,0 +1,83 @@
+<div class="teaser-banner-section section-id-{{ section.id }}">
+  {{ section.settings.video | video_tag: muted: true, autoplay: true, class: "teaser-banner_video desktop-only" }}
+  {{ section.settings.video_mobile | default: section.settings.video | video_tag: muted: true, autoplay: true, class: "teaser-banner_video mobile-only" }}
+  <div class="teaser-banner__grid">
+    {% if section.settings.logo %}
+      {{ section.settings.logo | image_url: width: nil | image_tag: class: 'teaser-banner__logo' }}
+    {% endif %}
+    <h1 class="teaser-banner__title">{{ section.settings.title | newline_to_br}}</h1>
+    <div class="teaser-banner__btns-wrap">
+      {% if section.settings.btn_text != blank %}
+        {% render 'btn-global', class: 'teaser-banner__btn btn', url: section.settings.btn_url, label: section.settings.btn_text, icon: true %}
+      {% endif %}
+      {% if section.settings.home_text != blank %}
+        <a class="teaser-banner__text-btn" href="{{ section.settings.home_url | default: routes.root_url }}">{{ section.settings.home_text }}</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script type='text/javascript'>
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const tl = gsap.timeline({paused: true});
+    tl.fromTo(".teaser-banner__title",{opacity: 0}, {opacity: 1, duration: 0.7}, '<');
+    tl.fromTo(".teaser-banner__logo",{opacity: 0}, {opacity: 1, duration: 0.7}, '<');
+    tl.fromTo(".teaser-banner__btns-wrap",{opacity: 0, y: 400}, {opacity: 1, y: 0, duration: 0.9}, 0.1);
+    document.querySelector('.teaser-banner_video.desktop-only').addEventListener('ended',() => {
+      tl.play();
+    },false);
+    document.querySelector('.teaser-banner_video.mobile-only').addEventListener('ended',() => {
+      tl.play();
+    },false);
+  })
+</script>
+{% schema %}
+  {
+    "name": "Teaser Banner",
+    "settings": [
+      {
+        "type": "video",
+        "id": "video",
+        "label": "Video"
+      },
+      {
+        "type": "video",
+        "id": "video_mobile",
+        "label": "Video mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "WINTER 2024 collection"
+      },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "DISCOVER MORE"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button URL",
+        "default": "/collections/all"
+      },
+      {
+        "type": "text",
+        "id": "home_text",
+        "label": "Home text",
+        "default": "Home"
+      },
+      {
+        "type": "url",
+        "id": "home_url",
+        "label": "Home URL"
+      },
+    ]
+  }
+{% endschema %}

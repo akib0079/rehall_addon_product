@@ -1,0 +1,334 @@
+<div class="section-black-friday-cols section-id-{{ section.id }}">
+  <div class="section-container">
+    <div class="black-friday-cols_wrap" style="--height:{{ section.settings.height }}; --height-mobile:{{ section.settings.height_mobile| default: section.settings.height }}">
+      {% for block in section.blocks %}
+        <div class="black-friday-cols__single" {{ block.shopify_attributes }}>
+          {% if forloop.first %}
+            <div class="black-friday-cols_content">
+              <h2 class="black-friday-cols_title">{{ section.settings.title | highlight: section.settings.highlight }}</h2>
+              {% if section.settings.desc  != blank%}
+                <div class="black-friday-cols_desc">
+                  {{ section.settings.desc }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+          <div class="black-friday-cols__single-content">
+            {% if block.settings.img != blank %}
+                {% if block.settings.img_wide != blank %}
+                  {{ block.settings.img_wide | image_url: width: nil | image_tag: class: 'black-friday-cols__img wide-only' }}
+                {% endif %}
+                {{ block.settings.img | image_url: width: nil | image_tag: class: 'black-friday-cols__img desktop-only' }}
+                {{ block.settings.img_mobile | default: block.settings.img | image_url: width: nil | image_tag: class: 'black-friday-cols__img mobile-only' }}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'black-friday-cols__img placeholder' }}
+              {% endif %}
+            {% if block.settings.product != blank %}
+              {% assign product = block.settings.product %}
+              {% capture variables %}
+                --posX:{{ block.settings.h_pos }}%;
+                --posY:{{ block.settings.v_pos }}%;
+                --dist: {{ block.settings.dist }}px;
+                --angle: {{ block.settings.angle }};
+              {%- if block.settings.repos_mobile %}
+                --posX-mobile:{{ block.settings.h_pos_mobile }}%;
+                --posY-mobile:{{ block.settings.v_pos_mobile }}%;
+                --dist-mobile: {{ block.settings.dist_mobile }}px;
+                --angle-mobile: {{ block.settings.angle_mobile }};
+              {%- endif -%}
+              {%- if block.settings.repos_wide %}
+                --posX-wide:{{ block.settings.h_pos_wide }}%;
+                --posY-wide:{{ block.settings.v_pos_wide }}%;
+                --dist-wide: {{ block.settings.dist_wide }}px;
+                --angle-wide: {{ block.settings.angle_wide }};
+              {%- endif -%}
+              {% endcapture %}
+              <div class="w2024-adjustable__hotspot{% if block.settings.repos_mobile %} mobile-repos{% endif %}{% if block.settings.repos_wide %} wide-repos{% endif %}" style="{{ variables }}">
+                <div class="w2024-adjustable__hotspot_anchor"></div>
+                 <div class="w2024-adjustable__hotspot_angle">
+                   <a class="w2024-adjustable__hotspot_wrap" href="{{ product.url }}">
+                     <div class="w2024-adjustable__hotspot_img-wrap">
+                       {% if product.featured_image != blank %}
+                        {{ product.featured_image | image_url: width: 100 | image_tag: class: 'w2024-adjustable__hotspot_img' }}
+                      {% else %}
+                        {{ 'image' | placeholder_svg_tag: 'w2024-adjustable__hotspot_img placeholder' }}
+                      {% endif %}
+                     </div>
+                     <div class="w2024-adjustable__hotspot_text-wrap">
+                       <h4 class="w2024-adjustable__hotspot_title">{{ product.title }}</h4>
+                       <p class="w2024-adjustable__hotspot_price">{{ product.price | money }}</p>
+                       <span class="w2024-adjustable__hotspot_btn">
+                         <span class="w2024-adjustable__hotspot_btn-text">{{ block.settings.btn_text }}</span>
+                         {% render 'svg-arrow-w2024-hotspot' %}
+                       </span>
+                     </div>
+                   </a>
+                 </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      
+    </div>
+  </div>
+</div>
+  <script>
+   document.addEventListener("DOMContentLoaded", () => {
+       document.querySelectorAll('.section-id-{{ section.id }} .w2024-adjustable__hotspot').forEach(hotspot => {
+         const anchor = hotspot.querySelector('.w2024-adjustable__hotspot_anchor');
+         const hotspotWrap = hotspot.querySelector('.w2024-adjustable__hotspot_wrap');
+         const tween = gsap.fromTo(hotspotWrap, {opacity: 0}, {opacity: 1, duration: 0.5 , paused: true, 
+            onStart: () => {
+              hotspotWrap.style.display = "flex";
+            },
+            onReverseComplete: () => {
+              hotspotWrap.style.display = "none";
+            },
+         })
+         function closeFunction(e) {
+            if(e.target != hotspotWrap && !hotspotWrap.contains(e.target)){
+              // e.stopPropagation();
+              tween.reverse()
+              hotspot.classList.remove('active')
+              document.removeEventListener('click', closeFunction);
+            }
+          }
+         anchor.addEventListener('click', (e) => {
+           // e.stopPropagation();
+           if(hotspot.classList.contains('active')){
+             document.removeEventListener('click', closeFunction);
+             tween.reverse()
+             hotspot.classList.remove('active')
+             return;
+           };
+           document.querySelector('.section-id-{{ section.id }} .w2024-adjustable__hotspot')?.classList.remove('active')
+           tween.play()
+           hotspot.classList.add('active')
+           setTimeout(()=>{
+             document.addEventListener('click', closeFunction);
+           })
+         })
+       })
+     })
+</script>
+{% schema %}
+  {
+    "name": "Black Friday Cols",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "info": "Enter <br/> for a line-break",
+        "default": "stoer, gedurfd en 100% Rehall"
+      },
+      {
+        "type": "text",
+        "id": "highlight",
+        "label": "Highlight",
+        "default": "100%"
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Dummy paragraph</p>"
+      },
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Height",
+        "default": "833px",
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Height mobile",
+        "default": "400px",
+      }
+    ],
+    "blocks": [
+      {
+        "type": "image_block",
+        "name": "Image Block",
+        "limit": 4,
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image",
+            "info": "2048 x 1024px recommended"
+          },
+          {
+            "type": "image_picker",
+            "id": "img_mobile",
+            "label": "Image Mobile",
+            "info": "1024px x 1024px recommended"
+          },
+          {
+            "type": "image_picker",
+            "id": "img_wide",
+            "label": "Image Wide"
+          },
+          {
+            "type": "header",
+            "content": "Hotspot"
+          },
+          {
+            "type": "product",
+            "id": "product",
+            "label": "Product",
+            "info": "Only shows if assigned"
+          },
+          {
+            "type": "text",
+            "id": "btn_text",
+            "label": "Button text",
+            "default": "VIEW PRODUCT"
+          },
+          {
+            "type": "range",
+            "id": "h_pos",
+            "label": "Horizontal Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          
+          {
+            "type": "range",
+            "id": "v_pos",
+            "label": "Vertical Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist",
+            "label": "Distance",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle",
+            "label": "Angle",
+            "default": 150,
+            "info": "in Degree"
+          },
+          {
+            "type": "checkbox",
+            "label": "Enable mobile repositioning",
+            "id": "repos_mobile",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "h_pos_mobile",
+            "label": "Horizontal Position mobile",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "v_pos_mobile",
+            "label": "Vertical Position mobile",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist_mobile",
+            "label": "Distance mobile",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle_mobile",
+            "label": "Angle mobile",
+            "default": 150,
+            "info": "in Degree"
+          },
+          {
+            "type": "checkbox",
+            "label": "Enable wide repositioning",
+            "id": "repos_wide",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "h_pos_wide",
+            "label": "Horizontal Position wide",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "v_pos_wide",
+            "label": "Vertical Position wide",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist_wide",
+            "label": "Distance wide",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle_wide",
+            "label": "Angle wide",
+            "default": 150,
+            "info": "in Degree"
+          },
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Black Friday Cols",
+        "blocks": [
+          {
+            "type": "image_block"
+          },
+          {
+            "type": "image_block"
+          },
+          {
+            "type": "image_block"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

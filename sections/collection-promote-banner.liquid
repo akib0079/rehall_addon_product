@@ -1,0 +1,73 @@
+<div class="wide-outer-container section-container">
+<div class="cpb-section {{ section.id }}">
+  {% if section.settings.bg_img %}
+    {% if section.settings.bg_img_wide %}
+      {{ section.settings.bg_img_wide | image_url: width: nil | image_tag: class: 'cpb__bg-img wide-only' }}
+    {% endif %}
+    {{ section.settings.bg_img | image_url: width: nil | image_tag: class: 'cpb__bg-img desktop-only' }}
+    {{ section.settings.bg_img_mobile | default: section.settings.bg_img | image_url: width: nil | image_tag: class: 'cpb__bg-img mobile-only' }}
+  {% else %}
+    {{ 'image' | placeholder_svg_tag: 'cpb__bg-img placeholder' }}
+  {% endif %}
+  <div class="section-container">
+    <h2 class="cpb__title">{{ section.settings.title }}</h2>
+    {% if section.settings.desc != blank %}
+      <p class="cpb__desc">{{ section.settings.desc | newline_to_br }}</p>
+    {% endif %}
+    {% if section.settings.btn_text != blank %}
+      {% render 'btn-global', class: 'cpb__btn btn', url: section.settings.btn_url, label: section.settings.btn_text, icon: true %}
+    {% endif %}
+  </div>
+</div>
+</div>
+{% schema %}
+  {
+    "name": "Collection Promote Banner",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "DXR COLLECTION"
+      },
+      {
+        "type": "textarea",
+        "id": "desc",
+        "label": "Description",
+        "default": "Waterproof & breathable 20K/20K Rehall \nDXR collection with Dermizax outershell. "
+      },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "SHOW COLLECTION"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button URL",
+        "default": "/collections/all"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_img",
+        "label": "Background image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_img_mobile",
+        "label": "Background image mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_img_wide",
+        "label": "Background image wide"
+      },
+    ],
+    "presets": [
+      {
+        "name":  "Collection Promote Banner",
+      }
+    ]
+  }
+{% endschema %}

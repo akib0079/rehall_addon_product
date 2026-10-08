@@ -1,0 +1,43 @@
+<div class="section-black-friday-text {{ section.id }}">
+  <div class="section-container">
+    <div class="black-friday-text_wrap">
+      <h2 class="black-friday-text_title">{{ section.settings.title | highlight: section.settings.highlight }}</h2>
+      {% if section.settings.desc  != blank%}
+        <div class="black-friday-text_desc" style="--offset: {{ section.settings.highlight.size }}">
+          {{ section.settings.desc }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Black Friday Text",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "info": "Enter <br/> for a line-break",
+        "default": "Exclusief BIJ ONS VERKRIJGBAAR"
+      },
+      {
+        "type": "text",
+        "id": "highlight",
+        "label": "Highlight",
+        "default": "Exclusief"
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Dummy paragraph</p>"
+      },
+    ],
+    "presets": [
+      {
+        "name": "Black Friday Text"
+      }
+    ]
+  }
+{% endschema %}

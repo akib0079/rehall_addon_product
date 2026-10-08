@@ -1,0 +1,62 @@
+<div class="w2024-inspire-section section-id-{{ section.id }}">
+  {% if section.settings.bg_image != blank %}
+    {{ section.settings.bg_image | image_url: width: nil | image_tag: class: 'w2024-inspire__bg-img desktop-only' }}
+    {{ section.settings.bg_image_mobile | default: section.settings.bg_image | image_url: width: nil | image_tag: class: 'w2024-inspire__bg-img mobile-only' }}
+  {% else %}
+    {{ 'image' | placeholder_svg_tag: 'w2024-inspire__bg-img placeholder' }}
+  {% endif %}
+  <div class="section-container">
+    <h2 class="w2024-inspire__title">{{ section.settings.title }}</h2>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    gsap.registerPlugin(ScrollTrigger) ;
+    let tl = gsap.timeline({
+      scrollTrigger: {
+          trigger: '.section-id-{{ section.id }}',
+          start: 'top bottom',
+          end: '70% bottom', 
+          scrub: 1,
+      },
+    });
+    tl.fromTo('.section-id-{{ section.id }} .w2024-inspire__bg-img',{scale: 0.5}, {scale: 1, duration: 1});
+    tl.fromTo('.section-id-{{ section.id }} .w2024-inspire__title',{opacity: 0}, {opacity: 1, duration: 0.5}, 0.5);
+    
+    gsap.to('.w2024-video-section .w2024-video__grid', {opacity: 0, scrollTrigger: {
+        trigger: '.section-id-{{ section.id }}',
+        start: '30% bottom',
+        end: '60% bottom', 
+        scrub: 1,
+      }
+    });
+  });
+</script>
+{% schema %}
+  {
+    "name": "W2024 Inspire Section",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Design Inspired by the World"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_image",
+        "label": "Background image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_image_mobile",
+        "label": "Background image mobile"
+      }
+    ],
+    "presets": [
+      {
+        "name": "W2024 Inspire Section"
+      }
+    ]
+  }
+{% endschema %}

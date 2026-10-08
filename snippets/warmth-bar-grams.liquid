@@ -1,0 +1,35 @@
+{%- comment -%}
+  Tab Eigenschappen (warmte, ademend vermogen, waterdichtheid). Aangepast door DEED, sept 2026.
+  Gebruik: {% raw %}{% render 'warmth-bar-grams' %}{% endraw %} in een Custom Liquid blok van de productsectie.
+
+  Warmte
+  - Altijd zichtbaar. In templates/product.json staat de warmte-instelling daarom op een vaste
+    tekst ("warm"), zodat main-product.liquid het item altijd rendert.
+  - Bron: metafield custom.specifications_padding_weight (gram).
+  - Geen gram ingevuld: standaard warmth_default_grams (20 gram).
+  - Schaal: 0 gram = 0%, warmth_cap gram = 100%. Waarden boven de cap tonen als 100%.
+
+  Ademend vermogen / Waterdichtheid
+  - Leeg in de metavelden = niet getoond (regelt main-product.liquid zelf).
+
+  Layout
+  - Elk item houdt 1/3 van de breedte; valt er een weg, dan schuiven de rest op (links uitgelijnd).
+{%- endcomment -%}
+{%- liquid
+  assign warmth_cap = 120.0
+  assign warmth_default_grams = 20.0
+  assign warmth_grams = product.metafields.custom.specifications_padding_weight.value | plus: 0.0
+  if warmth_grams <= 0
+    assign warmth_grams = warmth_default_grams
+  endif
+  assign warmth_pct = warmth_grams | at_most: warmth_cap | divided_by: warmth_cap | times: 100 | round: 2
+-%}
+<style>
+  @media screen and (min-width: 750px) {
+    .product-main__tab-props-wrap .product-main__tab-prop {
+      flex: 0 0 calc((100% - 70px) / 3);
+      max-width: calc((100% - 70px) / 3);
+    }
+  }
+  .product-main__tab-prop-value-wrap[data-value] .product-main__tab-prop-value { --width: {{ warmth_pct }}% !important; }
+</style>

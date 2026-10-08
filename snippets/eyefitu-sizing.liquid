@@ -1,0 +1,88 @@
+<!-- eyefitu_widget -->
+
+{% if request.page_type == "product" %}
+
+  {% assign place = shop.metafields.eyefitu.app_settings.place | default:'before' %}
+  {% assign selector = shop.metafields.eyefitu.app_settings.selector | default: 'form[action="/cart/add"]' %}
+  {% assign gaGenderDimensionIndex = shop.metafields.eyefitu.app_settings.gaGenderDimensionIndex | default: false %}
+  {% assign sizeOptionName = shop.metafields.eyefitu.app_settings.sizeOptionName | default: 'Size' %}
+
+  {%- if product.featured_image -%}
+    {%- assign image_size = product.featured_image.width | append: 'x' -%}
+    {%- assign image_url = product.featured_image.src | img_url: image_size -%}
+    {%- assign image_https = 'https:' | append: image_url -%}
+  {%- endif -%}
+
+  {% for product_option in product.options_with_values %}
+    {% if product_option.name == sizeOptionName %}
+      {%- assign sizeOption = "option" | append: product_option.position -%}
+    {% endif %}
+  {% endfor %}
+
+  {% assign gender = product.metafields.eyefitu.gender | default:'female' %}
+  {% assign displayVisualSizeCharts = shop.metafields.eyefitu.app_settings.displayVisualSizeCharts | default: false %}
+  {% assign visualSizeChartTitle = product.vendor | append: " - " | append: product.type  %}
+
+  <script type="application/javascript">
+    (function() {
+      window.eyefituShopifyOptions = {
+        selector: '{{ selector }}',
+        place: "{{ place }}",
+        dataAttributes: {
+          productId: 'gid://shopify/Product/{{ product.id }}',
+          image: "{{ image_https }}",
+          brand: "{{ product.vendor }}",
+          {% if product.type != blank %}
+            product: "{{ product.type }}",
+          {%  endif %}
+          gender: "{{ gender }}",
+          language: '{{ shop.locale }}',
+          {% if gaGenderDimensionIndex != false %}
+          gaGenderDimensionIndex: {{ gaGenderDimensionIndex }},
+          {% endif %}
+          {% if displayVisualSizeCharts != false %}
+          visualSizeChart: true,
+          {% endif %}
+          {% if sizeOption %}
+          sizes: '[{% for variant in product.variants %}"{{variant[sizeOption]}}"{% if forloop.last != true %}, {% endif %}{% endfor %}]',
+          {% else %}
+          sizes: '["all"]',
+          {% endif %}
+          visualSizeChartTitle: "{{ visualSizeChartTitle }}",
+        },
+      };
+
+      sessionStorage.removeItem('eyefitu:recommendedSize');
+      window.addEventListener('eyefitu', (event) => {
+        sessionStorage.setItem('eyefitu:recommendedSize', event.detail?.recommendedSize)
+      });
+
+      const product = {{ product | json }};
+      if (product) {
+        sessionStorage.setItem('eyefitu:product', JSON.stringify(product));
+      }
+
+      const productOptions = {{ product.options_with_values | json }};
+      if (productOptions) {
+        const sizes = productOptions.find(o => o.name === '{{sizeOptionName}}') || null;
+        sessionStorage.setItem('eyefitu:product-sizes', JSON.stringify(sizes));
+      }
+
+      fetch('/cart.js')
+        .then(response => response.json())
+        .then(cart => {
+          sessionStorage.setItem('eyefitu:cart-token', cart.token)
+        })
+        .catch(error => console.error('Error fetching cart:', error));
+    })()
+  </script>
+
+  <style>
+  {% render "eyefitu-styles" %}
+  </style>
+
+  {% capture eyefitu_custom %}{% render "eyefitu-custom" %}{% endcapture %}
+  {% unless eyefitu_custom contains "Liquid error" %}
+    {{ eyefitu_custom }}
+  {% endunless %}
+{% endif %}

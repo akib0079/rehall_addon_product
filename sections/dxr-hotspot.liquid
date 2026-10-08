@@ -1,0 +1,237 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    min-height: {{section.settings.mnheight}};
+    {% if section.settings.bg != blank %}
+      background-image: url({{section.settings.bg | image_url: width: nil}});
+    {% endif %}
+  }
+  .section-id-{{ section.id }} .dxr-hotspot_prod-img{
+    width: {{section.settings.img_width}}
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      min-height: {{section.settings.mnheight_mobile}};
+      {% if section.settings.bg_mobile != blank or section.settings.bg != blank %}
+        background-image: url({{section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil}});
+      {% endif %}
+    }
+    .section-id-{{ section.id }} .dxr-hotspot_prod-img-wrap{
+      width: {{section.settings.img_width_mobile}}
+    }
+    .section-id-{{ section.id }} .dxr-hotspot_prod-img{
+      width: 100%;
+    }
+  }
+{% endstyle %}
+<div class="section-dxr-hotspot section-id-{{ section.id }}" data-cc-animate data-cc-animate-delay="0.2s">
+  <div class="dxr-hotspot_prod-img-wrap">
+    {% if section.settings.img != blank %}
+      {{ section.settings.img | image_url: width: nil | image_tag: class: 'dxr-hotspot_prod-img' }}
+    {% endif %}
+    {% for block in section.blocks  %}
+      {% case block.type %}
+        {% when 'hotspot'%}
+          {% capture variables %}
+            --posX:{{ block.settings.horizontal }}%;
+            --posY:{{ block.settings.vertical }}%;
+            --dist: {{ block.settings.distance }}px;
+            --gap: {{ block.settings.gap }}px;
+            --angle: {{ block.settings.angle }};
+            --tranX: {{ block.settings.translate_x }}%;
+            --tranY: {{ block.settings.translate_y }}%;
+          {% endcapture %}
+          <div class="dxr-hotspot_hotspot" style="{{ variables }}" {{ block.shopify_attributes }}>
+            <div class="dxr-hotspot_hotspot-anchor"></div>
+             <div class="dxr-hotspot_hotspot-angle">
+               <span class="dxr-hotspot_hotspot-line"></span>
+               <div class="dxr-hotspot_hotspot-text-wrap">
+                 {% render 'svg-hotspot-close', class: 'dxr-hotspot_hotspot-close' %}
+                 <h4 class="dxr-hotspot_hotspot-title">{{ block.settings.title }}</h4>
+                 <p class="dxr-hotspot_hotspot-desc">{{ block.settings.desc }}</p>
+               </div>
+             </div>
+          </div>
+      {% endcase %}
+    {% endfor %}
+  </div>
+</div>
+<script>
+   // document.addEventListener("DOMContentLoaded", () => {
+     // if (window.matchMedia("(min-width: 768px)").matches) {
+       document.querySelectorAll('.dxr-hotspot_hotspot').forEach(hotspot => {
+         const anchor = hotspot.querySelector('.dxr-hotspot_hotspot-anchor')
+         anchor.addEventListener('click', () => {
+           if(hotspot.classList.contains('active')){
+             hotspot.classList.remove('active')
+             return;
+           };
+           document.querySelector('.dxr-hotspot_hotspot.active')?.classList.remove('active')
+           hotspot.classList.add('active')
+         })
+         if (window.matchMedia("(max-width: 767px)").matches) {
+           hotspot.querySelector('.dxr-hotspot_hotspot-close').addEventListener('click', () => {
+             hotspot.classList.remove('active');
+           })
+           hotspot.querySelector('.dxr-hotspot_hotspot-line').addEventListener('click', () => {
+             hotspot.classList.remove('active');
+           })
+           
+           // hotspot.querySelector('.dxr-hotspot_hotspot-angle').addEventListener('click', () => {
+           //   hotspot.classList.remove('active');
+           // })
+         }
+       })
+     // }
+   // })
+</script>
+{% schema %}
+  {
+    "name": "DXR Hotspot",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "img",
+        "label": "Product image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Background"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Background mobile"
+      },
+      {
+        "type": "text",
+        "id": "img_width",
+        "label": "Product Image width",
+        "default": "526px"
+      },
+      {
+        "type": "text",
+        "id": "img_width_mobile",
+        "label": "Product Image width mobile",
+        "default": "80%"
+      },
+      {
+        "type": "text",
+        "id": "mnheight",
+        "label": "Min height",
+        "default": "1012px"
+      },
+      {
+        "type": "text",
+        "id": "mnheight_mobile",
+        "label": "Min height mobile",
+        "default": "655px"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "hotspot",
+        "name": "Hotspot",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "Breathability"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "Next to ventilation zippers under the armpits the Dermizax shell offers amazing breathability in more humid or wet conditions, as its non-porous structure prevents clogging by dirt or oils, which can impair breathability over time."
+          },
+          {
+            "type": "header",
+            "content": "Hotspot Position",
+            "info": "With reference of the image"
+          },
+          {
+            "type": "range",
+            "id": "horizontal",
+            "label": "Horizontal position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "vertical",
+            "label": "Vertical position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "header",
+            "content": "Text Position",
+            "info": "With reference of hotspot"
+          },
+          {
+            "type": "range",
+            "id": "distance",
+            "label": "Distance position",
+            "min": 0,
+            "max": 500,
+            "step": 5,
+            "default": 110,
+            "unit": "px"
+          },
+          {
+            "type": "range",
+            "id": "gap",
+            "label": "Gap",
+            "min": 0,
+            "max": 50,
+            "step": 1,
+            "default": 20,
+            "unit": "px"
+          },
+          {
+            "type": "range",
+            "id": "angle",
+            "label": "Angle",
+            "min": 0,
+            "max": 360,
+            "step": 4,
+            "default": 64,
+            "unit": "deg"
+          },
+          {
+            "type": "range",
+            "id": "translate_x",
+            "label": "Move horizontally",
+            "min": -100,
+            "max": 0,
+            "step": 1,
+            "default": 0,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "translate_y",
+            "label": "Move vertically",
+            "min": -50,
+            "max": 50,
+            "step": 1,
+            "default": 0,
+            "unit": "%"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "DXR Hotspot"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,167 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding}};
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .section-id-{{ section.id }} .contact-info-container{
+    padding: {{section.settings.padding}};
+    padding-left: 0;
+    padding-right: 0;
+  }
+  @media (max-width: 767px){
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding_mobile}};
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+    .section-id-{{ section.id }} .contact-info-container{
+      padding: {{section.settings.padding_mobile}};
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+{% endstyle %}
+<div class="section-contact-info-banner section-id-{{ section.id }}">
+  <div class="contact-info-container">
+    <h1 class="cib-title">{{ section.settings.title }}</h1>
+    {% if section.settings.desc != blank %}
+      <p class="cib-desc">{{ section.settings.desc }}</p>
+    {% endif %}
+
+    <div class="contact-info-wrap">
+      <div class="contact-info-column left">
+        {% for block in section.blocks %}
+          {% if block.type == 'info_block' %}
+            <a class="contact-info-single" href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
+              <h4 class="cis-title">{{ block.settings.title }}</h4>
+              <p class="cis-info">{{ block.settings.info }}</p>
+              <span class="cis-icon">
+                {% render 'svg-contact-info-chevron' %}
+              </span>
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="contact-info-column right">
+        {% for block in section.blocks %}
+          {% if block.type == 'address_block' %}
+            <a class="contact-info-single address" href="{{ block.settings.url | default: '#' }}" {{ block.shopify_attributes }}>
+              <h4 class="cis-title">{{ block.settings.title }}</h4>
+              <div class="cis-address-wrap">
+                <h3 class="cis-info office">{{ block.settings.office }}</h3>
+                <p class="cis-info address">{{ block.settings.address | newline_to_br }}</p>
+                <span class="cis-icon">
+                  {% render 'svg-contact-info-chevron' %}
+                </span>
+              </div>
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Contact info banner",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Contact"
+      },
+      {
+        "type": "textarea",
+        "id": "desc",
+        "label": "Description",
+        "default": "Get in touch with Rehall, your go-to destination for premium outdoor and snowboard apparel. Whether you have questions about our products, need support, or want to explore our latest collections, our team is here to help. Contact us today for quick and friendly assistance!"
+      },
+      {
+        "type": "text",
+        "id": "padding",
+        "label": "Padding",
+        "default": "39px 20px 81px"
+      },
+      {
+        "type": "text",
+        "id": "padding_mobile",
+        "label": "Padding Mobile",
+        "default": "27px 20px 25px"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "info_block",
+        "name": "Info block",
+        "limit": 2,
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "CALL"
+          },
+          {
+            "type": "text",
+            "id": "info",
+            "label": "Info",
+            "default": "+31 0475 468196"
+          },
+          {
+            "type": "text",
+            "id": "url",
+            "label": "URL"
+          }
+        ]
+      },
+      {
+        "type": "address_block",
+        "name": "Address block",
+        "limit": 1,
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "OUR OFFICE"
+          },
+          {
+            "type": "text",
+            "id": "office",
+            "label": "Office name",
+            "default": "Rehall | RSD B.V."
+          },
+          {
+            "type": "textarea",
+            "id": "address",
+            "label": "Address",
+            "default": "Boven de Wolfskuil 20<br />6049LZ Herten | Netherlands<br />(During Office Hours 8AM-5PM)"
+          },
+          {
+            "type": "url",
+            "id": "url",
+            "label": "URL"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Contact info banner",
+        "blocks": [
+          {
+            "type": "info_block"
+          },
+          {
+            "type": "info_block"
+          },
+          {
+            "type": "address_block"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

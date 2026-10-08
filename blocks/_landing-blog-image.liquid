@@ -1,0 +1,60 @@
+<div class="landing-blog-content__img-wrap" style="{% if block.settings.margin_top %}--margin-top: {{ block.settings.margin_top }};{%endif %}{% if block.settings.margin_top_mobile %}--margin-top-mobile: {{ block.settings.margin_top_mobile }};{%endif %}">
+  {% if block.settings.img != blank %}
+      {{ block.settings.img | image_url: width: nil | image_tag: class: 'landing-blog-content__img desktop-only' }}
+      {{ block.settings.img_mobile | default: block.settings.img | image_url: width: nil | image_tag: class: 'landing-blog-content__img mobile-only' }}
+  {% else %}
+      {{ 'image' | placeholder_svg_tag: 'landing-blog-content__img placeholder' }}
+  {% endif %}
+</div>
+{% style %}
+.landing-blog-content__img-wrap{
+  margin-top: var(--margin-top);
+}
+.landing-blog-content__img{
+  height: 380px;
+  width: 100%;
+  object-fit: cover;
+}
+.landing-blog-content__img.placeholder {
+    background: #f7f7f7;
+}
+@media (max-width: 767px) {
+  .landing-blog-content__img-wrap{
+    margin-top: var(--margin-top-mobile);
+  }
+}
+{%endstyle %}
+{% schema %}
+{
+  "name": "Image",
+  "settings": [
+    {
+    "type": "image_picker",
+    "id": "img",
+    "label": "Image"
+    },
+    {
+    "type": "image_picker",
+    "id": "img_mobile",
+    "label": "Image mobile"
+    },
+    {
+      "type": "text",
+      "id": "margin_top",
+      "label": "Margin Top",
+      "default": "0px"
+    },
+    {
+      "type": "text",
+      "id": "margin_top_mobile",
+      "label": "Margin Top - Mobile",
+      "default": "0px"
+    },
+  ],
+  "presets": [
+        {
+        "name": "Image"
+        },
+    ]
+}
+{% endschema %}

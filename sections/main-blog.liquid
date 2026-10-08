@@ -1,0 +1,183 @@
+<div data-section-type="blog-template">
+  {% paginate blog.articles by 12 %}
+
+  <div class="container page-header page-header--triplet page-header--middle-main" data-cc-animate>
+    <div class="page-header__left">
+      {% if section.settings.show_filters  and blog.all_tags.size > 0 %}
+        <a href="#" class="toggle-btn js-only" data-toggle-filters>
+          <span class="button-icon">{% render 'svg-filter' %}</span>
+          <span>{{ 'collections.filtering.filter' | t }}</span>
+          {% if current_tags.size > 0 %}
+            <span class="toggle-btn__count">({{ current_tags | size }})</span>
+          {% endif %}
+        </a>
+      {% endif %}
+    </div>
+    <div class="page-header__middle">
+      <h1 class="page-header__title">{{ blog.title | escape }}</h1>
+    </div>
+    <div class="page-header__right">
+      {% if section.settings.show_sharing_icons %}
+        {% render 'social-sharing', share_title: blog.title, share_permalink: blog.url, share_image: false %}
+      {% endif %}
+      {% if section.settings.show_rss_icon %}
+        <a class="rsslink" href="{{ blog.url }}.atom" title="{{ blog.title | escape }} RSS">{% render 'svg-rss' %}</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="filter-modal cc-popup cc-popup--left" aria-hidden="true" data-freeze-scroll="true">
+    <div class="cc-popup-background"></div>
+    <div class="cc-popup-modal" role="dialog" aria-modal="true" aria-labelledby="FilterHeading">
+      <div class="cc-popup-container">
+        <button type="button" class="cc-popup-close tap-target" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+          {%- render 'popup-close' -%}
+        </button>
+        <div class="cc-popup-content" data-ajax-container="filters">
+          <div class="filters">
+            <div class="filters__inner">
+              <div class="filters__heading">
+                <h4 class="filters__heading-text" id="FilterHeading">{{ 'collections.filtering.heading' | t }}</h4>
+              </div>
+
+              <div class="filter-group">
+                <div class="filter-group__items">
+                  <a href="{{ blog.url }}" class="filter-group__item{% if current_tags == blank %} filter-group__item--active{% endif %}">
+                    <input class="filter-group__checkbox" type="checkbox" {% if current_tags == blank %}checked{% endif %} aria-hidden="true">
+                    <span class="filter-group__item__text">{{- 'collections.filtering.all' | t -}}</span>
+                  </a>
+
+                  {% for tag in blog.all_tags %}
+                    <a href="{{ tag | link_to_tag: tag | split: 'href="' | last | split: '"' | first }}" class="filter-group__item{% if current_tags contains tag %} filter-group__item--active{% endif %}">
+                      <input class="filter-group__checkbox" type="checkbox" {% if current_tags contains tag %}checked{% endif %} aria-hidden="true">
+                      <span class="filter-group__item__text">{{ tag }}</span>
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  {%- if blog.articles.size > 0 -%}
+    <div class="flexible-layout">
+      {%- for article in blog.articles -%}
+        {%- render 'article-block', article: article, heading_tag: 'h2' -%}
+      {%- endfor -%}
+    </div>
+  {%- else -%}
+    <h5 class="align-centre spaced-text-row">{{ 'blogs.general.no_matches' | t }}</h5>
+  {%- endif -%}
+
+  {% render 'pagination-control', paginate: paginate %}
+
+  {% endpaginate %}
+</div>
+
+
+{% schema %}
+  {
+    "name": "Blog pages",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_filters",
+        "label": "Show tag filter",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_author",
+        "label": "Show author",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_date",
+        "label": "Show date",
+        "default": true
+      },
+	    {
+        "type": "checkbox",
+        "id": "show_excerpts",
+        "label": "Show excerpt",
+        "info": "Change excerpts by editing your blog posts. [Learn more](https:\/\/help.shopify.com\/en\/manual\/online-store\/blogs\/writing-blogs#display-an-excerpt-from-a-blog-post)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_article_tags",
+        "label": "Show tags underneath articles",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_sharing_icons",
+        "label": "Show social sharing icons",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_rss_icon",
+        "label": "Show RSS feed link",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "crop_ratio",
+        "label": "Image size",
+        "options": [
+          {
+            "value": "",
+            "label": "Natural (no crop)"
+          },
+          {
+            "value": "0.67",
+            "label": "Portrait (2:3)"
+          },
+          {
+            "value": "1.0",
+            "label": "Square (1:1)"
+          },
+          {
+            "value": "1.33",
+            "label": "Landscape (4:3)"
+          },
+          {
+            "value": "1.78",
+            "label": "Wide (16:9)"
+          }
+        ],
+        "default": "1.78"
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

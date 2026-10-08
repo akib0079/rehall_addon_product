@@ -1,0 +1,76 @@
+{%- liquid
+  # image: image object - primary image
+  # image_position: string - primary image alignment, for object-position
+  # mobile_image: image object - mobile image
+  # mobile_image_position: string - mobile image alignment, for object-position
+  # eager: boolean - alters loading attribute
+  # wide: boolean - alters need for js srcset
+  # preload: boolean - passes preload to image_tag, adding srcset to preload http header
+
+  if eager
+    assign loading = 'eager'
+  else
+    assign loading = 'lazy'
+  endif
+
+  if no_transition_in
+    assign img_class = 'background-image__image'
+  else
+    assign img_class = 'background-image__image load-trans'
+  endif
+
+  assign preload = preload | default: false
+  assign image_max_width = image.width | at_most: 5760
+  assign widths = '180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1950, 2100, 2260, 2450, 2700, 3000, 3350, 3750, 4100, ' | append: image_max_width
+  assign desktop_image_url = image | image_url: width: image_max_width
+
+  if wide
+    assign desktop_sizes = '(min-width: ' | append: settings.page_container | append: 'px) ' | append: settings.page_container | append: 'px, 100vw'
+    assign desktop_image_tag = desktop_image_url | image_tag: widths: widths, sizes: desktop_sizes, class: img_class, loading: loading, preload: preload, onload: 'this.classList.add("loaded")', alt: image.alt
+  else
+    assign desktop_image_tag = desktop_image_url | image_tag: widths: widths, class: img_class, loading: loading, preload: preload, onload: 'this.classList.add("loaded")', alt: image.alt
+    assign desktop_image_tag = desktop_image_tag | replace: ' src="', ' src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-src="' | replace: ' srcset="', ' data-srcset="' | replace: ' onload=', ' data-onload='
+  endif
+
+  if image.presentation
+    assign image_position = image.presentation.focal_point
+  endif
+
+  if mobile_image
+    assign mobile_image_url = mobile_image | image_url: width: 4000
+    assign mobile_image_tag = mobile_image_url | image_tag: widths: widths, sizes: '100vw', class: img_class, loading: loading, preload: preload, onload: 'this.classList.add("loaded")', alt: mobile_image.alt
+    if mobile_image.presentation
+      assign mobile_image_position = mobile_image.presentation.focal_point
+    endif
+    unless wide
+      assign mobile_image_tag = mobile_image_tag | replace: ' src="', ' src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-src="' | replace: ' srcset="', ' data-srcset="' | replace: ' sizes="100vw"', '' | replace: ' onload=', ' data-onload='
+    endunless
+  endif
+ if wide_image
+    assign wide_image_url = wide_image | image_url: width: 4000
+    assign wide_image_tag = wide_image_url | image_tag: widths: widths, sizes: '100vw', class: img_class, loading: loading, preload: preload, onload: 'this.classList.add("loaded")', alt: wide_image.alt
+    if wide_image.presentation
+      assign wide_image_position = wide_image.presentation.focal_point
+    endif
+    unless wide
+      assign wide_image_tag = mobile_image_tag | replace: ' src="', ' src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-src="' | replace: ' srcset="', ' data-srcset="' | replace: ' sizes="100vw"', '' | replace: ' onload=', ' data-onload='
+    endunless
+  endif
+-%}
+{% if wide_image != blank %}
+  <div class="background-image wide-only {{ extra_classes }}" style="--bg-pos: {{ wide_image_position | default: 'center' }}; --ar-padding: {{ 1 | divided_by: wide_image.aspect_ratio | times: 100 }}%; --full-url: url({{ wide_image_url }})">
+    {{ wide_image_tag }}
+  </div>
+{% endif %}
+
+<div class="background-image{% if mobile_image != blank %} desktop-only{% endif %} {{ extra_classes }}" style="--bg-pos: {{ image_position | default: 'center' }}; --ar-padding: {{ 1 | divided_by: image.aspect_ratio | times: 100 }}%; --full-url: url({{ desktop_image_url }})">
+  {{ desktop_image_tag }}
+</div>
+
+{% if mobile_image != blank %}
+  <div class="background-image mobile-only {{ extra_classes }}" style="--bg-pos: {{ mobile_image_position | default: 'center' }}; --ar-padding: {{ 1 | divided_by: mobile_image.aspect_ratio | times: 100 }}%; --full-url: url({{ mobile_image_url }})">
+    {{ mobile_image_tag }}
+  </div>
+{% endif %}
+
+

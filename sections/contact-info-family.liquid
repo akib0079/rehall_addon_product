@@ -1,0 +1,122 @@
+{% style %}
+  .section-id-{{ section.id }}{
+    padding: {{section.settings.padding}};
+  }
+  @media (max-width: 767px){
+    .section-id-{{ section.id }}{
+      padding: {{section.settings.padding_mobile}};
+    }
+  }
+{% endstyle %}
+<div class="section-contact-info-family section-id-{{ section.id }}">
+  <div class="section-container">
+    <h2 class="cif-title">{{ section.settings.title | newline_to_br }}</h2>
+    <div class="cif_promo-wrap">
+      {% for block in section.blocks %}
+          {% if block.type == 'promo_block' %}
+            <div class="cif_promo-single" href="{{ block.settings.info | default: '#' }}" {{ block.shopify_attributes }}>
+              {% if block.settings.img != blank %}
+                {{ block.settings.img | image_url: width: nil | image_tag: class: 'cif_promo-img' }}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'cif_promo-img placeholder' }}
+              {% endif %}
+               <div class="cif_promo-content-wrap">
+                <div class="cif_promo-wide-left">
+                  <h3 class="cif_promo-title">{{ block.settings.title }}</h3>
+                  {% if block.settings.desc != blank %}
+                    <p class="cif_promo-desc">{{ block.settings.desc }}</p>
+                  {% endif %}
+                  </div>
+                  {% render 'btn-global', class: 'cif_promo-btn btn', url: block.settings.url, default: '#', label: block.settings.btn_text, icon: true %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Contact info family",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "do you want to be part of<br /> our rehall family?"
+      },
+      {
+        "type": "text",
+        "id": "padding",
+        "label": "Padding",
+        "default": "66px 0px 95px"
+      },
+      {
+        "type": "text",
+        "id": "padding_mobile",
+        "label": "Padding Mobile",
+        "default": "25px 0px 104px"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "promo_block",
+        "name": "Promo block",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "default": "Become a rehall PARTNER"
+          },
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "Join the Rehall family as a B2B partner or retailer and bring our high-quality outdoor and snowboard apparel to your customers. Partnering with Rehall means accessing exclusive collections, competitive pricing, and dedicated support to help grow your business. Contact us today to become an official Rehall retailer and elevate your store’s offerings!"
+          },
+          {
+            "type": "text",
+            "id": "btn_text",
+            "label": "Button text",
+            "default": "CONTACT US"
+          },
+          {
+            "type": "url",
+            "id": "url",
+            "label": "URL"
+          }
+        ]
+      },
+    ],
+    "presets": [
+      {
+        "name": "Contact info family",
+        "blocks": [
+          {
+            "type": "promo_block"
+          },
+          {
+            "type": "promo_block"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'btn-global', class: 'cif_promo-btn btn', url: block.settings.url
+    | default: '#', label: block.settings.btn_text, icon: true %}"
+  to: "{% render 'btn-global', class: 'cif_promo-btn btn', url: block.settings.url,
+    default: '#', label: block.settings.btn_text, icon: true %}"
+  position: 1322..1458
+{%- endcomment -%}

@@ -1,0 +1,409 @@
+<div id="section-id-{{ section.id }}" class="card-scheme card-scheme--{{ section.settings.color_scheme }} card-br-oh" data-section-type="image-with-text-overlay">
+  {% style %}
+    {%- if section.settings.height == 'fixed' -%}
+    #section-id-{{ section.id }} {
+      --image-height: {{ section.settings.height_mobile }}px;
+    }
+    {%- endif -%}
+
+    @media (min-width: 768px) {
+      {%- if section.settings.height == 'fixed' -%}
+      #section-id-{{ section.id }} {
+        --image-height: {{ section.settings.height_desktop }}px;
+      }
+      {%- endif -%}
+    }
+  {% endstyle %}
+
+  {%- liquid
+    assign show_overlay_text = false
+    if section.settings.title != blank or section.settings.subheading != blank or section.settings.text != blank or section.settings.button_label_1 != blank or section.settings.button_label_2 != blank
+      assign show_overlay_text = true
+      assign wrap_image_with_link = true
+      if section.settings.image_link == blank or section.settings.text contains '</a>' or section.settings.button_url_1 != blank or section.settings.button_url_2 != blank
+        assign wrap_image_with_link = false
+      endif
+    elsif section.settings.image_link != blank
+      assign wrap_image_with_link = true
+    endif
+
+    if section.settings.mobile_overlay_under and section.settings.color_scheme == 'none'
+      assign image_class = 'card-br-oh'
+    else
+      assign image_class = ''
+    endif
+  -%}
+  <div class="height--{{ section.settings.height }} image-overlay image-overlay--bg-{{ section.settings.overlay_style }} {% if section.settings.mobile_overlay_under %}overlay-text-parent--mobile-stack{% endif %}" data-cc-animate data-cc-animate-delay="0.2s">
+    {%- if wrap_image_with_link -%}
+      <a class="image-overlay__image-link focus-inset" href="{{ section.settings.image_link }}">
+    {%- endif -%}
+
+    {%- if section.settings.image == blank -%}
+      <div class="placeholder-image placeholder--banner{% if show_overlay_text %} dark{% endif %}" {% if section.settings.height == 'adapt' %}style="padding-top: 50%"{% endif %}>
+        {% capture current %}{% cycle 1, 2 %}{% endcapture %}
+        {{ 'lifestyle-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    {%- else -%}
+
+      {%-
+        render 'background-image',
+          image: section.settings.image,
+          mobile_image: section.settings.mobile_image,
+          eager: true,
+          wide: true,
+          extra_classes: image_class
+      -%}
+
+    {%- endif -%}
+
+    {%- if show_overlay_text -%}
+      <div class="overlay-text overlay-text--for-banner overlay--v-{{ section.settings.text_alignment | split: ' ' | first }} overlay--h-{{ section.settings.text_alignment | split: ' ' | last }} image-overlay__over">
+        <div class="overlay-text__inner" style="max-width: {{ section.settings.content_max_width }}px">
+          <div class="overlay-text__text">
+            {%- if section.settings.subheading != blank -%}
+              <div class="overlay-text__subheading subheading subheading--over">{{ section.settings.subheading | escape }}</div>
+            {%- endif -%}
+            {%- if section.settings.title != blank -%}
+              {% if section.settings.use_h1 %}
+                <h1 class="overlay-text__title {{ section.settings.title_size }}">{% render 'feature-heading-text', text: section.settings.title, item_settings: section.settings %}</h1>
+              {% else %}
+                <h2 class="overlay-text__title {{ section.settings.title_size }}">{% render 'feature-heading-text', text: section.settings.title, item_settings: section.settings %}</h2>
+              {% endif %}
+            {%- endif -%}
+            {%- if section.settings.text != blank -%}
+              <div class="overlay-text__rte rte {% if section.settings.enlarge_text %}large-text{% endif %}">{{ section.settings.text }}</div>
+            {%- endif -%}
+            {%- if section.settings.button_label_1 != blank or section.settings.button_label_2 != blank -%}
+              <div class="overlay-text__button-row">
+                {%- if wrap_image_with_link -%}
+                  {%- if section.settings.button_label_1 != blank -%}
+                    <span class="overlay-text__button btn btn--secondary btn--link"><span class="btn__text">{{ section.settings.button_label_1 }}</span></span>
+                  {%- endif -%}
+                  {%- if section.settings.button_label_2 != blank -%}
+                    <span class="overlay-text__button btn btn--secondary btn--link"><span class="btn__text">{{ section.settings.button_label_2 }}</span></span>
+                  {%- endif -%}
+                {%- else -%}
+                  {%- if section.settings.button_label_1 != blank -%}
+                    <a class="overlay-text__button btn btn--secondary btn--link" href="{{ section.settings.button_url_1 }}"><span class="btn__text">{{ section.settings.button_label_1 | escape }}</span></a>
+                  {%- endif -%}
+                  {%- if section.settings.button_label_2 != blank -%}
+                    <a class="overlay-text__button btn btn--secondary btn--link" href="{{ section.settings.button_url_2 }}"><span class="btn__text">{{ section.settings.button_label_2 | escape }}</span></a>
+                  {%- endif -%}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if wrap_image_with_link -%}
+      </a>
+    {%- endif -%}
+  </div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Image with text overlay",
+    "class": "section-image-with-text-overlay card",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image",
+        "info": "2048 x 1024px recommended"
+      },
+      {
+        "type": "image_picker",
+        "id": "mobile_image",
+        "label": "Mobile image",
+        "info": "1024px x 1024px recommended"
+      },
+      {
+        "type": "radio",
+        "id": "height",
+        "label": "Image height",
+        "options": [
+          {
+            "value": "adapt",
+            "label": "Natural"
+          },
+          {
+            "value": "full",
+            "label": "Full screen"
+          },
+          {
+            "value": "fixed",
+            "label": "Fixed height"
+          }
+        ],
+        "default": "fixed"
+      },
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop fixed height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile fixed height",
+        "default": 460
+      },
+      {
+        "type": "url",
+        "id": "image_link",
+        "label": "Image link",
+        "info": "Not used if buttons or text contain links"
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "range",
+        "id": "content_max_width",
+        "min": 500,
+        "max": 1200,
+        "step": 20,
+        "unit": "px",
+        "label": "Maximum content width",
+        "default": 800
+      },
+      {
+        "type": "text",
+        "id": "subheading",
+        "label": "Subheading",
+        "default": "Tell your story"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "info": "Enter <br> for a line-break",
+        "default": "Text heading"
+      },
+      {
+        "type": "select",
+        "id": "title_size",
+        "label": "Heading size",
+        "default": "hsl-style",
+        "options": [
+          {
+            "label": "Regular",
+            "value": "h1-style"
+          },
+          {
+            "label": "Impact",
+            "value": "hl-style"
+          },
+          {
+            "label": "Extra impact",
+            "value": "hsl-style"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "use_h1",
+        "label": "Set as primary page heading",
+        "info": "Use <h1> tag. One per page recommended. [Read more](https://cleancanvas.co.uk/support/mode/section-h1-setting)",
+        "default": false
+      },
+      {
+        "type": "richtext",
+        "id": "text",
+        "label": "Text",
+        "default": "<p>And optional subtext</p>"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "button_label_1",
+        "label": "Button 1 label",
+        "default": "Shop this"
+      },
+      {
+        "type": "url",
+        "id": "button_url_1",
+        "label": "Button 1 link"
+      },
+      {
+        "type": "text",
+        "id": "button_label_2",
+        "label": "Button 2 label",
+        "default": "Shop all"
+      },
+      {
+        "type": "url",
+        "id": "button_url_2",
+        "label": "Button 2 link"
+      },
+      {
+        "type": "select",
+        "id": "text_alignment",
+        "label": "Text overlay position",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ],
+        "default": "center center"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "id": "mobile_overlay_under",
+        "type": "checkbox",
+        "label": "Show text below image on mobile",
+        "default": false
+      },
+      {
+        "id": "overlay_style",
+        "type": "select",
+        "label": "Overlay style",
+        "default": "shadow",
+        "options": [
+          {
+            "value": "full",
+            "label": "Tint"
+          },
+          {
+            "value": "shadow",
+            "label": "Text shadow"
+          },
+          {
+            "value": "full image-overlay--bg-shadow",
+            "label": "Text shadow and tint"
+          },
+          {
+            "value": "no_background",
+            "label": "No background"
+          }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "info": "Only seen when text shows under image",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Heading text highlight"
+      },
+      {
+        "type": "text",
+        "id": "heading_highlight_text",
+        "label": "Text to highlight",
+        "info": "Case-sensitive. To highlight words or phrases that are not next to each other, use a comma. For example 'free shipping, returns'"
+      },
+      {
+        "type": "checkbox",
+        "id": "heading_highlight_font",
+        "label": "Enable highlight font",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "heading_highlight_stencil",
+        "label": "Enable stencil",
+        "default": false
+      },
+      {
+        "type": "color",
+        "id": "heading_highlight_color",
+        "label": "Color",
+        "default": "rgba(0,0,0,0)"
+      },
+      {
+        "type": "color_background",
+        "id": "heading_highlight_gradient",
+        "label": "Color gradient",
+        "info": "A gradient stencil is not possible"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Image with text overlay",
+        "settings": {
+        }
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,133 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "full_width": false
+      }
+    },
+    "landing_blog_banner_1_JGP3wc": {
+      "type": "landing-blog-banner-1",
+      "name": "Landing - Blog Banner 1",
+      "settings": {
+        "title_1": "Conquer the <em>mountain</em>",
+        "title_2": "with rehall",
+        "desc": "<p>Emfum ski apparel engineered for peak rmance in the most extreme conditio Igned by athletes, built for the bold.</p>",
+        "trustpilot": "shopify://shop_images/Trust_Pilot_Micro_Combo.webp",
+        "second_layout": false,
+        "img_1": "shopify://shop_images/image_16.webp",
+        "img_2": "shopify://shop_images/3_9.webp",
+        "decor": "shopify://shop_images/Vector_2.webp"
+      }
+    },
+    "landing_blog_content_9r3Ykr": {
+      "type": "landing-blog-content",
+      "blocks": {
+        "landing_blog_image_CcyUMC": {
+          "type": "_landing-blog-image",
+          "name": "Image",
+          "settings": {
+            "img": "shopify://shop_images/image_16_1.webp",
+            "margin_top": "0px",
+            "margin_top_mobile": "0px"
+          },
+          "blocks": {}
+        },
+        "landing_blog_text_Va8kta": {
+          "type": "_landing-blog-text",
+          "name": "Text",
+          "settings": {
+            "title": "Redefined new style go!",
+            "desc": "<p>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection, our gear ensures you're always at your best. Explore the backcountry, conquer new tricks in the terrain park, or simply enjoy the breathtaking views – all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.</p><p>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection.</p><p>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection, our gear ensures you're always at your best. Explore the backcountry, conquer new tricks in the terrain park, or simply enjoy the breathtaking views – all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.<br/><br/>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection.</p>",
+            "margin_top": "64px",
+            "margin_top_mobile": "30px",
+            "scroll": true
+          },
+          "blocks": {}
+        },
+        "landing_blog_enumbered_E7TzQH": {
+          "type": "_landing-blog-enumbered",
+          "name": "Numbered List",
+          "settings": {
+            "numbered": true,
+            "margin_top": "129px",
+            "margin_top_mobile": "30px",
+            "scroll": true,
+            "scroll_title": "Thermal insulation"
+          },
+          "blocks": {
+            "landing_blog_enumbered_item_9PwaFT": {
+              "type": "_landing-blog-enumbered-item",
+              "name": "Item",
+              "settings": {
+                "title": "Thermal insulation",
+                "desc": "<p>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection.</p>"
+              },
+              "blocks": {}
+            },
+            "landing_blog_enumbered_item_8RUFFV": {
+              "type": "_landing-blog-enumbered-item",
+              "name": "Item",
+              "settings": {
+                "title": "Thermal insulation",
+                "desc": "<p>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection.</p>"
+              },
+              "blocks": {}
+            },
+            "landing_blog_enumbered_item_Ngjkji": {
+              "type": "_landing-blog-enumbered-item",
+              "name": "Item",
+              "settings": {
+                "title": "Thermal insulation",
+                "desc": "<p>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection.</p>"
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "landing_blog_enumbered_item_9PwaFT",
+            "landing_blog_enumbered_item_8RUFFV",
+            "landing_blog_enumbered_item_Ngjkji"
+          ]
+        },
+        "landing_blog_text_D6QcMG": {
+          "type": "_landing-blog-text",
+          "name": "Text",
+          "settings": {
+            "title": "Gear up for the winter",
+            "desc": "<ul><li>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. </li><li>Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection, our gear ensures you're always at your best. </li><li>Explore the backcountry, conquer new tricks in the terrain park, or simply enjoy the breathtaking views – all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.</li><li>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. </li><li>Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection, our gear ensures you're always at your best. </li><li>Explore the backcountry, conquer new tricks in the terrain park, or simply enjoy the breathtaking views – all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.</li><li>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. </li><li>Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection, our gear ensures you're always at your best. </li><li>Explore the backcountry, conquer new tricks in the terrain park, or simply enjoy the breathtaking views – all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.</li><li>As the crisp mountain air fills your lungs and the sun glistens on the freshly powdered slopes, you carve your path through a winter wonderland. </li><li>Rehall's latest collection is designed for those who seek adventure and demand performance. From the adrenaline-pumping descents to the serene moments of reflection, our gear ensures you're always at your best. </li><li>Explore the backcountry, conquer new tricks in the terrain park, or simply enjoy the breathtaking views – all while wrapped in comfort and style. Gear up and embrace the thrill of the ride with Rehall.<br/><br/><br/><br/></li></ul>",
+            "margin_top": "125px",
+            "margin_top_mobile": "40px",
+            "scroll": true
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "landing_blog_image_CcyUMC",
+        "landing_blog_text_Va8kta",
+        "landing_blog_enumbered_E7TzQH",
+        "landing_blog_text_D6QcMG"
+      ],
+      "name": "Landing - Blog Content",
+      "settings": {
+        "scroller_title": "Conquer the mountain"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "landing_blog_banner_1_JGP3wc",
+    "landing_blog_content_9r3Ykr"
+  ]
+}

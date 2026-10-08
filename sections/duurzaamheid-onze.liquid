@@ -1,0 +1,102 @@
+<section class="duur-onze-section"{% if section.settings.scroller-id != blank %} data-scroller-id="{{ section.settings.scroller-id }}"{% endif %}>
+  <div class="duur-onze-content-container">
+    {% if section.settings.subtitle != blank %}
+      <li class="duur-section-subtitle"><span>{{ section.settings.subtitle }}</span></li>
+    {% endif %}
+    {% if section.settings.title != blank %}
+      <h2 class="duur-section-title">{{ section.settings.title }}</h2>
+    {% endif %}
+    {% if section.settings.desc != blank %}
+      <div class="duur-onze-desc">
+        {{ section.settings.desc }}
+      </div>
+    {% endif %}
+  </div>
+  
+  <div class="section-container">
+  <div class="duur-onze-blocks-wrap">
+    {% for block in section.blocks %}
+      <div class="duur-onze__block-item" {{ block.shopify_attributes }}>
+        <h4 class="duur-onze__block-title">
+          {{ block.settings.title }}
+        </h4>
+      {% if block.settings.desc != blank %}
+        <p class="duur-onze__block-desc">
+          {{ block.settings.desc | newline_to_br }}
+        </p>
+      {% endif %}
+      </div>
+    {% endfor %}
+    {% if section.settings.bg != blank %}
+      {{ section.settings.bg | image_url: width: nil | image_tag: class: 'duur-onze__blocks-bg desktop-only'  }}
+      {{ section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil | image_tag: class: 'duur-onze__blocks-bg mobile-only'  }}
+    {% endif %}
+  </div>
+  </div>
+</section>
+{% schema %}
+  {
+    "name": "Duurzaamheid Onze visie",
+    "settings": [
+      {
+        "type": "text",
+        "id": "scroller-id",
+        "label": "Scroller ID",
+        "default": "onze-visie",
+      },
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "Sub title",
+        "default": "Onze visie",
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Re-use reduce repair Rehall",
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Dummy para</p><p>Dummy para</p>",
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Items Background image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Items Background image mobile"
+      },
+    ],
+    "blocks": [
+      {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Name",
+            "default": "Re-use"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "We hergebruiken materialen om de\n impact op het milieu te verkleinen."
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Duurzaamheid Onze"
+      }
+    ]
+  }
+{% endschema %}

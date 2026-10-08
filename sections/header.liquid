@@ -1,0 +1,795 @@
+{% include "eyefitu-sizing" %}
+{%- assign mobile_expand_with_entire_link = true -%}
+
+{% style %}
+  .logo img {
+    width: {{ section.settings.logo_img_width_int }}px;
+  }
+  .logo-area__middle--logo-image {
+    max-width: {{ section.settings.logo_img_width_int }}px;
+  }
+  @media (max-width: 767.98px) {
+    .logo img {
+      width: {{ section.settings.mobile_logo_img_width_int }}px;
+    }
+    .logo-area__middle--logo-image {
+      max-width: {{ section.settings.mobile_logo_img_width_int }}px;
+    }
+  }
+  {%- if section.settings.enable_sticky -%}
+  .section-header {
+    position: -webkit-sticky;
+    position: sticky;
+    top: var(--magic-margin);
+  }
+  {%- endif -%}
+{% endstyle %}
+
+{%- if template == 'gift_card' -%}
+
+{% comment %} Gift card template logo {% endcomment %}
+{%- if section.settings.logo != blank -%}
+  <h1 class="logo">
+    {% capture img_size %}{{ section.settings.logo_img_width_int | times: 2 }}x{% endcapture %}
+    <img src="{{ section.settings.logo | img_url: img_size }}" alt="{{ section.settings.logo.alt | escape }}" width="{{ section.settings.logo.width }}" height="{{ section.settings.logo.height }}" />
+  </h1>
+{%- else -%}
+  <h1><span class="logotext">{{ shop.name }}</span></h1>
+{%- endif -%}
+
+{%- else -%}
+
+{%- assign featured_links = section.settings.nav_featured_link | split: ', ' -%}
+<div data-section-type="header" data-cc-animate>
+  {% for block in section.blocks  %}
+  {% if block.type == 'top-header' %}
+  <div class="card card-scheme--2" {{ block.shopify_attributes }}>
+    <div class="header__top wide-container">
+    <div class="header__top_col">
+      <h5 class="header__top_heading">
+        {{ block.settings.heading }}
+      </h5>
+      {%- assign top_links = block.settings.list | split: '|' -%}
+      {% if top_links.size > 0 %}
+      <ul class="header__top_list">
+        {% for link in top_links %}
+        <li class="header__top_list-item">
+          {% render 'svg-checked-circle' %}
+          <span>{{ link | strip }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+
+    <div class="header__top_col">
+      <div class="header__top_star-main">
+        {% render 'star-rating', rating: block.settings.rating, class: 'header__top__stars-wrap' %}
+        <h6 class="header__top_star_heading">{{ block.settings.rating | times: 1.0 | round: 1 }}</h6>
+      </div>
+      <p class="header__top_star_para">{{ block.settings.rating_text }}</p>
+    </div>
+  </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+  
+  <div id="pageheader" class="pageheader pageheader--layout-{{ section.settings.menu_layout }} pageheader--layout-inline-permitted{% if section.settings.enable_sticky %} pageheader--sticky{% endif %} card card--header">
+    <div class="logo-area wide-container">
+      <div class="logo-area__left">
+        <div class="logo-area__left__inner">
+          <button class="btn--icon mobile-nav-toggle tap-target" aria-label="{{ 'general.navigation.menu_toggle_aria_label' | t }}" aria-controls="MobileNavigationDrawer">
+            {%- render 'svg-menu' -%}
+          </button>
+
+          {% if section.settings.enable_search %}
+            <a class="show-search-link mobile-only" href="{{ routes.search_url }}">
+              <span class="show-search-link__text visually-hidden">{{ 'layout.search.open' | t }}</span>
+              <span class="show-search-link__icon">{% render 'svg-search' %}</span>
+            </a>
+          {% endif %}
+
+          <div class="navigation navigation--desktop" role="navigation" aria-label="{{ 'general.navigation.main_navigation_aria_label' | t }}">
+            <div class="navigation__tier-1-container">
+              {% render 'main-nav-links', link_list: section.settings.menu_linklist, mobile: false, featured_links: featured_links %}
+            </div>
+
+             <form class="header__search-form" action="{{ routes.search_url }}" method="get">
+              <input type="text" class="header__search-field" placeholder="Zoeken" name="q">
+              <input type="hidden" name="options[unavailable_products]" value="hide" />
+              <button type="submit" class="header__search-button" >{% render 'svg-search-alt' %}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="logo-area__middle logo-area__middle--logo-{% if section.settings.logo != blank %}image{% else %}text{% endif %}">
+        <div class="logo-area__middle__inner">
+          <div class="logo" itemscope itemtype="http://schema.org/Organization">
+            <meta itemprop="name" content="{{ shop.name | escape }}">
+
+            {%- if request.page_type == 'index' and section.settings.logo_h1 -%}
+              <h1 class="logo__h1">
+            {%- endif -%}
+
+            <a class="logo__link" href="{{ routes.root_url }}" title="{{ shop.name }}" itemprop="url">
+              {%- if section.settings.logo != blank -%}
+                {%- capture img_size -%}{{ section.settings.logo_img_width_int | times: 2 }}x{%- endcapture -%}
+                <img class="logo__image desktop-only" src="{{ section.settings.logo | img_url: img_size }}" alt="{{ section.settings.logo.alt | default: shop.name | escape }}" width="{{ section.settings.logo.width }}" height="{{ section.settings.logo.height }}" itemprop="logo" />
+                <img class="logo__image mobile-only" src="{{ section.settings.logo_mobile | default: section.settings.logo | img_url: img_size }}" alt="{{ section.settings.logo.alt | default: shop.name | escape }}" width="{{ section.settings.logo.width }}" height="{{ section.settings.logo.height }}" itemprop="logo" />
+              {%- else -%}
+                <span class="logotext">{{ shop.name }}</span>
+              {%- endif -%}
+            </a>
+
+            {%- if request.page_type == 'index' and section.settings.logo_h1 -%}
+              </h1>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="logo-area__right">
+        <div class="logo-area__right__inner">
+          {% if section.settings.show_portal  %}
+            <a class="header-portal-link" href="{{ section.settings.portal_url | default: '#' }}" aria-label="{{ section.settings.portal }}">
+              <span class="header-account-link__icon">{% render 'svg-briefcase' %}</span>
+            {% if section.settings.portal != blank %}
+              <span class="header-account-link__text desktop-only">{{ section.settings.portal }}</span>
+            {% endif %}
+            </a>
+          {% endif %}
+          {% if shop.customer_accounts_enabled %}
+            {% if customer %}
+              <a class="header-account-link" href="{{ routes.account_url }}" aria-label="{{ 'layout.customer.account' | t }}">
+                <span class="header-account-link__text desktop-only visually-hidden">{{ 'layout.customer.account' | t }}</span>
+                <span class="header-account-link__icon">{% render 'svg-user' %}</span>
+              </a>
+            {% else %}
+              <a class="header-account-link" href="{{ routes.account_login_url }}" aria-label="{{ 'layout.customer.account' | t }}">
+                <span class="header-account-link__text desktop-only visually-hidden">{{ 'layout.customer.account' | t }}</span>
+                <span class="header-account-link__icon">{% render 'svg-user' %}</span>
+              </a>
+            {% endif %}
+          {% endif %}
+          {% if section.settings.enable_search %}
+            <a class="show-search-link" href="{{ routes.search_url }}">
+              <span class="show-search-link__text visually-hidden">{{ 'layout.search.open' | t }}</span>
+              <span class="show-search-link__icon">{% render 'svg-search' %}</span>
+            </a>
+          {% endif %}
+          <a class="cart-link_custom" href="{{ routes.cart_url }}">
+            <span class="cart-link__label{% unless section.settings.show_cart_icon_label %} visually-hidden{% endunless %}">
+              {{- 'layout.header.cart' | t -}}
+            </span>
+            <span class="cart-link__icon">
+              {%- if section.settings.cart_icon == 'basket' -%}
+                {%- render 'svg-basket' -%}
+              {%- elsif section.settings.cart_icon == 'bag' -%}
+                {%- render 'svg-bag' -%}
+              {%- else -%}
+                {%- render 'svg-cart' -%}
+              {%- endif -%}
+              {%- if cart.item_count > 0 -%}
+                <span class="cart-link__count">({{ cart.item_count }})</span>
+              {%- endif -%}
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% for block in section.blocks  %}
+    {% if block.type == 'bottom-header' %}
+      <div class="card card-scheme--2" {{ block.shopify_attributes }}>
+        <div class="header__bottom wide-container">
+          <h6 class="header__bottom_text"><span class="desktop-only">{{ block.settings.heading }}</span><span class="mobile-only">{{ block.settings.heading_mobile | default: block.settings.heading }}</span></h6>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+  
+  {%- assign mobile_linklist = section.settings.menu_linklist_mobile | default: section.settings.menu_linklist -%}
+  <template class="mobile-navigation-drawer-template">
+    <div id="MobileNavigationDrawer" class="mobile-navigation-drawer" data-mobile-expand-with-entire-link="{{ mobile_expand_with_entire_link }}">
+      <div class="navigation navigation--mobile" role="navigation" aria-label="{{ 'general.navigation.main_navigation_aria_label' | t }}">
+        <div class="navigation__tier-1-container">
+          <div class="navigation__mobile-header">
+            <a href="#" class="mobile-nav-back ltr-icon tap-target" aria-label="{{ 'layout.navigation.back' | t }}">{% render 'svg-chevron-left', stroke_width: 1.3 %}</a>
+            <span class="mobile-nav-title"></span>
+            <a href="#" class="mobile-nav-toggle tap-target"  aria-label="{{ 'general.accessibility_labels.close' | t }}">{% render 'svg-x', stroke_width: 1.3 %}</a>
+          </div>
+          <div class="header__drawer_nav-wrap">
+            <a class="logo__link" href="{{ routes.root_url }}" title="{{ shop.name }}" itemprop="url">
+              {%- if section.settings.logo != blank -%}
+                {%- capture img_size -%}{{ section.settings.logo_img_width_int | times: 2 }}x{%- endcapture -%}
+                <img class="logo__image" src="{{ section.settings.logo | img_url: img_size }}" alt="{{ section.settings.logo.alt | default: shop.name | escape }}" width="{{ section.settings.logo.width }}" height="{{ section.settings.logo.height }}" itemprop="logo" />
+              {%- else -%}
+                <span class="logotext">{{ shop.name }}</span>
+              {%- endif -%}
+            </a>
+            {% render 'main-nav-links', link_list: mobile_linklist, mobile: true, with_icon: true, featured_links: featured_links %}
+          </div>
+          {% if section.settings.enable_nav_mob_products and section.settings.nav_mob_products_collection != blank %}
+            <div class="navigation__mobile-products">
+              <cc-carousel class="cc-carousel cc-carousel--off-edge-mobile card-margin" allow-mouse-drag>
+                <div class="opposing-items opposing-items--title-with-cta">
+                  <h2 class="h6-style opposing-items__title navigation__mobile-products-title">{{ section.settings.nav_mob_products_title | escape }}</h2>
+                  <div class="cc-carousel-buttons">
+                    <button class="cc-carousel-button cc-carousel-button--prev tap-target cc-carousel-button--no-bg" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+                    <button class="cc-carousel-button cc-carousel-button--next tap-target cc-carousel-button--no-bg" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+                  </div>
+                </div>
+                <div class="cc-carousel__scroll-outer">
+                  <div class="product-list cc-carousel__scroll-area">
+                    {%- liquid
+                      if settings.prod_thumb_shape == 'portrait-23'
+                        assign chosen_aspect_ratio = 0.67
+                      elsif settings.prod_thumb_shape == 'portrait-45'
+                        assign chosen_aspect_ratio = 0.8
+                      elsif settings.prod_thumb_shape == 'square'
+                        assign chosen_aspect_ratio = 1.0
+                      elsif settings.prod_thumb_shape == 'landscape-54'
+                        assign chosen_aspect_ratio = 1.25
+                      elsif settings.prod_thumb_shape == 'landscape-32'
+                        assign chosen_aspect_ratio = 1.50
+                      elsif settings.prod_thumb_shape == 'tallest'
+                        assign chosen_aspect_ratio = 99
+                        for product in collections[section.settings.nav_mob_products_collection].products limit: product_limit
+                          if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                            assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                          endif
+                        endfor
+                      else
+                        assign chosen_aspect_ratio = 0
+                        for product in collections[section.settings.nav_mob_products_collection].products limit: product_limit
+                          if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                            assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                          endif
+                        endfor
+                      endif
+                    -%}
+                    {%- for product in collections[section.settings.nav_mob_products_collection].products limit: 10 -%}
+                      {%- render 'product-block', product: product, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: true, manual_load: true -%}
+                    {%- endfor -%}
+                  </div>
+                </div>
+              </cc-carousel>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </template>
+
+  {%- if settings.enable_quick_header_search and section.settings.enable_search and template.name != 'search' -%}
+    <script type="text/template" class="header-search-template">
+      <div class="header-search-content wide-container">
+        <div data-section-id="{{ section.id }}-Search" data-section-type="search-template" data-filter-section-id="" data-alter-location="false" data-search-while-typing="true" data-ajax-filtering="true" data-components="modal,price-range">
+          <h2 class="visually-hidden">{{ 'general.search.title' | t }}</h2>
+
+          <div class="main-search fully-spaced-row--medium" data-ajax-scroll-to>
+            <span class="main-search__btn-offset" aria-hidden="true">{{ 'general.accessibility_labels.close' | t }}</span>
+            <div class="main-search__container">
+              <form class="main-search__form" action="{{ routes.search_url }}" method="get" autocomplete="off">
+                <input type="hidden" name="type" value="{{ settings.search_type }}" />
+                <input type="hidden" name="options[prefix]" value="last" />
+                <input type="hidden" name="options[unavailable_products]" value="hide" />
+                <div class="main-search__input-container">
+                  <input
+                    class="main-search__input"
+                    type="search"
+                    name="q"
+                    autocomplete="off"
+                    placeholder="{{ 'general.search.placeholder' | t }}"
+                    aria-label="{{ 'general.search.input_label' | t }}"
+                    value="" />
+                </div>
+                <button class="main-search__button main-search__button--submit btn--icon tap-target" type="submit" aria-label="{{ 'general.search.submit' | t }}">{% render 'svg-search' %}</button>
+                <button class="main-search__button main-search__button--clear btn--icon tap-target" type="reset" aria-label="{{ 'general.search.clear' | t }}">{% render 'svg-x' %}</button>
+              </form>
+            </div>
+            <button class="btn btn--plain-text main-search__close">{{ 'general.accessibility_labels.close' | t }}</button>
+          </div>
+
+          <div class="container page-header page-header--triplet page-header--empty-right" data-ajax-scroll-to>
+            <div class="page-header__left" data-ajax-container="filter-button">
+            </div>
+            <div class="page-header__middle" data-ajax-container="result-count">
+            </div>
+            <div class="page-header__right"></div>
+          </div>
+
+          <div class="filter-container">
+            <div class="filter-modal cc-popup cc-popup--left" aria-hidden="true" data-freeze-scroll="true">
+              <div class="cc-popup-background"></div>
+              <div class="cc-popup-modal" role="dialog" aria-modal="true" aria-labelledby="FilterHeading">
+                <div class="cc-popup-container">
+                  <button type="button" class="cc-popup-close tap-target" aria-label="{{ 'general.accessibility_labels.close' | t }}">
+                    {%- render 'popup-close' -%}
+                  </button>
+                  <div class="cc-popup-content" data-ajax-container="filters">>
+                    <form id="CollectionFilterForm" class="hidden">
+                      <input type="hidden" name="q" value="" data-terms>
+                      <input type="hidden" name="type" value="{{ settings.search_type }}" />
+                      <input type="hidden" name="options[prefix]" value="last" />
+                <input type="hidden" name="options[unavailable_products]" value="hide" />
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="filters-adjacent collection-listing" data-ajax-container="products">
+          </div>
+          <div class="pagination-row" data-ajax-container="pagination"></div>
+        </div>
+        <div class="before-search-content" data-ajax-container="before-search-content"></div>
+      </div>
+    </script>
+  {%- endif -%}
+</div>
+
+<script id="InlineNavigationCheckScript">
+  theme.inlineNavigationCheck = function() {
+    var pageHeader = document.querySelector('.pageheader'),
+        inlineNavContainer = pageHeader.querySelector('.logo-area__left'),
+        inlineNav = inlineNavContainer.querySelector('.navigation');
+
+    if (inlineNav && getComputedStyle(inlineNav).display != 'none') {
+      var inlineMenuCentered = document.querySelector('.pageheader--layout-inline-menu-center'),
+          logoContainer = pageHeader.querySelector('.logo-area__middle__inner'),
+          availableNavWidth = inlineNavContainer.offsetWidth;
+      if(inlineMenuCentered) {
+        var rightWidth = pageHeader.querySelector('.logo-area__right__inner').clientWidth,
+            middleWidth = logoContainer.clientWidth,
+            logoArea = pageHeader.querySelector('.logo-area'),
+            computedLogoAreaStyle = getComputedStyle(logoArea),
+            logoAreaInnerWidth = logoArea.clientWidth - Math.ceil(parseFloat(computedLogoAreaStyle.paddingLeft)) - Math.ceil(parseFloat(computedLogoAreaStyle.paddingRight));
+        availableNavWidth = logoAreaInnerWidth - Math.max(rightWidth, middleWidth) * 2 - 40;
+      }
+      theme.enqueueStyleUpdate(() => {
+        pageHeader.classList.toggle('pageheader--layout-inline-permitted', availableNavWidth >= inlineNav.clientWidth);
+      });
+    }
+  }
+  setTimeout(theme.inlineNavigationCheck, 0);
+</script>
+
+{%- endif -%}
+
+
+{% schema %}
+  {
+    "name": "Header",
+    "class": "section-header",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo",
+        "info": "520 x 200px (recommended)"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo_mobile",
+        "label": "Logo mobile"
+      },
+      {
+        "type": "range",
+        "id": "logo_img_width_int",
+        "min": 30,
+        "max": 500,
+        "step": 5,
+        "unit": "px",
+        "label": "Logo width",
+        "default": 180
+      },
+      {
+        "type": "range",
+        "id": "mobile_logo_img_width_int",
+        "min": 30,
+        "max": 300,
+        "step": 5,
+        "unit": "px",
+        "label": "Mobile logo width",
+        "default": 100
+      },
+      {
+        "type": "checkbox",
+        "id": "show_portal",
+        "label": "Show Portal link",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "portal",
+        "label": "Portal text",
+        "default": "Business Portal"
+      },
+      {
+        "type": "url",
+        "id": "portal_url",
+        "label": "Portal url"
+      },
+      {
+        "type": "checkbox",
+        "id": "logo_h1",
+        "label": "Enable logo <h1> on home page",
+        "info": "For SEO. Deselect only if another section on the home page contains a primary page heading. [Learn more](https://cleancanvas.co.uk/support/mode/section-h1-setting)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_sticky",
+        "label": "Enable sticky header",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Navigation"
+      },
+      {
+        "type": "paragraph",
+        "content": "Drawer navigation will be used on desktop if the links do not fit in one line."
+      },
+      {
+        "type": "link_list",
+        "id": "menu_linklist",
+        "label": "Menu",
+        "default": "main-menu"
+      },
+      {
+        "type": "link_list",
+        "id": "menu_linklist_mobile",
+        "label": "Drawer menu",
+        "info": "Select a different menu for drawer navigation. Used on mobile. Main menu is used if not selected."
+      },
+      {
+        "type": "select",
+        "id": "menu_layout",
+        "label": "Menu alignment",
+        "options": [
+          {
+            "value": "inline-menu-left",
+            "label": "Left"
+          },
+          {
+            "value": "inline-menu-center",
+            "label": "Center"
+          }
+        ],
+        "default": "inline-menu-left"
+      },
+      {
+        "type": "text",
+        "id": "nav_featured_link",
+        "label": "Featured link",
+        "info": "Enter the title of a link to highlight it in a different color",
+        "default": "Sale"
+      },
+      {
+        "type": "header",
+        "content": "Drawer navigation"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_mobile_promo_carousel",
+        "label": "Enable carousel layout for menu promotions",
+        "info": "Disabled for dropdown menus containing only promotions",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_nav_mob_products",
+        "label": "Enable featured products",
+        "info": "Shows beneath the main menu",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "nav_mob_products_title",
+        "label": "Featured products title",
+        "default": "Best Sellers"
+      },
+      {
+        "type": "collection",
+        "id": "nav_mob_products_collection",
+        "label": "Featured products collection"
+      },
+      {
+        "type": "header",
+        "content": "Search"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_search",
+        "label": "Enable search",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Icons"
+      },
+      {
+        "type": "select",
+        "id": "cart_icon",
+        "label": "Cart icon",
+        "options": [
+          {
+            "value": "bag",
+            "label": "Bag"
+          },
+          {
+            "value": "basket",
+            "label": "Basket"
+          },
+          {
+            "value": "cart",
+            "label": "Cart"
+          }
+        ],
+        "default": "basket"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_cart_icon_label",
+        "label": "Show cart icon label",
+        "default": false
+      }
+    ],
+    "blocks": [
+      {
+        "type": "top-header",
+        "limit": 1,
+        "name": "Top header",
+        "settings": [
+          {
+            "type": "text",
+            "id": "heading",
+            "label": "Heading",
+            "default": "ENJOY YOUR RIDES"
+          },
+          {
+            "type": "textarea",
+            "id": "list",
+            "label": "List",
+            "default": "Binnen 1 dag geleverd | Retourneren binnen 30 dagen | Gratis verzending"
+          },
+          {
+            "type": "range",
+            "id": "rating",
+            "label": "Rating",
+            "min": 0,
+            "max": 5,
+            "step": 0.1,
+            "default": 5.0
+          },
+          {
+            "type": "inline_richtext",
+            "id": "rating_text",
+            "label": "Rating text",
+            "default": "(Op basis van <strong>10.000 reviews</strong>)"
+          }
+        ]
+      },
+      {
+        "type": "bottom-header",
+        "limit": 1,
+        "name": "Bottom header",
+        "settings": [
+          {
+            "type": "text",
+            "id": "heading",
+            "label": "Heading",
+            "default": "WINTER DEALS"
+          },
+          {
+            "type": "text",
+            "id": "heading_mobile",
+            "label": "Heading Mobile",
+            "default": "WINTER ACTIE"
+          }
+        ]
+      },
+      {
+        "type": "menu-promotion-small",
+        "limit": 50,
+        "name": "Small menu promotion",
+        "settings": [
+          {
+            "type": "paragraph",
+            "content": "Menu promotions are shown in dropdown menus. [Read more](https://cleancanvas.co.uk/support/mode/header)"
+          },
+          {
+            "type": "text",
+            "id": "dropdown_link_title",
+            "label": "Link name",
+            "info": "The name of any top-level link"
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "color",
+            "id": "bg_col",
+            "label": "Background golor",
+            "default": "#f4e8dc"
+          },
+          {
+            "type": "color",
+            "id": "text_col",
+            "label": "Text color",
+            "default": "rgba(0,0,0,0)"
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title"
+          },
+          {
+            "type": "text",
+            "id": "text",
+            "label": "Text"
+          },
+          {
+            "type": "url",
+            "id": "link_url",
+            "label": "Link URL"
+          }
+        ]
+      },
+      {
+        "type": "menu-promotion-large",
+        "name": "Wide menu promotion",
+        "limit": 10,
+        "settings": [
+          {
+            "type": "paragraph",
+            "content": "Menu promotions are shown in dropdown menus. [Read more](https://cleancanvas.co.uk/support/mode/header)"
+          },
+          {
+            "type": "text",
+            "id": "dropdown_link_title",
+            "label": "Link name",
+            "info": "The name of any top-level link"
+          },
+          {
+            "type": "image_picker",
+            "id": "desktop_image",
+            "label": "Desktop image"
+          },
+          {
+            "type": "image_picker",
+            "id": "mobile_image",
+            "label": "Mobile image"
+          },
+          {
+            "type": "checkbox",
+            "id": "enable_fade",
+            "label": "Enable image fade",
+            "default": false
+          },
+          {
+            "type": "text",
+            "id": "subheading",
+            "label": "Subheading",
+            "default": "Tell your story"
+          },
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Heading",
+            "default": "Wide menu promotion"
+          },
+          {
+            "type": "richtext",
+            "id": "text",
+            "label": "Text",
+            "default": "<p>Pair text with an image to give customers insight into your brand. Tell a story, explain a product detail, or describe a new promotion.<\/p>"
+          },
+          {
+            "type": "text",
+            "id": "button_1_label",
+            "label": "Button 1",
+            "default": "Shop this"
+          },
+          {
+            "type": "url",
+            "id": "button_1_link",
+            "label": "Button 1 link"
+          },
+          {
+            "type": "select",
+            "id": "button_1_style",
+            "label": "Button 1 style",
+            "default": "secondary",
+            "options": [
+              {
+                "label": "Button - primary",
+                "value": "primary"
+              },
+              {
+                "label": "Button - secondary",
+                "value": "secondary"
+              },
+              {
+                "label": "Link",
+                "value": "link"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "button_2_label",
+            "label": "Button 2",
+            "default": "Shop all"
+          },
+          {
+            "type": "url",
+            "id": "button_2_link",
+            "label": "Button 2 link"
+          },
+          {
+            "type": "select",
+            "id": "button_2_style",
+            "label": "Button 2 style",
+            "default": "primary",
+            "options": [
+              {
+                "label": "Button - primary",
+                "value": "primary"
+              },
+              {
+                "label": "Button - secondary",
+                "value": "secondary"
+              },
+              {
+                "label": "Link",
+                "value": "link"
+              }
+            ]
+          },
+          {
+            "type": "select",
+            "id": "image_position",
+            "label": "Image alignment",
+            "default": "right",
+            "options": [
+              {
+                "value": "left",
+                "label": "Left"
+              },
+              {
+                "value": "right",
+                "label": "Right"
+              }
+            ]
+          },
+          {
+            "type": "select",
+            "id": "text_alignment",
+            "label": "Text alignment",
+            "default": "center",
+            "options": [
+              {
+                "value": "left",
+                "label": "Left"
+              },
+              {
+                "value": "center",
+                "label": "Center"
+              },
+              {
+                "value": "right",
+                "label": "Right"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

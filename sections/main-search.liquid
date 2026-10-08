@@ -1,0 +1,626 @@
+{%- liquid
+  if search.performed
+    assign show_filters = section.settings.enable_filtering
+    if search.filters == empty
+      assign show_filters = false
+    endif
+    if section.settings.coll_show_sort
+      assign show_filters = true
+    endif
+  endif
+-%}
+{% paginate search.results by section.settings.coll_num_per_page_int %}
+  {%- capture filter_button -%}
+    {%-# if show_filters -%}
+      <!-- <a href="#" class="btn--icon btn-coll-filter js-only" data-toggle-filters> -->
+      <span class="btn--icon btn-coll-filter js-only" onclick="globofilter.toggleCanvas()">
+        <span class="button-icon">{% render 'svg-filter-lines' %}</span>
+        <span class="button-text">Filter and sort</span>
+        {% comment %}
+        {% liquid
+          assign filter_count = 0
+          for filter in collection.filters
+            assign filter_count = filter_count | plus: filter.active_values.size
+            if filter.type == 'price_range'
+              if filter.min_value.value != nil or filter.max_value.value != nil
+                assign filter_count = filter_count | plus: 1
+              endif
+            endif
+          endfor
+        %}
+        {% if filter_count > 0 %}
+          <span class="toggle-btn__count">({{ filter_count }})</span>
+        {% endif %}
+      {% endcomment %}
+      </span>
+    {%-# endif -%}
+  {%- endcapture -%}
+
+<div data-section-id="{{ section.id }}" data-filter-section-id="{{ section.id }}" data-section-type="search-template" data-alter-location="true" data-search-while-typing="{{ section.settings.enable_search_while_typing }}" data-ajax-filtering="{{ section.settings.ajax_products }}" data-components="modal,price-range">
+  <h1 class="visually-hidden">{{ 'general.search.title' | t }}</h1>
+
+  <div class="main-search{% if search.terms != blank %} main-search--terms-entered{% endif %} fully-spaced-row--medium" data-cc-animate data-ajax-scroll-to>
+    <div class="main-search__container">
+      <form class="main-search__form" action="{{ routes.search_url }}" method="get" autocomplete="off">
+        <input type="hidden" name="type" value="{{ settings.search_type }}" />
+        <input type="hidden" name="options[prefix]" value="last" />
+                <input type="hidden" name="options[unavailable_products]" value="hide" />
+        <div class="main-search__input-container">
+          <input
+            class="main-search__input"
+            type="search"
+            name="q"
+            autocomplete="off"
+            placeholder="{{ 'general.search.placeholder' | t }}"
+            aria-label="{{ 'general.search.input_label' | t }}"
+            value="{{ search.terms | escape }}" />
+        </div>
+        <button class="main-search__button main-search__button--submit btn--icon tap-target" type="submit" aria-label="{{ 'general.search.submit' | t }}">{% render 'svg-search' %}</button>
+        <button class="main-search__button main-search__button--clear btn--icon tap-target" type="reset" aria-label="{{ 'general.search.clear' | t }}">{% render 'svg-x' %}</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container page-header page-header--triplet page-header--empty-right">
+    <div class="page-header__left" data-ajax-container="filter-button">
+      {%- if show_filters -%}
+        <a href="#" class="toggle-btn js-only" data-toggle-filters>
+          <span class="button-icon">{% render 'svg-filter' %}</span>
+          <span>{{ 'collections.filtering.filter' | t }}</span>
+          {% liquid
+            assign filter_count = 0
+            for filter in search.filters
+              assign filter_count = filter_count | plus: filter.active_values.size
+              if filter.type == 'price_range'
+                if filter.min_value.value != nil or filter.max_value.value != nil
+                  assign filter_count = filter_count | plus: 1
+                endif
+              endif
+            endfor
+          %}
+          {% if filter_count > 0 %}
+            <span class="toggle-btn__count">({{ filter_count }})</span>
+          {% endif %}
+        </a>
+      {%- endif -%}
+    </div>
+    <div class="page-header__middle" data-ajax-container="result-count">
+      {%- if search.performed -%}
+        <div class="lighter-text">{{ 'general.search.results_with_count' | t: count: paginate.items }}</div>
+      {%- endif -%}
+    </div>
+    <div class="page-header__right"></div>
+  </div>
+
+  <div class="wide-container">
+    <div class="main-search__header">
+      <p>{{ section.settings.search_label }}</p>
+      <h4>‘’{{ search.terms }}’’</h4>
+    </div>
+    <div class="filter-container">
+      <div class="result-count_row">
+        {{ filter_button }}
+      </div>
+      <div class="filter-modal cc-popup cc-popup--left" aria-hidden="true" data-freeze-scroll="true">
+        <div class="cc-popup-background"></div>
+        <div class="cc-popup-modal" role="dialog" aria-modal="true" aria-labelledby="FilterHeading">
+          <div class="cc-popup-container">
+            <button type="button" class="cc-popup-close tap-target" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+              {%- render 'popup-close' -%}
+            </button>
+            <div class="cc-popup-content" data-ajax-container="filters">
+              {% if show_filters %}
+                {% assign clear_url = search.terms | escape | prepend: '?q=' | prepend: routes.search_url %}
+                {% render 'faceted-filters', filter_context: search, clear_url: clear_url, current_sort: current_sort %}
+              {% else %}
+                <form id="CollectionFilterForm" class="hidden">
+                  <input type="hidden" name="q" value="" data-terms>
+                  <input type="hidden" name="type" value="{{ settings.search_type }}" />
+                  <input type="hidden" name="options[prefix]" value="last" />
+                <input type="hidden" name="options[unavailable_products]" value="hide" />
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters-adjacent collection-listing" data-ajax-container="products">
+        {% if search.performed %}
+          {% if search.results == empty %}
+            <h5 class="align-centre spaced-text-row" data-cc-animate>{{ 'general.search.no_results' | t: terms: search.terms }}</h5>
+          {% else %}
+            <div class="product-list product-list--per-row-{{ section.settings.grid }} product-list--per-row-mob-{{ settings.prod_thumb_mob_per_row }} product-list--image-shape-{{ settings.prod_thumb_shape }}">
+              {%- liquid
+                if settings.prod_thumb_shape == 'portrait-23'
+                  assign chosen_product_aspect_ratio = 0.67
+                elsif settings.prod_thumb_shape == 'portrait-45'
+                  assign chosen_product_aspect_ratio = 0.8
+                elsif settings.prod_thumb_shape == 'square'
+                  assign chosen_product_aspect_ratio = 1.0
+                elsif settings.prod_thumb_shape == 'landscape-54'
+                  assign chosen_product_aspect_ratio = 1.25
+                elsif settings.prod_thumb_shape == 'landscape-32'
+                  assign chosen_product_aspect_ratio = 1.50
+                elsif settings.prod_thumb_shape == 'tallest'
+                  assign chosen_product_aspect_ratio = 99
+                  for product in search.results
+                    if product.object_type == 'product' and product.featured_media.preview_image.aspect_ratio < chosen_product_aspect_ratio
+                      assign chosen_product_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                    endif
+                  endfor
+                else
+                  assign chosen_product_aspect_ratio = 0
+                  for product in search.results
+                    if product.object_type == 'product' and product.featured_media.preview_image.aspect_ratio > chosen_product_aspect_ratio
+                      assign chosen_product_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                    endif
+                  endfor
+                endif
+
+                if settings.coll_grid_image_shape == 'portrait-23'
+                  assign chosen_collection_aspect_ratio = 0.67
+                elsif settings.coll_grid_image_shape == 'portrait-45'
+                  assign chosen_collection_aspect_ratio = 0.8
+                elsif settings.coll_grid_image_shape == 'square'
+                  assign chosen_collection_aspect_ratio = 1.0
+                elsif settings.coll_grid_image_shape == 'landscape-54'
+                  assign chosen_collection_aspect_ratio = 1.25
+                elsif settings.coll_grid_image_shape == 'landscape-32'
+                  assign chosen_collection_aspect_ratio = 1.50
+                elsif settings.coll_grid_image_shape == 'tallest'
+                  assign chosen_collection_aspect_ratio = 99
+                  for collection in search.results
+                    if collection.object_type == 'collection'
+                      if collection.featured_image.aspect_ratio < chosen_collection_aspect_ratio
+                        assign chosen_collection_aspect_ratio = collection.featured_image.aspect_ratio
+                      endif
+                    endif
+                  endfor
+                else
+                  assign chosen_collection_aspect_ratio = 0
+                  for collection in search.results
+                    if collection.object_type == 'collection'
+                      if collection.featured_image.aspect_ratio > chosen_collection_aspect_ratio
+                        assign chosen_collection_aspect_ratio = collection.featured_image.aspect_ratio
+                      endif
+                    endif
+                  endfor
+                endif
+              -%}
+              {% for item in search.results %}
+                {% if item.object_type == 'product' %}
+                  {% render 'product-block', product: item, custom_aspect_ratio: chosen_product_aspect_ratio, animate: true %}
+                {% elsif item.object_type == 'collection' %}
+                  {% render 'collection-block', collection: item, custom_aspect_ratio: chosen_collection_aspect_ratio, animate: true %}
+                {% elsif item.object_type == 'article' %}
+                  {%- render 'article-block', article: item, heading_tag: 'div', no_grid_classes: true, extra_classes: 'product-block align-start' %}
+                {% else %}
+                  <div class="product-block page-block align-start" data-cc-animate>
+                    <div class="block-inner block-inner card-scheme card-scheme--{{ section.settings.color_scheme }}">
+                      <div class="text-cont card-content-padding{% if item.image %}-x{% endif %} padded-row-bottom--medium">
+                        <div class="page-block__title heading-font h3-style"><a href="{{ item.url }}">{{ item.title }}</a></div>
+                        {% if item.content %}
+                          <p>{{ item.content | strip_html | truncatewords: 20 }}</p>
+                        {% endif %}
+                        <a href="{{ item.url }}" class="more">
+                          <span class="beside-svg underline">{{ 'general.search.continue_reading' | t }}</span>
+                          <span class="icon icon--small icon-natcol ltr-icon">{% render 'svg-chevron-right' %}</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <div data-cc-animate data-ajax-container="pagination">{% render 'pagination-control', paginate: paginate %}</div>
+
+      <div class="before-search-content" data-ajax-container="before-search-content">
+        {% unless search.performed %}
+          {% if section.settings.show_collections %}
+            {% if section.settings.collections_title != blank %}
+              <h2 class="section-title" data-cc-animate>{{ section.settings.collections_title | escape }}</h2>
+            {% endif %}
+
+            {%- if section.settings.collections_enable_carousel -%}
+              <cc-carousel class="cc-carousel card-margin" allow-mouse-drag data-cc-animate="cc-fade-in-up">
+                <div class="cc-carousel-buttons cc-carousel-buttons--overlay-top">
+                  <button class="cc-carousel-button cc-carousel-button--prev tap-target" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+                  <button class="cc-carousel-button cc-carousel-button--next tap-target" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+                </div>
+                <div class="cc-carousel__scroll-outer">
+            {%- else -%}
+              <div class="collection-listing" data-cc-animate="cc-fade-in-up">
+            {%- endif -%}
+
+            <div class="product-list product-list--per-row-{{ section.settings.collections_grid }} product-list--per-row-mob-{{ settings.prod_thumb_mob_per_row }} product-list--image-shape-{{ settings.coll_grid_image_shape }}{% if section.settings.collections_enable_carousel %} cc-carousel__scroll-area{% endif %}">
+              {% if section.settings.collection_list != empty %}
+                {%- liquid
+                  if settings.coll_grid_image_shape == 'portrait-23'
+                    assign chosen_aspect_ratio = 0.67
+                  elsif settings.coll_grid_image_shape == 'portrait-45'
+                    assign chosen_aspect_ratio = 0.8
+                  elsif settings.coll_grid_image_shape == 'square'
+                    assign chosen_aspect_ratio = 1.0
+                  elsif settings.coll_grid_image_shape == 'landscape-54'
+                    assign chosen_aspect_ratio = 1.25
+                  elsif settings.coll_grid_image_shape == 'landscape-32'
+                    assign chosen_aspect_ratio = 1.50
+                  elsif settings.coll_grid_image_shape == 'tallest'
+                    assign chosen_aspect_ratio = 999
+                    for collection in section.settings.collection_list
+                      assign collection_image = block.settings.image | default: collection.featured_image
+                      if collection_image.aspect_ratio < chosen_aspect_ratio
+                        assign chosen_aspect_ratio = collection_image.aspect_ratio
+                      endif
+                    endfor
+                  else
+                    assign chosen_aspect_ratio = 0
+                    for collection in section.settings.collection_list
+                      assign collection_image = block.settings.image | default: collection.featured_image
+                      if collection_image.aspect_ratio > chosen_aspect_ratio
+                        assign chosen_aspect_ratio = collection_image.aspect_ratio
+                      endif
+                    endfor
+                  endif
+                -%}
+
+                {% for collection in section.settings.collection_list %}
+                    {% render 'collection-block', collection: collection, custom_aspect_ratio: chosen_aspect_ratio %}
+                {% endfor %}
+
+              {% else %}
+
+                {% for i in (1..4) %}
+                  {% render 'onboarding-collection-block', forloop: forloop %}
+                {% endfor %}
+
+              {% endif %}
+            </div>
+
+            {%- unless section.settings.collections_enable_carousel -%}
+              </div>
+            {%- else -%}
+                </div>
+              </cc-carousel>
+            {%- endunless -%}
+          {% endif %}
+
+          {% if section.settings.show_products %}
+            {% if section.settings.products_title != blank %}
+              <h2 class="section-title">{{ section.settings.products_title | escape }}</h2>
+            {% endif %}
+
+            {%- if section.settings.products_enable_carousel -%}
+              <cc-carousel class="cc-carousel card-margin" allow-mouse-drag data-cc-animate="cc-fade-in-up">
+                <div class="cc-carousel-buttons cc-carousel-buttons--overlay-top">
+                  <button class="cc-carousel-button cc-carousel-button--prev tap-target" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+                  <button class="cc-carousel-button cc-carousel-button--next tap-target" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+                </div>
+                <div class="cc-carousel__scroll-outer">
+            {%- else -%}
+              <div class="collection-listing" data-cc-animate="cc-fade-in-up">
+            {%- endif -%}
+
+            <div class="product-list product-list--per-row-{{ section.settings.products_grid }} product-list--per-row-mob-{{ settings.prod_thumb_mob_per_row }} product-list--image-shape-{{ settings.prod_thumb_shape }}{% if section.settings.products_enable_carousel %} cc-carousel__scroll-area{% endif %}">
+              {% if section.settings.product_list != blank %}
+                {%- liquid
+                  if settings.prod_thumb_shape == 'portrait-23'
+                    assign chosen_aspect_ratio = 0.67
+                  elsif settings.prod_thumb_shape == 'portrait-45'
+                    assign chosen_aspect_ratio = 0.8
+                  elsif settings.prod_thumb_shape == 'square'
+                    assign chosen_aspect_ratio = 1.0
+                  elsif settings.prod_thumb_shape == 'landscape-54'
+                    assign chosen_aspect_ratio = 1.25
+                  elsif settings.prod_thumb_shape == 'landscape-32'
+                    assign chosen_aspect_ratio = 1.50
+                  elsif settings.prod_thumb_shape == 'tallest'
+                    assign chosen_aspect_ratio = 99
+                    for product in section.settings.product_list
+                      if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                        assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                      endif
+                    endfor
+                  else
+                    assign chosen_aspect_ratio = 0
+                    for product in section.settings.product_list
+                      if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                        assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                      endif
+                    endfor
+                  endif
+                -%}
+                {% for product in section.settings.product_list %}
+                  {% render 'product-block', product: product, custom_aspect_ratio: chosen_aspect_ratio, no_swiping: section.settings.products_enable_carousel %}
+                {% endfor %}
+              {% else %}
+                {% for i in (1..4) %}
+                  {% render 'onboarding-product-block', forloop: forloop %}
+                {% endfor %}
+              {% endif %}
+            </div>
+
+            {%- unless section.settings.products_enable_carousel -%}
+              </div>
+            {%- else -%}
+                </div>
+              </cc-carousel>
+            {%- endunless -%}
+          {% endif %}
+        {% endunless %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endpaginate %}
+
+{% schema %}
+  {
+    "name": "Search results",
+    "class": "section-search-template collection_main card",
+    "settings": [
+      {
+        "type": "text",
+        "id": "search_label",
+        "label": "Search Label",
+        "default": "All search results for"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_search_while_typing",
+        "label": "Enable searching while typing",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendors",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "coll_num_per_page_int",
+        "min": 16,
+        "max": 50,
+        "step": 1,
+        "label": "Number of products to show per page",
+        "default": 24
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Blog post and page color scheme",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Blog post results"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_author",
+        "label": "Show author",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_date",
+        "label": "Show date",
+        "default": true
+      },
+	    {
+        "type": "checkbox",
+        "id": "show_excerpts",
+        "label": "Show excerpt",
+        "info": "Change excerpts by editing your blog posts. [Learn more](https:\/\/help.shopify.com\/en\/manual\/online-store\/blogs\/writing-blogs#display-an-excerpt-from-a-blog-post)",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "crop_ratio",
+        "label": "Image size",
+        "options": [
+          {
+            "value": "",
+            "label": "Natural (no crop)"
+          },
+          {
+            "value": "0.67",
+            "label": "Portrait (2:3)"
+          },
+          {
+            "value": "1.0",
+            "label": "Square (1:1)"
+          },
+          {
+            "value": "1.33",
+            "label": "Landscape (4:3)"
+          },
+          {
+            "value": "1.78",
+            "label": "Wide (16:9)"
+          }
+        ],
+        "default": "1.78"
+      },
+      {
+        "type": "header",
+        "content": "Filters"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_filtering",
+        "label": "Enable filtering",
+        "info": "[Customize filters](\/admin\/menus)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "coll_show_sort",
+        "label": "Enable sorting",
+        "info": "Shows in the filter drawer",
+        "default": true
+      },
+      {
+        "type": "select",
+        "id": "collapse_filters_method",
+        "label": "Filter row collapse",
+        "default": "over-12",
+        "options": [
+          {
+            "value": "none",
+            "label": "None"
+          },
+          {
+            "value": "over-6",
+            "label": "Over 6 items"
+          },
+          {
+            "value": "over-12",
+            "label": "Over 12 items"
+          },
+          {
+            "value": "over-18",
+            "label": "Over 18 items"
+          },
+          {
+            "value": "all",
+            "label": "All rows"
+          }
+        ]
+      },
+      {
+        "type": "checkbox",
+        "id": "show_filter_counts",
+        "label": "Show filter counts",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_disabled_filters",
+        "label": "Show filters with zero results",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "ajax_products",
+        "label": "Filter and sort collections without loading a new page",
+        "default": true,
+        "info": "Some apps require this to be disabled"
+      },
+      {
+        "type": "checkbox",
+        "id": "filter_two_columns",
+        "label": "Two column filter values",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Before-search content"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_collections",
+        "label": "Show collections",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "collections_title",
+        "label": "Heading",
+        "default": "Popular collections"
+      },
+      {
+        "type": "collection_list",
+        "id": "collection_list",
+        "label": "Collection list"
+      },
+      {
+        "type": "checkbox",
+        "id": "collections_enable_carousel",
+        "label": "Enable carousel",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "collections_grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "checkbox",
+        "id": "show_products",
+        "label": "Show products",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "products_title",
+        "label": "Heading",
+        "default": "Popular products"
+      },
+      {
+        "type": "product_list",
+        "id": "product_list",
+        "label": "Product list"
+      },
+      {
+        "type": "checkbox",
+        "id": "products_show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "products_enable_carousel",
+        "label": "Enable carousel",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "products_grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      }
+    ]
+  }
+{% endschema %}

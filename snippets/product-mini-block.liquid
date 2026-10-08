@@ -1,0 +1,76 @@
+{%- liquid
+  if collection and settings.prod_thumb_url_within_coll and product.collections contains collection
+    assign product_url = product.url | within: collection
+  else
+    assign product_url = product.url
+  endif
+
+  assign cheapest_variant = product.variants | sort: 'price' | first
+
+  if product.metafields.theme.card_bg != blank
+    assign card_bg = product.metafields.theme.card_bg
+  endif
+  for variant in product.variants
+    if variant.featured_media and variant.featured_media.id == product.featured_media.id and variant.metafields.theme.card_bg
+      assign card_bg = variant.metafields.theme.card_bg
+    endif
+  endfor
+-%}
+
+<div data-product-id="{{ product.id }}" class="product-mini-block" {% if animate %}data-cc-animate{% endif %}>
+  <div class="product-mini-block__inner card-scheme card-scheme--{{ settings.product_card_color_scheme }} card-br-oh"{% if card_bg %} style="--bg:{{ card_bg }}"{% endif %}>
+    <div class="block-mini-block__image">
+      <div class="image-cont">
+        {% if product.featured_media %}
+          <a class="product-link" href="{{ product_url }}" aria-label="{{ product.title | escape }}" tabindex="-1">
+            <div class="product-mini-block__image card-br-oh">
+              {%- render 'responsive-image', image: product.featured_media.preview_image, min_aspect_ratio: 0.6, aspect_ratio: custom_aspect_ratio, no_max_width: true, cover: settings.prod_thumb_crop -%}
+            </div>
+          </a>
+        {% else %}
+          <div class="placeholder-image">{{ 'product-1' | placeholder_svg_tag }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="product-mini-block__detail">
+      <a class="product-link" href="{{ product_url }}">
+        {%- if section.settings.show_vendor -%}
+          <div class="vendor">{{ product.vendor }}</div>
+        {%- endif -%}
+
+        <div class="product-mini-block__title">{{ product.title }}</div>
+
+        {%- if settings.prod_thumb_show_subtitle and product.metafields.descriptors.subtitle != blank -%}
+          <div class="product-mini-block__subtitle small-text">{{ product.metafields.descriptors.subtitle }}</div>
+        {%- endif -%}
+      </a>
+
+      <div class="product-price">
+        {% if product.price_varies %}
+          <span class="product-price__item product-price__from">{{ 'products.listing.from' | t }}</span>
+        {% endif %}
+        <span class="product-price__item product-price__amount {% if cheapest_variant.compare_at_price > cheapest_variant.price %}product-price__amount--on-sale{% endif %} theme-money">
+          {{- cheapest_variant.price | money -}}
+        </span>
+        {% if cheapest_variant.compare_at_price > cheapest_variant.price %}
+          <span class="product-price__item product-price__compare theme-money">{{ cheapest_variant.compare_at_price | money }}</span>
+        {% endif %}
+      </div>
+
+      {% render 'unit-price', variant: cheapest_variant %}
+    </div>
+
+    {%- if product.available -%}
+      {%- if settings.quickbuy_style == 'button-quick-add' and product.variants.size == 1 and product.requires_selling_plan != true -%}
+        <div class="product-mini-block__cta">
+          <a class="quick-action-button quick-action-button--visibility-{{ settings.quickbuy_visibility }} quick-add tap-target" href="{{ product_url }}" data-variant-id="{{ product.variants.first.id }}" aria-label="{{ 'products.grid.add_to_cart' | t }}"><span class="icon icon--small">{% render 'svg-plus' %}</span></a>
+        </div>
+      {% elsif settings.quickbuy_style == 'button' or settings.quickbuy_style == 'button-quick-add' %}
+        <div class="product-mini-block__cta">
+          <a class="quick-action-button quick-action-button--visibility-{{ settings.quickbuy_visibility }} quickbuy-toggle tap-target" href="{{ product_url }}" aria-label="{{ 'products.quick_buy.launch' | t }}"><span class="icon icon--small">{% render 'svg-search' %}</span></a>
+        </div>
+      {% endif %}
+    {%- endif -%}
+  </div>
+</div>

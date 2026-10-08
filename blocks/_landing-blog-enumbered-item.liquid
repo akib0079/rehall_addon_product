@@ -1,0 +1,63 @@
+<div class="landing-blog-content__numlist_item">
+{% if block.settings.title != blank %}
+    <h4 class="landing-blog-content__numlist_title">{{ block.settings.title }}</h4>
+{% endif %}
+{% if block.settings.desc != blank %}
+    <div class="landing-blog-content__numlist_desc">{{ block.settings.desc }}</div>
+{% endif %}
+</div>
+{% style %}
+.landing-blog-content__numlist_item {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 20px;
+}
+.landing-blog-content__numlist_title {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 100%;
+    letter-spacing: 0.25px;
+}
+.landing-blog-content__numlist_desc {
+    font-size: 16px;
+    line-height: 175%;
+}
+.landing-blog-content__numlist_desc p:last-child{
+    margin: 0;
+}
+@media (max-width: 767px) {
+  .landing-blog-content__numlist_item-wrap{
+    grid-gap: 30px;
+  }
+  .landing-blog-content__numlist_title{
+    font-size: 22px;
+  }
+    .landing-blog-content__numlist_desc {
+        font-size: 14px;
+    }
+}
+{%endstyle %}
+{% schema %}
+{
+  "name": "Item",
+  "settings": [
+    {
+    "type": "inline_richtext",
+    "id": "title",
+    "label": "Title",
+    "default": "Thermal insulation"
+    },
+    {
+    "type": "richtext",
+    "id": "desc",
+    "label": "Description",
+    "default": "<p>Description</p>"
+    },
+  ],
+  "presets": [
+        {
+            "name": "Item"
+        },
+    ]
+}
+{% endschema %}

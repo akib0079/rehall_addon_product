@@ -1,0 +1,96 @@
+<div class="section-container">
+<div id="section-id-{{ section.id }}" data-cc-animate>
+  {% style %}
+    #section-id-{{ section.id }} .video-container {
+      --image-height: {{ section.settings.height_mobile }};
+    }
+
+    @media (min-width: 768px) {
+      #section-id-{{ section.id }} .video-container {
+        --image-height: {{ section.settings.height_desktop }};
+      }
+    }
+  {% endstyle %}
+
+  {% if section.settings.video_shopify != blank %}
+    <div class="height--fixed video-container video-container--background"
+      {% if section.settings.video_shopify != blank %}
+        data-video-sources="{%- for source in section.settings.video_shopify.sources -%}
+          {{ source.format }} {{ source.mime_type }} {{ source.url }}
+          {%- unless forloop.last -%}|{%- endunless -%}
+        {%- endfor -%}"
+        data-video-type="mp4"
+      {% elsif section.settings.video_external != blank %}
+        data-video-url="{{ section.settings.video_external | escape }}"
+      {% endif %}
+      data-video-autoplay="true"
+      data-video-loop="true"
+      data-cc-animate>
+
+      {% if section.settings.placeholder_image %}
+        {% assign placeholder_image = section.settings.placeholder_image %}
+      {% elsif section.settings.video_shopify %}
+        {% assign placeholder_image = section.settings.video_shopify.preview_image %}
+      {% endif %}
+
+      {% if placeholder_image %}
+        <div class="video-container__fallback">
+          {%- render 'background-image', image: placeholder_image -%}
+        </div>
+      {% endif %}
+      {{ section.settings.video_shopify | video_tag: autoplay: true, loop: true, muted: true , controls: false, image_size: '0x', class: "slideshow__slide_video", style: bg, poster: "", preload: "none" }}
+      
+    </div>
+  {% elsif request.design_mode %}
+    <div class="fully-padded-row--large align-center">{{ 'homepage.onboarding.no_content' | t }}</div>
+  {% endif %}
+</div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Our story banner",
+    "class": "section-our-story",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "id": "video_shopify",
+        "type": "video",
+        "label": "Video upload",
+        "info": "Hosted by Shopify. Replaces External video if both are set."
+      },
+      {
+        "id": "placeholder_image",
+        "type": "image_picker",
+        "label": "Custom placeholder image",
+        "info": "Shows while the video is loading, or if it cannot autoplay."
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "text",
+        "id": "height_desktop",
+        "label": "Desktop fixed height",
+        "default": "980px"
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Mobile fixed height",
+        "default": "980px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Our story banner"
+      }
+    ]
+  }
+{% endschema %}

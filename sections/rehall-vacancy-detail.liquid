@@ -1,0 +1,334 @@
+{%- comment -%}
+  Rehall — Vacature detail
+  Eén sectie: titel + meta + volledig bewerkbare tekst (rich text) links,
+  en een zelf te kiezen afbeelding rechtsboven.
+  Identiek aan het Figma-ontwerp (node 7832:3214).
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign title_mobile = s.title_size | times: 0.6 | round
+-%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --vac-content-max: {{ s.content_max }}px;
+    --vac-side-pad: {{ s.side_padding }}px;
+    --vac-media-w: {{ s.media_width }}px;
+    --vac-media-h: {{ s.media_height }}px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-detail-wrap {
+    background: {{ s.background }};
+    padding-top: {{ s.padding_top }}px;
+    padding-bottom: {{ s.padding_bottom }}px;
+  }
+
+  @media (max-width: 989px) {
+    #shopify-section-{{ section.id }} .vac-detail-wrap {
+      padding-top: {{ s.padding_top | times: 0.45 | round }}px;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .vac-detail {
+    width: 100%;
+    margin-inline: auto;
+    max-width: calc(var(--vac-content-max) + (var(--vac-side-pad) * 2));
+    padding-inline: 20px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  /* Kop + meta */
+  #shopify-section-{{ section.id }} .vac-detail__head {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-detail__title {
+    margin: 0;
+    color: #000000;
+    font-weight: 600;
+    line-height: 1.1;
+    font-size: clamp(28px, 7vw, {{ title_mobile }}px);
+    text-transform: none;
+    letter-spacing: normal;
+    overflow-wrap: break-word;
+  }
+
+  #shopify-section-{{ section.id }} .vac-detail__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #shopify-section-{{ section.id }} .vac-detail__location {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #shopify-section-{{ section.id }} .vac-detail__location svg {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 13px;
+  }
+  #shopify-section-{{ section.id }} .vac-detail__location svg path { fill: #000000; }
+
+  #shopify-section-{{ section.id }} .vac-detail__location span,
+  #shopify-section-{{ section.id }} .vac-detail__subtitle {
+    margin: 0;
+    color: #000000;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  /* Afbeelding */
+  #shopify-section-{{ section.id }} .vac-detail__media {
+    width: 100%;
+    aspect-ratio: {{ s.media_width }} / {{ s.media_height }};
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .vac-detail__media img,
+  #shopify-section-{{ section.id }} .vac-detail__media .placeholder-svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .vac-detail__media .placeholder-svg {
+    background: #1d2733;
+    fill: rgba(255,255,255,.12);
+  }
+
+  /* Body tekst */
+  #shopify-section-{{ section.id }} .vac-detail__body {
+    color: #202020;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  #shopify-section-{{ section.id }} .vac-detail__body > *:first-child { margin-top: 0 !important; }
+  #shopify-section-{{ section.id }} .vac-detail__body > *:last-child { margin-bottom: 0; }
+  #shopify-section-{{ section.id }} .vac-detail__body p { margin: 0 0 1em; }
+  #shopify-section-{{ section.id }} .vac-detail__body strong,
+  #shopify-section-{{ section.id }} .vac-detail__body b { font-weight: 600; color: #202020; }
+  /* Vetgedrukte tussenkoppen (bijv. "Jouw rol") krijgen extra ruimte erboven
+     voor een duidelijke alinea-opbouw zoals in het ontwerp */
+  #shopify-section-{{ section.id }} .vac-detail__body p:has(strong:only-child) {
+    margin-top: 1.9em;
+    margin-bottom: 0.55em;
+  }
+  #shopify-section-{{ section.id }} .vac-detail__body ul,
+  #shopify-section-{{ section.id }} .vac-detail__body ol { margin: 0 0 1.5em; padding-left: 21px; }
+  #shopify-section-{{ section.id }} .vac-detail__body li { margin: 0 0 0.35em; }
+  #shopify-section-{{ section.id }} .vac-detail__body li:last-child { margin-bottom: 0; }
+  #shopify-section-{{ section.id }} .vac-detail__body a { color: inherit; text-decoration: underline; }
+
+  /* Desktop: twee kolommen, afbeelding rechtsboven */
+  @media (min-width: 990px) {
+    #shopify-section-{{ section.id }} .vac-detail {
+      grid-template-columns: minmax(0, 1fr) var(--vac-media-w);
+      column-gap: 43px;
+      row-gap: 0;
+      align-items: start;
+      padding-inline: var(--vac-side-pad);
+    }
+    #shopify-section-{{ section.id }} .vac-detail__head {
+      grid-column: 1;
+      grid-row: 1;
+      gap: 50px;
+    }
+    #shopify-section-{{ section.id }} .vac-detail__media {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      aspect-ratio: auto;
+      height: var(--vac-media-h);
+    }
+    #shopify-section-{{ section.id }} .vac-detail__body {
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 50px;
+    }
+    #shopify-section-{{ section.id }} .vac-detail__title {
+      font-size: {{ s.title_size }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="vac-detail-wrap">
+  <div class="vac-detail">
+    <div class="vac-detail__head">
+      {%- if s.title != blank -%}
+        <h1 class="vac-detail__title">{{ s.title | escape }}</h1>
+      {%- endif -%}
+
+      {%- if s.location != blank or s.subtitle != blank -%}
+        <div class="vac-detail__meta">
+          {%- if s.location != blank -%}
+            <div class="vac-detail__location">
+              <svg viewBox="0 0 10 13" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <path d="M5 0C2.243 0 0 2.197 0 4.897c0 3.353 4.473 7.778 4.664 7.965a.48.48 0 0 0 .672 0C5.527 12.675 10 8.25 10 4.897 10 2.197 7.757 0 5 0Zm0 7.292c-1.353 0-2.453-1.077-2.453-2.401S3.647 2.49 5 2.49s2.453 1.077 2.453 2.401S6.353 7.292 5 7.292Z"/>
+              </svg>
+              <span>{{ s.location | escape }}</span>
+            </div>
+          {%- endif -%}
+          {%- if s.subtitle != blank -%}
+            <p class="vac-detail__subtitle">{{ s.subtitle | escape }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="vac-detail__media">
+      {%- if s.image != blank -%}
+        {{ s.image | image_url: width: 1400 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 619px, 100vw', widths: '500, 619, 900, 1238, 1400', alt: s.image.alt | default: s.title }}
+      {%- else -%}
+        {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+      {%- endif -%}
+    </div>
+
+    {%- if s.body != blank -%}
+      <div class="vac-detail__body rte">{{ s.body }}</div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Vacature detail",
+  "tag": "section",
+  "class": "section-vacature-detail",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titel",
+      "default": "Operations & Supply Chain Coördinator (32-40 uur)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Afbeelding (rechtsboven)"
+    },
+    {
+      "type": "header",
+      "content": "Meta-regels"
+    },
+    {
+      "type": "text",
+      "id": "location",
+      "label": "Locatie",
+      "default": "Locatie: Boven de Wolfskuil 20 – 6049 LZ - Herten"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Tagline",
+      "default": "Werk mee aan de groei van REHALL – internationaal ski-, snowboard- en outerwearmerk"
+    },
+    {
+      "type": "header",
+      "content": "Vacaturetekst"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Tekst",
+      "default": "<p>REHALL is een Nederlands sport- en lifestylemerk dat bekend staat om functionele en stijlvolle ski- en snowboardkleding. Onze collecties worden in eigen huis ontwikkeld en geproduceerd in samenwerking met vaste productiepartners in Azië. Vanuit Nederland leveren wij aan retailers en distributeurs in heel Europa en daarbuiten.</p><p>Door onze groei zijn wij op zoek naar een Operations &amp; Supply Chain Coördinator die zorgt dat alles achter de schermen soepel verloopt. Van nieuwe artikelen in het systeem tot productieplanning, leveringen en klantcommunicatie: jij houdt overzicht en zorgt dat afspraken worden nagekomen.</p><p><strong>Jouw rol</strong></p><p>Als Operations &amp; Supply Chain Coördinator ben jij de spil tussen design, productie, logistiek, verkoop en onze internationale leveranciers.</p><p>Jij zorgt ervoor dat collecties op tijd geproduceerd worden, orders correct verwerkt zijn en klanten weten waar ze aan toe zijn. Je bewaakt processen, signaleert knelpunten en schakelt direct wanneer iets afwijkt van de planning.</p><p>Kortom: jij zorgt ervoor dat onze producten op het juiste moment van fabriek naar klant gaan.</p><p><strong>Wat ga je doen?</strong></p><p>Product- en artikelbeheer</p><ul><li>Aanmaken en beheren van nieuwe artikelen en collecties in ons ERP-systeem (XL-ENZ)</li><li>Controleren en verwerken van productgegevens, kleuren, maten en prijzen</li><li>Bewaken van de kwaliteit van de data in het systeem</li></ul><p>Productie &amp; Supply Chain</p><ul><li>Dagelijks contact onderhouden met onze productiepartners in Azië</li><li>Bewaken van productietijden en leverdeadlines</li><li>Opvolgen van orders vanaf productie tot uitlevering</li><li>Signaleren van vertragingen en actief zoeken naar oplossingen</li></ul><p>Logistiek &amp; Klantcommunicatie</p><ul><li>Informeren van retailers en distributeurs over leveringen en beschikbaarheid</li><li>Afstemmen van uitleveringen met logistieke partners</li><li>Ondersteunen bij voorraadbeheer en forecasting</li><li>Verwerken en opvolgen van klantvragen met betrekking tot orders</li></ul><p>Operations &amp; Procesverbetering</p><ul><li>Ondersteunen van het management bij operationele werkzaamheden</li><li>Optimaliseren van interne processen en werkwijzen</li><li>Opstellen en beheren van planningen, overzichten en rapportages</li><li>Zorgen voor structuur en overzicht binnen de organisatie</li></ul><p><strong>Wie zoeken wij?</strong></p><p>Je bent iemand die energie krijgt van organiseren, plannen en het creëren van overzicht. Je werkt nauwkeurig, denkt vooruit en laat je niet snel verrassen.</p><p><strong>Jij hebt:</strong></p><ul><li>MBO+ of HBO werk- en denkniveau</li><li>Minimaal enkele jaren ervaring in een operationele, logistieke of supply chain functie</li><li>Goede communicatieve vaardigheden in Nederlands en Engels.</li><li>Ervaring met ERP-systemen (ervaring met XL-ENZ is een plus)</li><li>Goede kennis van Microsoft Office, met name Excel</li></ul><p><strong>Jij bent:</strong></p><ul><li>Gestructureerd en nauwkeurig</li><li>Zelfstandig en proactief</li><li>Stressbestendig en oplossingsgericht</li><li>Communicatief sterk</li><li>Verantwoordelijk en betrouwbaar</li><li>Niet bang om leveranciers of klanten actief op te volgen</li></ul><p><strong>Wat bieden wij?</strong></p><ul><li>Een zelfstandige en verantwoordelijke functie binnen een groeiend internationaal merk</li><li>Werken in een informele organisatie met korte lijnen</li><li>Veel ruimte voor eigen initiatief en procesverbetering</li><li>Directe samenwerking met management, leveranciers en internationale klanten</li><li>Een marktconform salaris passend bij jouw ervaring</li><li>32 tot 40 uur per week</li><li>Werken in een sportieve en dynamische branche</li></ul><p><strong>Interesse?</strong></p><p>Ben jij de organisator die ervoor zorgt dat alles op rolletjes loopt binnen REHALL?</p><p>Stuur je CV en motivatie naar <strong>info@rsd-clothing.com</strong> en vertel ons waarom jij de Operations &amp; Supply Chain Coördinator bent die wij zoeken.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Vormgeving"
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Achtergrondkleur",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 24,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "label": "Titelgrootte (desktop)",
+      "default": 54
+    },
+    {
+      "type": "range",
+      "id": "media_width",
+      "min": 320,
+      "max": 760,
+      "step": 5,
+      "unit": "px",
+      "label": "Breedte afbeelding (desktop)",
+      "default": 620
+    },
+    {
+      "type": "range",
+      "id": "media_height",
+      "min": 300,
+      "max": 800,
+      "step": 5,
+      "unit": "px",
+      "label": "Hoogte afbeelding (desktop)",
+      "default": 560
+    },
+    {
+      "type": "header",
+      "content": "Breedte & ruimte"
+    },
+    {
+      "type": "range",
+      "id": "content_max",
+      "min": 1000,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "label": "Max. breedte content",
+      "default": 1520
+    },
+    {
+      "type": "range",
+      "id": "side_padding",
+      "min": 0,
+      "max": 140,
+      "step": 2,
+      "unit": "px",
+      "label": "Zijmarge (desktop)",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 2,
+      "unit": "px",
+      "label": "Ruimte boven",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "label": "Ruimte onder",
+      "default": 100
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vacature detail"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,99 @@
+<div id="section-id-{{ section.id }}" class="section-signup">
+  <div class="fully-padded-row--large card-content-padding-x align-center card card-scheme card-scheme--{{ section.settings.color_scheme }}" data-cc-animate data-cc-animate-delay="0.3s">
+
+    <h2 class="section-title section-title--in-card">{{ section.settings.title | escape }}</h2>
+
+    <div class="rte lightly-spaced-row">{{ section.settings.subheading }}</div>
+
+    <div class="signup-form">
+      {% form 'customer', id: 'home_newsletter_signup' %}
+        {% if form.posted_successfully? %}
+          <div class="signup-form__response signup-form__response--success">
+            <h4>{{ 'layout.signup.post_success' | t }}</h4>
+          </div>
+        {% else %}
+          {% if form.errors %}
+            <div class="signup-form__response signup-form__response--error">
+              {% for field in form.errors %}
+                <p class="error">{{ field | capitalize }} - {{ form.errors.messages[field] }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <input type="hidden" name="contact[tags]" value="prospect,newsletter"/>
+          <div class="signup-form__inline-container">
+            <input type="email"
+              placeholder="{{ 'layout.signup.placeholder' | t }}"
+              class="signup-form__email"
+              value=""
+              name="contact[email]"
+              aria-label="{{ 'layout.signup.input_label' | t | escape }}"
+              required />
+            <button class="button signup-form__button" type="submit">
+              {{- 'layout.signup.submit' | t -}}
+            </button>
+          </div>
+        {% endif %}
+      {% endform %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Newsletter",
+    "class": "section-newsletter",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Subscribe to our newsletter"
+      },
+	    {
+        "type": "richtext",
+        "id": "subheading",
+        "label": "Subheading",
+        "default": "<p>Promotions, new products and sales. Directly to your inbox.</p>"
+      },
+      {
+        "type": "select",
+        "id": "color_scheme",
+        "label": "Color scheme",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "Card 1"
+          },
+          {
+            "value": "2",
+            "label": "Card 2"
+          },
+          {
+            "value": "3",
+            "label": "Card 3"
+          },
+          {
+            "value": "none",
+            "label": "No card"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "content": "Customers who subscribe will have their email address added to the “accepts marketing” [customer list](/admin/customers?query=&accepts_marketing=1)"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Newsletter",
+        "settings": {}
+      }
+    ]
+  }
+{% endschema %}

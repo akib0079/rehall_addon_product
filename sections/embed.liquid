@@ -1,0 +1,60 @@
+{% style %}
+  #shopify-section-{{ section.id }}{
+    margin: {{ section.settings.margin }};
+  }
+  
+  @media screen and (max-width: 767px){
+    #shopify-section-{{ section.id }}{
+      margin: {{ section.settings.margin_mobile }};
+    }
+  }
+{% endstyle %}
+
+<div class="wide-container" data-cc-animate="cc-fade-in-up" data-section-type="embed">
+  {% if section.settings.title != blank %}
+    <h2 class="embed__title hsl-style">{{ section.settings.title }}</h2>
+  {% endif %}
+  {{ section.settings.html }}
+</div>
+
+{% schema %}
+  {
+    "name": "Embed",
+    "class": "section-embed card",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "#ENJOYYOURRIDES"
+      },
+      {
+        "type": "html",
+        "id": "html",
+        "label": "Html",
+        "default": "Your code goes here"
+      },
+      {
+      "type": "header",
+      "content": "Margin"
+      },
+      {
+        "type": "text",
+        "id": "margin",
+        "label": "Margin",
+        "default": "186px 0 212px"
+      },
+      {
+        "type": "text",
+        "id": "margin_mobile",
+        "label": "Margin mobile",
+        "default": "124px 0 79px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Embed"
+      }
+    ]
+  }
+{% endschema %}

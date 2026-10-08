@@ -1,0 +1,357 @@
+{% assign floating_img = false %}
+{% for block in section.blocks %}
+  {% if block.type == 'image_block' %}
+    {% assign floating_img = true %}
+  {% endif %}
+{% endfor %}
+<div class="w2024-prefooter-section section-id-{{ section.id }}{% if floating_img %} has-floating-img{% endif %}">
+  <div class="w2024-prefooter__inner">
+    {% if section.settings.bg_img != blank %}
+      {% if section.settings.bg_img_wide != blank %}
+        {{ section.settings.bg_img_wide | image_url: width: nil | image_tag: class: 'w2024-prefooter__bg-img wide-only' }}
+      {% endif %}
+      {{ section.settings.bg_img | image_url: width: nil | image_tag: class: 'w2024-prefooter__bg-img desktop-only' }}
+      {{ section.settings.bg_img_mobie | default: section.settings.bg_img | image_url: width: nil | image_tag: class: 'w2024-prefooter__bg-img mobile-only' }}
+    {% else %}
+      {{ 'collection-1' | placeholder_svg_tag: 'w2024-prefooter__bg-img placeholder' }}
+    {% endif %}
+    <div class="section-container">
+      <h2 class="w2024-prefooter__title">{{ section.settings.title | newline_to_br }}</h2>
+      {% if section.settings.btn_text != blank %}
+        {% render 'btn-global', class: 'w2024-prefooter__btn btn', url: section.settings.btn_url, label: section.settings.btn_text, icon: true %}
+      {% endif %}
+    </div>
+    {% for block in section.blocks %}
+        {% if block.type == 'hotspot' %}
+          {% if block.settings.product != blank %}
+            {% assign product = block.settings.product %}
+            {% capture variables %}
+              --posX:{{ block.settings.h_pos }}%;
+              --posY:{{ block.settings.v_pos }}%;
+              --dist: {{ block.settings.dist }}px;
+              --angle: {{ block.settings.angle }};
+            {%- if block.settings.repos_wide %}
+              --posX-wide:{{ block.settings.h_pos_wide }}%;
+              --posY-wide:{{ block.settings.v_pos_wide }}%;
+              --dist-wide: {{ block.settings.dist_wide }}px;
+              --angle-wide: {{ block.settings.angle_wide }};
+            {%- endif -%}
+            {% endcapture %}
+            <div class="w2024-adjustable__hotspot{% if block.settings.repos_wide %} wide-repos{% endif %} desktop-only" style="{{ variables }}" {{ block.shopify_attributes }}>
+              <div class="w2024-adjustable__hotspot_anchor"></div>
+               <div class="w2024-adjustable__hotspot_angle">
+                 <a class="w2024-adjustable__hotspot_wrap" href="{{ product.url }}">
+                   <div class="w2024-adjustable__hotspot_img-wrap">
+                     {% if product.featured_image != blank %}
+                      {{ product.featured_image | image_url: width: 100 | image_tag: class: 'w2024-adjustable__hotspot_img' }}
+                    {% else %}
+                      {{ 'image' | placeholder_svg_tag: 'w2024-adjustable__hotspot_img placeholder' }}
+                    {% endif %}
+                   </div>
+                   <div class="w2024-adjustable__hotspot_text-wrap">
+                     <h4 class="w2024-adjustable__hotspot_title">{{ product.title }}</h4>
+                     <p class="w2024-adjustable__hotspot_price">{{ product.price | money }}</p>
+                     <span class="w2024-adjustable__hotspot_btn">
+                       <span class="w2024-adjustable__hotspot_btn-text">{{ block.settings.btn_text }}</span>
+                       {% render 'svg-arrow-w2024-hotspot' %}
+                     </span>
+                   </div>
+                 </a>
+               </div>
+            </div>
+          {% endif %}
+          {% elsif block.type == 'image_block' %}
+            <div class="w2024-prefooter__floating-img-block desktop-only" {{ block.shopify_attributes }}>
+              {% if block.settings.video != blank %}
+                {{ block.settings.video | video_tag: muted: true, autoplay: true, loop: true, class: 'w2024-prefooter__floating-img_img' }}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'w2024-prefooter__floating-img_img placeholder' }}
+              {% endif %}
+              {% if block.settings.product != blank %}
+                {% assign product = block.settings.product %}
+                {% capture variables %}
+                  --posX:{{ block.settings.h_pos }}%;
+                  --posY:{{ block.settings.v_pos }}%;
+                  --dist: {{ block.settings.dist }}px;
+                  --angle: {{ block.settings.angle }};
+                {% endcapture %}
+                <div class="w2024-adjustable__hotspot" style="{{ variables }}">
+                  <div class="w2024-adjustable__hotspot_anchor"></div>
+                   <div class="w2024-adjustable__hotspot_angle">
+                     <a class="w2024-adjustable__hotspot_wrap" href="{{ product.url }}">
+                       <div class="w2024-adjustable__hotspot_img-wrap">
+                         {% if product.featured_image != blank %}
+                          {{ product.featured_image | image_url: width: nil | image_tag: class: 'w2024-adjustable__hotspot_img' }}
+                        {% else %}
+                          {{ 'image' | placeholder_svg_tag: 'w2024-adjustable__hotspot_img placeholder' }}
+                        {% endif %}
+                       </div>
+                       <div class="w2024-adjustable__hotspot_text-wrap">
+                         <h4 class="w2024-adjustable__hotspot_title">{{ product.title }}</h4>
+                         <p class="w2024-adjustable__hotspot_price">{{ product.price | money }}</p>
+                         <span class="w2024-adjustable__hotspot_btn">
+                           <span class="w2024-adjustable__hotspot_btn-text">{{ block.settings.btn_text }}</span>
+                           {% render 'svg-arrow-w2024-hotspot' %}
+                         </span>
+                       </div>
+                     </a>
+                   </div>
+                </div>
+              {% endif %}
+            </div>
+        {% endif %}
+      {% endfor %}
+  </div>
+</div>
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     // if (window.matchMedia("(min-width: 768px)").matches) {
+       document.querySelectorAll('.section-id-{{ section.id }} .w2024-adjustable__hotspot').forEach(hotspot => {
+         const anchor = hotspot.querySelector('.w2024-adjustable__hotspot_anchor');
+         const hotspotWrap = hotspot.querySelector('.w2024-adjustable__hotspot_wrap');
+         const tween = gsap.fromTo(hotspotWrap, {opacity: 0}, {opacity: 1, duration: 0.5 , paused: true, 
+            onStart: () => {
+              hotspotWrap.style.display = "flex";
+            },
+            onReverseComplete: () => {
+              hotspotWrap.style.display = "none";
+            },
+         })
+         function closeFunction(e) {
+            if(e.target != hotspotWrap && !hotspotWrap.contains(e.target)){
+              // e.stopPropagation();
+              tween.reverse()
+              hotspot.classList.remove('active')
+              document.removeEventListener('click', closeFunction);
+            }
+          }
+         anchor.addEventListener('click', (e) => {
+           // e.stopPropagation();
+           if(hotspot.classList.contains('active')){
+             document.removeEventListener('click', closeFunction);
+             tween.reverse()
+             hotspot.classList.remove('active')
+             return;
+           };
+           document.querySelector('.section-id-{{ section.id }} .w2024-adjustable__hotspot')?.classList.remove('active')
+           tween.play()
+           hotspot.classList.add('active')
+           setTimeout(()=>{
+             document.addEventListener('click', closeFunction);
+           })
+         })
+       })
+     })
+</script>
+{% schema %}
+  {
+    "name": "W2024 Prefooter",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "So gear up, get out there, and enjoy your rides — \nRehall style."
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_img",
+        "label": "Background Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_img_mobie",
+        "label": "Background Image mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_img_wide",
+        "label": "Background Image wide"
+      },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "SHOW COLLECTION"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button URL",
+        "default": "/collections/all"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "image_block",
+        "name": "Floating Video",
+        "limit": 1,
+        "settings": [
+          {
+            "type": "video",
+            "id": "video",
+            "label": "Video"
+          },
+          {
+            "type": "header",
+            "content": "Hotspot"
+          },
+          {
+            "type": "product",
+            "id": "product",
+            "label": "Product",
+            "info": "Only shows if assigned"
+          },
+          {
+            "type": "text",
+            "id": "btn_text",
+            "label": "Button text",
+            "default": "VIEW PRODUCT"
+          },
+          {
+            "type": "range",
+            "id": "h_pos",
+            "label": "Horizontal Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          
+          {
+            "type": "range",
+            "id": "v_pos",
+            "label": "Vertical Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist",
+            "label": "Distance",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle",
+            "label": "Angle",
+            "default": 150,
+            "info": "in Degree"
+          },
+          {
+            "type": "checkbox",
+            "label": "Enable wide repositioning",
+            "id": "repos_wide",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "h_pos_wide",
+            "label": "Horizontal Position wide",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "v_pos_wide",
+            "label": "Vertical Position wide",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist_wide",
+            "label": "Distance wide",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle_wide",
+            "label": "Angle wide",
+            "default": 150,
+            "info": "in Degree"
+          },
+        ]
+      },
+      {
+        "type": "hotspot",
+        "name": "Hotspot",
+        "settings": [
+          {
+            "type": "product",
+            "id": "product",
+            "label": "Product",
+            "info": "Only shows if assigned"
+          },
+          {
+            "type": "text",
+            "id": "btn_text",
+            "label": "Button text",
+            "default": "VIEW PRODUCT"
+          },
+          {
+            "type": "range",
+            "id": "h_pos",
+            "label": "Horizontal Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          
+          {
+            "type": "range",
+            "id": "v_pos",
+            "label": "Vertical Position",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "default": 50,
+            "unit": "%"
+          },
+          {
+            "type": "range",
+            "id": "dist",
+            "label": "Distance",
+            "min": -100,
+            "max": 100,
+            "step": 2,
+            "default": 46,
+            "unit": "px",
+          },
+          {
+            "type": "number",
+            "id": "angle",
+            "label": "Angle",
+            "default": 150,
+            "info": "in Degree"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "W2024 Prefooter"
+      }
+    ]
+  }
+{% endschema %}

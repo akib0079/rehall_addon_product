@@ -1,0 +1,334 @@
+{%- unless template.name == 'cart' or settings.cart_type == 'page' -%}
+<div data-section-id="{{ section.id }}" data-section-type="cart-drawer" data-form-action="{{ routes.cart_url }}" data-form-method="post" class="section-id-{{ section.id }}">
+  <div class="cart-drawer-modal cc-popup cc-popup--right" aria-hidden="true" data-freeze-scroll="true">
+    <div class="cc-popup-background"></div>
+    <div class="cc-popup-modal" role="dialog" aria-modal="true" aria-labelledby="CartDrawerModal-Title">
+      <div class="cc-popup-container">
+        <button type="button" class="cc-popup-close tap-target" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+          {%- render 'svg-x-cart' -%}
+        </button>
+
+        <div class="cc-popup-content">
+
+          <cart-form data-section-id="{{ section.id }}" class="cart-drawer" data-ajax-update="true">
+            <div class="cart-drawer__content">
+              <div class="cart-drawer__header">
+                <h2 id="CartDrawerModal-Title" data-merge="header-title">
+                  {{ 'cart.general.title' | t }}
+                  {% if cart.items != empty %}
+                    <span class="cart-drawer__title-count">({{ cart.item_count }})</span>
+                  {% endif %}
+                </h2>
+                <div class="product-slider__nav-wrap">
+                  <div class="product-slider__nav prev">
+                    {% render 'svg-slider-arrow' %}
+                  </div>
+                  <div class="product-slider__nav next">
+                    {% render 'svg-slider-arrow' %}
+                  </div>
+                </div>
+              </div>
+
+              {%- if settings.show_free_shipping_bar -%}
+                {%- render 'free-shipping-bar' -%}
+              {%- endif -%}
+
+              <div class="cart-item-list swiper">
+                <div class="cart-item-list__body swiper-wrapper" data-merge-list="cart-items">
+                  {% for item in cart.items %}
+                    <div class="swiper-slide" data-merge-list-item="item-key:{{ item.key }}|{{ item.final_price }}{% for discount_allocation in item.line_level_discount_allocations %}|{{ discount_allocation.discount_application.title | escape }}{% endfor %}"
+                         {% comment %} Discount items are difficult to predict - BOGOFs appear as a separate item with the same key as an existing item - simpler to always refresh {% endcomment %}
+                         {%- if item.line_level_discount_allocations == empty -%}
+                         data-merge-cache="{{ item.key }}|{{ item.quantity }}|{{ item.final_line_price }}|{% if item.selling_plan_allocation %}{{ item.selling_plan_allocation.selling_plan.id }}{% endif %}"
+                         {%- endif -%}>
+                      {%- render 'cart-item-slider', item: item, forloop: forloop, drawer: true -%}
+                    </div>
+                  {% else %}
+                    <div class="fully-padded-row align-centre" data-merge-list-item="no-cart-item">
+                      <p>{{ 'cart.general.empty' | t }}</p>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div data-merge="cross-sells" data-merge-cache="{% if cart.items == blank %}blank{% else %}{{ cart.items.first.product.id }}{% endif %}">
+                {%- liquid
+                  if section.settings.enable_cross_sells
+                    if cart.items == empty
+                      if section.settings.cross_sell_products != blank
+                        assign cross_sell_product_list = true
+                      endif
+                    else
+                      if section.settings.enable_automatic_cross_sells
+                        assign cross_sell_auto = true
+                      elsif section.settings.cross_sell_products != blank
+                        assign cross_sell_product_list = true
+                      endif
+                    endif
+                  endif
+                -%}
+                {%- if cross_sell_product_list or cross_sell_auto -%}
+                  <div class="cart-item-upsells">
+                    <cc-cart-cross-sell{% if cross_sell_auto %} data-from="{{ routes.product_recommendations_url }}?section_id=product-mini-recommendations&limit=8&product_id={{ cart.items.first.product.id }}"{% endif %}>
+                      <cc-carousel class="cc-carousel" allow-mouse-drag select-single>
+                        <div class="opposing-items opposing-items--title-with-cta">
+                          <h2 class="h6-style opposing-items__title">{{ section.settings.cross_sell_title | escape }}</h2>
+                          <div class="cc-carousel-buttons">
+                            <button class="cc-carousel-button cc-carousel-button--prev tap-target cc-carousel-button--no-bg" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+                            <button class="cc-carousel-button cc-carousel-button--next tap-target cc-carousel-button--no-bg" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+                          </div>
+                        </div>
+                        <div class="cc-carousel__scroll-outer">
+                          <div class="product-mini-list product-mini-list--horizontal cc-carousel__scroll-area">
+                            {%- if cross_sell_product_list -%}
+                              {%- liquid
+                                if settings.prod_thumb_shape == 'portrait-23'
+                                  assign chosen_aspect_ratio = 0.67
+                                elsif settings.prod_thumb_shape == 'portrait-45'
+                                  assign chosen_aspect_ratio = 0.8
+                                elsif settings.prod_thumb_shape == 'square'
+                                  assign chosen_aspect_ratio = 1.0
+                                elsif settings.prod_thumb_shape == 'landscape-54'
+                                  assign chosen_aspect_ratio = 1.25
+                                elsif settings.prod_thumb_shape == 'landscape-32'
+                                  assign chosen_aspect_ratio = 1.50
+                                elsif settings.prod_thumb_shape == 'tallest'
+                                  assign chosen_aspect_ratio = 99
+                                  for product in section.settings.cross_sell_products
+                                    if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                                      assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                                    endif
+                                  endfor
+                                else
+                                  assign chosen_aspect_ratio = 0
+                                  for product in section.settings.cross_sell_products
+                                    if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                                      assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                                    endif
+                                  endfor
+                                endif
+                              -%}
+                              {% for product in section.settings.cross_sell_products %}
+                                {% render 'product-mini-block', product: product, custom_aspect_ratio: chosen_aspect_ratio %}
+                              {% endfor %}
+                            {%- endif -%}
+                          </div>
+                        </div>
+                      </cc-carousel>
+                    </cross-sell-products>
+                  </div>
+                {%- endif -%}
+              </div>
+            </div>
+
+            <div class="cart-drawer__footer{% if cart.items == empty %} hidden{% endif %}" data-merge-attributes="footer-container">
+              <div data-merge="footer">
+                {% if cart.items != empty %}
+                  {%- if cart.cart_level_discount_applications != blank -%}
+                    <ul class="cart-discount-list">
+                      {%- for discount_application in cart.cart_level_discount_applications -%}
+                        <li class="cart-discount cart-discount--inline">
+                          <span class="cart-discount__label">
+                              <span class="cart-discount__icon">{% render 'icon-label' %}</span>
+                              <span class="cart-discount__title">{{ discount_application.title }}</span>
+                          </span>
+                          <span class="cart-discount__amount theme-money">{{ discount_application.total_allocated_amount | money }}</span>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  {%- endif -%}
+                  <h2 class="subtotal h3-style opposing-items">
+                    {{ 'cart.general.subtotal' | t }}:
+                    <span class="theme-money">
+                      {%- if settings.cart_currency_code_enabled -%}
+                        {{- cart.total_price | money_with_currency -}}
+                      {%- else -%}
+                        {{- cart.total_price | money -}}
+                      {%- endif -%}
+                    </span>
+                  </h2>
+
+                  <div>
+                    {%- if section.settings.show_tax_and_shipping -%}
+                      {%- capture taxes_shipping_checkout -%}
+                        {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
+                          {{ 'cart.general.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
+                        {%- elsif cart.taxes_included -%}
+                          {{ 'cart.general.taxes_included_but_shipping_at_checkout' | t }}
+                        {%- elsif shop.shipping_policy.body != blank -%}
+                          {{ 'cart.general.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
+                        {%- else -%}
+                          {{ 'cart.general.taxes_and_shipping_at_checkout' | t }}
+                        {%- endif -%}
+                      {%- endcapture -%}
+
+                      <div class="cart-policies rte">{{ taxes_shipping_checkout }}</div>
+                    {%- endif -%}
+
+                    {% if section.settings.enable_cart_notes %}
+                      <div class="lightly-spaced-row">
+                        <a href="#" class="toggle-target-toggler--is-hidden feature-link" data-toggle-target=".cart-drawer__note">{{ 'cart.label.note' | t }}</a>
+                        <div class="cart-drawer__note toggle-target toggle-target--hidden">
+                          <div class="toggle-target-container">
+                            <textarea name="note">{{ cart.note }}</textarea>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+
+              {% if section.settings.cart_terms_page != blank %}
+                <terms-agreement class="terms-agreement rte">
+                  <input type="checkbox" id="terms" />
+                  <label for="terms">{{ 'cart.terms.agreement_html' | t: terms_url: section.settings.cart_terms_page }}</label>
+                </terms-agreement>
+              {% endif %}
+
+              <div class="checkout-buttons lightly-spaced-row-above{% if cart.items == empty %} hidden{% endif %}" data-merge-attributes="checkout-buttons">
+                {% if section.settings.enable_direct_cart %}
+                  {% assign url = routes.root_url | append: '/checkout' | replace: '//', '/' %}
+                  {% assign text = 'cart.general.checkout' | t %}
+                  {% render 'btn-global', class: 'cart_checkout-btn btn button button--large', url: url, label: text, icon: true %}
+                  <!-- <a href="{{ routes.root_url | append: '/checkout' | replace: '//', '/' }}" class="button button--large">{{ 'cart.general.checkout' | t }}</a> -->
+                {% else %}
+                  {% assign url = routes.cart_url %}
+                  {% assign text = 'cart.general.checkout' | t %}
+                  {% render 'btn-global', class: 'cart_checkout-btn btn button button--large', url: url, label: text, icon: true %}
+                  <!-- <a href="{{ routes.cart_url }}" class="button button--large">{{ 'cart.general.checkout' | t }}</a> -->
+                {% endif %}
+
+                {% if section.settings.show_additional_checkout_buttons and additional_checkout_buttons and section.settings.cart_terms_page == blank %}
+                  <div class="additional-checkout-buttons">
+                    {{ content_for_additional_checkout_buttons }}
+                  </div>
+                {% endif %}
+                {% if section.settings.continue_text != blank %}
+                  <a class="cart_continue-link" href="{{ section.settings.continue_url }}">
+                    {{ section.settings.continue_text }}
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </cart-form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  //  document.addEventListener("DOMContentLoaded", () => {
+  //     theme.CartDrawerSection.swiper = new Swiper('.cart-item-list', {
+  //       slidesPerView: 1,
+  //       spaceBetween: 10,
+  //       freeMode: {
+  //         enabled: true,
+  //         sticky: true,
+  //         momentumRatio: 0.8,
+  //       },
+  //       speed: 400,
+  //       navigation: {
+  //         nextEl: '.section-id-{{ section.id }} .product-slider__nav.next',
+  //         prevEl: '.section-id-{{ section.id }} .product-slider__nav.prev',
+  //       },
+  //     });
+  // });     
+</script>
+{%- endunless -%}
+
+
+{% schema %}
+  {
+    "name": "Cart drawer",
+    "class": "section-cart-drawer",
+    "settings": [
+      {
+        "type": "text",
+        "id": "continue_text",
+        "label": "Continue Shopping Text",
+        "default": "VERDER SHOPPEN"
+      },
+      {
+        "type": "url",
+        "id": "continue_url",
+        "label": "Continue Shopping URL",
+        "default": "/collections/all"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_cart_notes",
+        "label": "Enable cart notes",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_tax_and_shipping",
+        "label": "Show tax status and shipping policy link",
+        "default": true
+      },
+      {
+        "type": "url",
+        "id": "cart_terms_page",
+        "label": "Terms and Conditions link",
+        "info": "Additional checkout buttons will be hidden when cart terms are shown"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_direct_cart",
+        "label": "Enable direct checkout",
+        "info": "Disable to send customers to the cart page, additional checkout options will be hidden.",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_additional_checkout_buttons",
+        "label": "Show additional checkout options",
+        "default": true,
+        "info": "Display other gateways and quick checkout buttons. [Read more](https://help.shopify.com/en/manual/payments/accelerated-checkouts)"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_backorder_text",
+        "label": "Show backorder text",
+        "default": true,
+        "info": "Only shows for products which use inventory tracking and are available to purchase when out of stock."
+      },
+      {
+        "type": "header",
+        "content": "Recommended products"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_cross_sells",
+        "label": "Show recommended products",
+        "info": "With both empty and filled carts",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "cross_sell_title",
+        "label": "Heading",
+        "default": "You may like"
+      },
+      {
+        "type": "product_list",
+        "id": "cross_sell_products",
+        "label": "Products"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_automatic_cross_sells",
+        "label": "Enable automatic recommendations",
+        "info": "Displays products related to the first item in the cart, replacing the recommended products above.",
+        "default": true
+      },
+      {
+        "type": "paragraph",
+        "content": "Dynamic recommendations change and improve with time. [Learn more](https://help.shopify.com/en/themes/development/recommended-products)"
+      }
+    ]
+  }
+{% endschema %}

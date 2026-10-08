@@ -1,0 +1,79 @@
+{% style %}
+    #shopify-section-{{ section.id }} .section-story-img{
+      height: {{ section.settings.height }};
+    }
+
+    @media (max-width: 767px) {
+      #shopify-section-{{ section.id }} .section-story-img{
+        height: {{ section.settings.height_mobile }};
+      }
+    }
+{% endstyle %}
+<div class="wide-outer-container section-container">
+<div class="section-story-img">
+  <div class="section-container">
+    <h2 class="story-img-title">{{ section.settings.title | newline_to_br }}</h2>
+    {% if section.settings.btn_text != blank %}
+      {% render 'btn-global', class: 'story-img-btn btn', url: section.settings.btn_url, label: section.settings.btn_text, icon: true %}
+    {% endif %}
+    {% if section.settings.image != blank %}
+      {{ section.settings.image | image_url: width: nil | image_tag: class: "story-img-img desktop-only" }}
+      {{ section.settings.image_mobile | default: section.settings.image | image_url: width: nil | image_tag: class: "story-img-img mobile-only" }}
+      {% else %}
+        {{ 'collection-1' | placeholder_svg_tag: 'story-img-img' }}
+      {% endif %}
+  </div>
+</div>
+</div>
+{% schema %}
+  {
+    "name": "Our story image",
+    "settings": [
+      {
+        "type": "textarea",
+        "id": "title",
+        "label": "Title",
+        "default": "So go out there and<br /> “ENJOY YOUR RIDES!”"
+      },
+      {
+        "type": "text",
+        "id": "btn_text",
+        "label": "Button text",
+        "default": "SHOW COLLECTION"
+      },
+      {
+        "type": "url",
+        "id": "btn_url",
+        "label": "Button url",
+        "default": "/collections/all"
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_mobile",
+        "label": "Image mobile"
+      },
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Section height",
+        "default": "1029px"
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Section height mobile",
+        "default": "747px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Our story image"
+      }
+    ]
+  }
+{% endschema %}

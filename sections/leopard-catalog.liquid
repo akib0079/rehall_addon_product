@@ -1,0 +1,89 @@
+<div class="section-wrapper" id="section-id-{{ section.id }}" data-cc-animate>
+    {% if section.settings.desc != blank %}
+        <div class="leaopard-catalog__desc">
+        {{ section.settings.desc }}
+        </div>
+    {% endif %}
+    {% if section.settings.title != blank %}
+        <h2 class="leaopard-catalog__title">
+        {{ section.settings.title }}
+        </h2>
+    {% endif %}
+  <div class="leaopard-catalog__grid">
+        {% for block in section.blocks %}
+        <a class="leaopard-catalog__single" href="{{ block.settings.url | default: "#" }}" {{ block.shopify_attributes }}>
+            {% if block.settings.image != blank %}
+            {% comment %} {{ block.settings.image_wide | default: block.settings.image | image_url: width: nil | image_tag: class: "leaopard-catalog__single_image wide-only" }} {% endcomment %}
+            {{ block.settings.image | image_url: width: nil | image_tag: class: "leaopard-catalog__single_image" }}
+            {% comment %} {{ block.settings.image_mobile | default: block.settings.image | image_url: width: nil | image_tag: class: "leaopard-catalog__single_image mobile-only" }} {% endcomment %}
+            {% else %}
+            {{ 'product-1' | placeholder_svg_tag: "leaopard-catalog__single_image placeholder" }}
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+
+{% schema %}
+  {
+    "name": "Leopard Catalog",
+    "class": "section-leopard-catalog",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "id": "desc",
+        "type": "richtext",
+        "label": "Desciption",
+        "default": "<p>Whether you’re carving</p>"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Go snow-proof. Go stylish. Go Leopard."
+      }
+    ],
+    "blocks": [
+      {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+            {
+                "id": "image",
+                "type": "image_picker",
+                "label": "Item Image",
+            },
+          {
+            "type": "url",
+            "id": "url",
+            "label": "Collection url"
+          },
+            ]
+        }
+    ],
+    "presets": [
+      {
+        "name": "Leopard Catalog",
+        "blocks": [
+            {
+            "type": "item"
+            },
+            {
+            "type": "item"
+            },
+            {
+            "type": "item"
+            },
+            {
+            "type": "item"
+            }
+        ]
+      }
+    ]
+  }
+{% endschema %}

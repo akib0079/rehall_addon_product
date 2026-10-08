@@ -1,0 +1,386 @@
+{% doc %}
+  @prompt
+    Je bent Shopify Sidekick. Maak en implementeer één Liquid-section die exact het blok uit mijn screenshot oplevert: H2-titel, twee korte intro-paragrafen, H3-subtitel met korte lead, daarna een uitklapbare vervolgtekst met een pill-knop “Toon meer / Toon minder” en een chevron die roteert. Geen afbeeldingen. Stijl moet het huidige (Rehall-achtige) thema erven., Zorg ervoor dat het gewoon 1 groot metaveld is met tekst met opmaak, zodat het gewoon 1 groot tesktblok is en we deze kunnen koppelen aan een collectie metaveld., ik wil dat de titels dezelfde opmaak hebben als de andere titels (wat dikgedrukter). neem de fonts en stijlen over van de webshop. Lijn ook het blok uit met de rest van de blokken. Nu staat dit helemaal links tegen de rand aan, dat is niet goed, voeg 200px spacing toe aan de bovenkant en zorg dat links vanuit de kant ook spacing wordt toegeovegd zodat deze tekst is uitgelijnd met de rest van de content. De titels worden wel dikgedrukt weergegeven in de content teskt maar niet aan de voorkant,
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-expandable-content-{{ ai_gen_id }} {
+    padding: 200px 0 {{ block.settings.section_padding }}px;
+  }
+
+  .ai-expandable-content__container-{{ ai_gen_id }} {
+    max-width: {{ settings.page_container }}px;
+    margin: 0 auto;
+    padding: 0 {{ settings.section_adding }}px;
+  }
+
+  .ai-expandable-content__wrapper-{{ ai_gen_id }} {
+    color: {{ settings.font_col_base }};
+    font-family: {{ settings.type_base_font.family }}, {{ settings.type_base_font.fallback_families }};
+    font-size: {{ settings.font_size_base_int }}px;
+    line-height: 1.6;
+  }
+
+  .ai-expandable-content__content-{{ ai_gen_id }} {
+    position: relative;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} {
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }}.collapsed {
+    max-height: {{ block.settings.preview_height }}px;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }}.expanded {
+    max-height: none;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h1,
+  .ai-expandable-content__text-{{ ai_gen_id }} h2,
+  .ai-expandable-content__text-{{ ai_gen_id }} h3,
+  .ai-expandable-content__text-{{ ai_gen_id }} h4,
+  .ai-expandable-content__text-{{ ai_gen_id }} h5,
+  .ai-expandable-content__text-{{ ai_gen_id }} h6 {
+    font-family: {{ settings.type_heading_font.family }}, {{ settings.type_heading_font.fallback_families }};
+    font-weight: {{ settings.type_heading_font.weight | default: 600 }};
+    font-style: {{ settings.type_heading_font.style }};
+    color: {{ settings.font_col_heads | default: settings.font_col_base }};
+    margin: {{ settings.medium_spacing | times: 0.5 }}px 0 {{ settings.medium_spacing | times: 0.3 }}px;
+    line-height: 1.2;
+    {% if settings.capitalize_headings %}text-transform: uppercase;{% endif %}
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h1:first-child,
+  .ai-expandable-content__text-{{ ai_gen_id }} h2:first-child,
+  .ai-expandable-content__text-{{ ai_gen_id }} h3:first-child {
+    margin-top: 0;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h1 {
+    font-size: {{ settings.font_size_heading_int }}px;
+    font-weight: {{ settings.type_heading_font.weight | default: 700 }};
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h2 {
+    font-size: {{ settings.font_size_heading_int | times: 0.9 }}px;
+    font-weight: {{ settings.type_heading_font.weight | default: 700 }};
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h3 {
+    font-size: {{ settings.font_size_heading_int | times: 0.75 }}px;
+    font-weight: {{ settings.type_heading_font.weight | default: 600 }};
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h4 {
+    font-size: {{ settings.font_size_base_int | times: 1.2 }}px;
+    font-weight: {{ settings.type_heading_font.weight | default: 600 }};
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} h5,
+  .ai-expandable-content__text-{{ ai_gen_id }} h6 {
+    font-size: {{ settings.font_size_base_int | times: 1.1 }}px;
+    font-weight: {{ settings.type_heading_font.weight | default: 600 }};
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} p {
+    margin: 0 0 {{ settings.medium_spacing | times: 0.3 }}px;
+    {% if settings.text_lighter_than_heading %}
+      opacity: 0.8;
+    {% endif %}
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} p:last-child {
+    margin-bottom: 0;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} ul,
+  .ai-expandable-content__text-{{ ai_gen_id }} ol {
+    margin: 0 0 {{ settings.medium_spacing | times: 0.3 }}px;
+    padding-left: 24px;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} li {
+    margin-bottom: 8px;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} strong {
+    font-weight: 600;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} a {
+    color: {{ settings.font_col_link }};
+    text-decoration: underline;
+  }
+
+  .ai-expandable-content__text-{{ ai_gen_id }} a:hover {
+    opacity: 0.8;
+  }
+
+  .ai-expandable-content__fade-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(transparent, {{ settings.bg_col | default: '#ffffff' }});
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-expandable-content__fade-{{ ai_gen_id }}.hidden {
+    opacity: 0;
+  }
+
+  .ai-expandable-content__toggle-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: {{ settings.btn_col }};
+    color: {{ settings.btn_col_txt }};
+    border: none;
+    border-radius: {{ settings.button_border_radius }}px;
+    padding: 12px 20px;
+    font-family: {{ settings.type_base_font.family }}, {{ settings.type_base_font.fallback_families }};
+    font-size: {{ settings.font_size_base_int }}px;
+    font-weight: {{ settings.type_base_font.weight }};
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: {{ settings.medium_spacing | times: 0.5 }}px;
+    text-decoration: none;
+  }
+
+  .ai-expandable-content__toggle-{{ ai_gen_id }}:hover {
+    background-color: {{ settings.btn_col_alt }};
+  }
+
+  .ai-expandable-content__toggle-{{ ai_gen_id }}:focus {
+    outline: 2px solid {{ settings.btn_col }};
+    outline-offset: 2px;
+  }
+
+  .ai-expandable-content__chevron-{{ ai_gen_id }} {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-expandable-content__chevron-{{ ai_gen_id }}.rotated {
+    transform: rotate(180deg);
+  }
+
+  .ai-expandable-content__empty-state-{{ ai_gen_id }} {
+    padding: {{ settings.medium_spacing }}px {{ settings.section_adding }}px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    background-color: {{ settings.alt_bg_col | default: '#f9f9f9' }};
+    border-radius: {{ settings.card_border_radius }}px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-expandable-content-{{ ai_gen_id }} {
+      padding: 120px 0 {{ block.settings.section_padding | times: 0.7 }}px;
+    }
+
+    .ai-expandable-content__container-{{ ai_gen_id }} {
+      padding: 0 {{ settings.section_adding | times: 0.7 }}px;
+    }
+
+    .ai-expandable-content__text-{{ ai_gen_id }}.collapsed {
+      max-height: {{ block.settings.preview_height | times: 0.8 }}px;
+    }
+
+    .ai-expandable-content__text-{{ ai_gen_id }} h1 {
+      font-size: {{ settings.font_size_heading_int | times: 0.9 }}px;
+    }
+
+    .ai-expandable-content__text-{{ ai_gen_id }} h2 {
+      font-size: {{ settings.font_size_heading_int | times: 0.8 }}px;
+    }
+
+    .ai-expandable-content__text-{{ ai_gen_id }} h3 {
+      font-size: {{ settings.font_size_heading_int | times: 0.7 }}px;
+    }
+  }
+{% endstyle %}
+
+<expandable-content-{{ ai_gen_id }}
+  class="ai-expandable-content-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-expandable-content__container-{{ ai_gen_id }}">
+    <div class="ai-expandable-content__wrapper-{{ ai_gen_id }}">
+      {% if block.settings.content_text != blank %}
+        <div class="ai-expandable-content__content-{{ ai_gen_id }}">
+          <div
+            class="ai-expandable-content__text-{{ ai_gen_id }} collapsed"
+            data-expandable-content
+          >
+            {{ block.settings.content_text }}
+          </div>
+          <div
+            class="ai-expandable-content__fade-{{ ai_gen_id }}"
+            data-fade-overlay
+          ></div>
+        </div>
+
+        <button
+          class="ai-expandable-content__toggle-{{ ai_gen_id }}"
+          data-toggle-button
+          aria-expanded="false"
+        >
+          <span data-toggle-text>{{ block.settings.show_more_text }}</span>
+          <svg
+            class="ai-expandable-content__chevron-{{ ai_gen_id }}"
+            data-chevron
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </button>
+      {% else %}
+        <div class="ai-expandable-content__empty-state-{{ ai_gen_id }}">
+          Voeg content toe via het metaveld of de instellingen
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</expandable-content-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class ExpandableContent{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.expandableContent = this.querySelector('[data-expandable-content]');
+        this.toggleButton = this.querySelector('[data-toggle-button]');
+        this.toggleText = this.querySelector('[data-toggle-text]');
+        this.chevron = this.querySelector('[data-chevron]');
+        this.fadeOverlay = this.querySelector('[data-fade-overlay]');
+
+        if (this.toggleButton && this.expandableContent) {
+          this.showMoreText = '{{ block.settings.show_more_text }}';
+          this.showLessText = '{{ block.settings.show_less_text }}';
+          
+          this.toggleButton.addEventListener('click', () => this.toggleContent());
+          
+          this.checkContentHeight();
+        }
+      }
+
+      checkContentHeight() {
+        const contentHeight = this.expandableContent.scrollHeight;
+        const previewHeight = {{ block.settings.preview_height }};
+        
+        if (contentHeight <= previewHeight) {
+          this.toggleButton.style.display = 'none';
+          this.fadeOverlay.style.display = 'none';
+          this.expandableContent.classList.remove('collapsed');
+        }
+      }
+
+      toggleContent() {
+        const isExpanded = this.expandableContent.classList.contains('expanded');
+        
+        if (isExpanded) {
+          this.expandableContent.classList.remove('expanded');
+          this.expandableContent.classList.add('collapsed');
+          this.toggleText.textContent = this.showMoreText;
+          this.chevron.classList.remove('rotated');
+          this.fadeOverlay.classList.remove('hidden');
+          this.toggleButton.setAttribute('aria-expanded', 'false');
+          
+          this.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          this.expandableContent.classList.remove('collapsed');
+          this.expandableContent.classList.add('expanded');
+          this.toggleText.textContent = this.showLessText;
+          this.chevron.classList.add('rotated');
+          this.fadeOverlay.classList.add('hidden');
+          this.toggleButton.setAttribute('aria-expanded', 'true');
+        }
+      }
+    }
+
+    customElements.define('expandable-content-{{ ai_gen_id }}', ExpandableContent{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Uitklapbare content",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "richtext",
+      "id": "content_text",
+      "label": "Content tekst",
+      "info": "Voeg hier je volledige content toe met opmaak. Dit kan gekoppeld worden aan een collectie metaveld.",
+      "default": "<h2>Hoofdtitel</h2><p>Dit is de eerste korte introductie paragraaf die de context geeft voor de rest van de content.</p><p>Dit is de tweede korte introductie paragraaf die aanvullende informatie biedt.</p><h3>Subtitel</h3><p>Dit is de korte lead tekst die direct onder de subtitel staat.</p><p>Dit is de uitgebreide tekst die wordt getoond wanneer de gebruiker op 'Toon meer' klikt. Deze tekst kan veel langer zijn en meer details bevatten over het onderwerp.</p><p>Je kunt hier meerdere paragrafen toevoegen met alle informatie die je wilt delen. Ook kun je <strong>vetgedrukte tekst</strong> gebruiken en <a href='#'>links</a> toevoegen.</p><ul><li>Lijst item 1</li><li>Lijst item 2</li><li>Lijst item 3</li></ul><p>En nog meer content die pas zichtbaar wordt na het uitklappen.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Uitklap instellingen"
+    },
+    {
+      "type": "range",
+      "id": "preview_height",
+      "min": 100,
+      "max": 500,
+      "step": 20,
+      "unit": "px",
+      "label": "Preview hoogte",
+      "info": "Hoogte van de zichtbare content voordat uitklappen",
+      "default": 200
+    },
+    {
+      "type": "text",
+      "id": "show_more_text",
+      "label": "Toon meer tekst",
+      "default": "Toon meer"
+    },
+    {
+      "type": "text",
+      "id": "show_less_text",
+      "label": "Toon minder tekst",
+      "default": "Toon minder"
+    },
+    {
+      "type": "header",
+      "content": "Stijl"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Sectie padding",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Uitklapbare content"
+    }
+  ]
+}
+{% endschema %}

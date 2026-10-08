@@ -1,0 +1,72 @@
+<div class="section-black-friday-list section-id-{{ section.id }}">
+  <div class="section-container">
+    <div class="black-friday-list_wrap">
+      {% for block in section.blocks %}
+        <div class="black-friday-list_single" {{ block.shopify_attributes }}>
+          <div class="black-friday-list_title-count-wrap">
+            <div class="black-friday-list_title-wrap">
+              <h4 class="black-friday-list_title">{{ block.settings.title }}</h4>
+              <h5 class="black-friday-list_sutitle">{{ block.settings.sub_title }}</h5>
+            </div>
+          </div>
+          {% if block.settings.desc  != blank%}
+            <div class="black-friday-list_desc">
+              {{ block.settings.desc }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Black Friday List",
+    "settings": [
+      
+    ],
+    "blocks": [
+      {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Title",
+            "info": "Enter <br/> for a line-break",
+            "default": "Ventilatieritsen"
+          },
+          {
+            "type": "text",
+            "id": "sub_title",
+            "label": "Sub Title",
+            "default": "maximale controle over je klimaat"
+          },
+          {
+            "type": "richtext",
+            "id": "desc",
+            "label": "Description",
+            "default": "<p>Dummy paragraph</p>"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Black Friday List",
+        "blocks": [
+          {
+            "type": "item"
+          },
+          {
+            "type": "item"
+          },
+          {
+            "type": "item"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

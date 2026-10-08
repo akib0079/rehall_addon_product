@@ -1,0 +1,67 @@
+{% style %}
+    #shopify-section-{{ section.id }} .story-li-img {
+      height: {{ section.settings.height }};
+    }
+
+    @media (max-width: 767px) {
+      #shopify-section-{{ section.id }} .story-li-img {
+        height: {{ section.settings.height_mobile }};
+      }
+    }
+{% endstyle %}
+<div class="section-container">
+  <div class="story-li-grid">
+    {% if section.settings.image != blank %}
+    {{ section.settings.image | image_url: width: nil | image_tag: class: "story-li-img desktop-only" }}
+    {{ section.settings.image_mobile | default: section.settings.image | image_url: width: nil | image_tag: class: "story-li-img mobile-only" }}
+    {% else %}
+      {{ 'image' | placeholder_svg_tag: 'story-li-img' }}
+    {% endif %}
+    <div class="story-li-text-wrap card card-scheme--2">
+      <h4 class="story-li-text hl-style">
+        {{ section.settings.text }}
+      </h4>
+    </div>
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Our story left image",
+    "class": "section-story-left-img",
+    "settings": [
+      {
+        "type": "text",
+        "id": "text",
+        "label": "Text",
+        "default": "We want everybody to feel good when wearing our Rehall products, that’s why we create both the design and shape of our garments in a way that suits each and every one of you."
+      },
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "image_mobile",
+        "label": "Image mobile"
+      },
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Image height",
+        "default": "550px"
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Image height mobile",
+        "default": "332px"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Our story left image"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,207 @@
+<section class="duur-productie-section"{% if section.settings.scroller-id != blank %} data-scroller-id="{{ section.settings.scroller-id }}"{% endif %}>
+  <div class="duur-productie-container">
+    <div class="duur-productie-top">
+      <div class="duur-productie-top-content">
+        {% if section.settings.subtitle != blank %}
+          <li class="duur-section-subtitle"><span>{{ section.settings.subtitle }}</span></li>
+        {% endif %}
+        {% if section.settings.title != blank %}
+          <h2 class="duur-section-title">{{ section.settings.title }}</h2>
+        {% endif %}
+        {% if section.settings.desc != blank %}
+          <div class="duur-onze-desc">
+            {{ section.settings.desc }}
+          </div>
+        {% endif %}
+        <div class="duur-productie-icons-wrap">
+        {% if section.settings.icon != blank %}
+          {{ section.settings.icon | image_url: width: nil | image_tag: class: 'duur-productie-icon icon-1'  }}
+        {% endif %}
+          {% if section.settings.icon2 != blank %}
+          {{ section.settings.icon2 | image_url: width: nil | image_tag: class: 'duur-productie-icon icon-2'  }}
+        {% endif %}
+        </div>
+      </div>
+      {% if section.settings.img != blank %}
+        {{ section.settings.img_wide | default: section.settings.img | image_url: width: nil | image_tag: class: 'duur-productie-img wide-only'  }}
+        {{ section.settings.img | image_url: width: nil | image_tag: class: 'duur-productie-img desktop-only'  }}
+        {{ section.settings.img_mobile | default: section.settings.img | image_url: width: nil | image_tag: class: 'duur-productie-img mobile-only'  }}
+      {% endif %}
+    </div>
+    {% assign hasCounter = false %}
+  <div class="duur-productie-blocks-wrap">
+    {% for block in section.blocks %}
+      {% if block.type == 'counter' %}
+        {% assign hasCounter = true %}
+      {% endif %}
+      {% if block.type == 'item' %}
+        <div class="duur-productie__block-item" {{ block.shopify_attributes }}>
+          {% if block.settings.img != blank %}
+            {{ block.settings.img | image_url: width: nil | image_tag: class: 'duur-productie__block-img'  }}
+          {% endif %}
+          <h4 class="duur-productie__block-title">
+            {{ block.settings.title }}
+          </h4>
+          {% if block.settings.desc != blank %}
+            <p class="duur-productie__block-desc">
+              {{ block.settings.desc | newline_to_br }}
+            </p>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if hasCounter %}
+    <div class="duur-productie-counters-wrap">
+      {% if section.settings.counter_title != blank %}
+        <h5 class="duur-productie-counter-title">{{ section.settings.counter_title }}</h5>
+      {% endif %}
+      <div class="duur-productie-counters-container">
+        {% for block in section.blocks %}
+          {% if block.type == 'counter' %}
+            <div class="duur-productie__block-item" {{ block.shopify_attributes }}>
+              <h4 class="duur-productie__counter-num">
+                <span>{{ block.settings.count }}</span>%
+              </h4>
+              {% if block.settings.year != blank %}
+                <span class="duur-productie__counter-year">
+                  {{ block.settings.year }}
+                </span>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+  </div>
+  
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.duur-productie__counter-num span').forEach(counter => {
+      let demo = new countUp.CountUp(counter, counter.innerText,{
+        enableScrollSpy: true,
+      });
+      if (!demo.error) {
+        demo.start();
+      } else {
+        console.error(demo.error);
+      }
+    })
+  })
+</script>
+{% schema %}
+  {
+    "name": "Duurzaamheid Productie",
+    "settings": [
+      {
+        "type": "text",
+        "id": "scroller-id",
+        "label": "Scroller ID",
+        "default": "productie",
+      },
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "Sub title",
+        "default": "PRODUCTIE",
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "100% gerecycled materiaal",
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Dummy para</p><p>Dummy para</p>",
+      },
+      {
+        "type": "image_picker",
+        "id": "icon",
+        "label": "Icon"
+      },
+      {
+        "type": "image_picker",
+        "id": "icon2",
+        "label": "Icon 2"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_mobile",
+        "label": "Image mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "img",
+        "label": "Image"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_wide",
+        "label": "Image wide"
+      },
+      {
+        "type": "text",
+        "id": "counter_title",
+        "label": "Counter Title",
+        "default": "Recycling kerndoelen:",
+      },
+    ],
+    "blocks": [
+      {
+        "type": "item",
+        "name": "Item",
+        "settings": [
+          {
+            "type": "text",
+            "id": "title",
+            "label": "Name",
+            "default": "Stichting UPV Textiel"
+          },
+          {
+            "type": "textarea",
+            "id": "desc",
+            "label": "Description",
+            "default": "We zijn aangesloten bij het collectief UPV textielsysteem die als bouwsteen fungeert voor een circulaire textielketen."
+          },
+          {
+            "type": "image_picker",
+            "id": "img",
+            "label": "Image"
+          },
+        ]
+      },
+      {
+        "type": "counter",
+        "name": "Counter Item",
+        "settings": [
+          {
+            "type": "range",
+            "id": "count",
+            "label": "Number",
+            "default": 100,
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "unit": "%"
+          },
+          {
+            "type": "text",
+            "id": "year",
+            "label": "Year",
+            "default": "In 2025"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Duurzaamheid Productie"
+      }
+    ]
+  }
+{% endschema %}

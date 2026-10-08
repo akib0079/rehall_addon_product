@@ -1,0 +1,48 @@
+{%- comment -%}
+  Zet een token uit de Details-tab om naar de waarde van een productmetaveld.
+  Gebruik in de tekst van het blok "Tab - Details":
+    Verstelbare Capuchon | [[specifications_adjustable_hood]]
+  Zonder namespace wordt "custom" gebruikt. Andere namespace: [[nexera.product_number]]
+
+  Waar/onwaar metavelden worden Ja / Nee (per taal). Lijsten worden met komma's gescheiden.
+  Is het metaveld leeg, dan komt er niets terug en verbergt de sectie de regel.
+
+  Parameters:
+  - product: het product
+  - token: de tekst met daarin [[key]] of [[namespace.key]]
+{%- endcomment -%}
+{%- liquid
+  assign mf_key = token | split: '[[' | last | split: ']]' | first | strip_html | strip
+  assign mf_namespace = 'custom'
+  if mf_key contains '.'
+    assign mf_namespace = mf_key | split: '.' | first
+    assign mf_key = mf_key | split: '.' | last
+  endif
+  assign mf = product.metafields[mf_namespace][mf_key]
+
+  assign text_true = 'Ja'
+  assign text_false = 'Nee'
+  case request.locale.iso_code
+    when 'en'
+      assign text_true = 'Yes'
+      assign text_false = 'No'
+    when 'de'
+      assign text_true = 'Ja'
+      assign text_false = 'Nein'
+    when 'fr'
+      assign text_true = 'Oui'
+      assign text_false = 'Non'
+  endcase
+
+  if mf.type == 'boolean'
+    if mf.value == true
+      echo text_true
+    elsif mf.value == false
+      echo text_false
+    endif
+  elsif mf.type contains 'list.'
+    echo mf.value | join: ', '
+  elsif mf.value != blank
+    echo mf.value
+  endif
+-%}

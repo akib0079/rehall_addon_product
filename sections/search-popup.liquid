@@ -1,0 +1,422 @@
+<search-popup class="header__search-popup">
+    <div class="section-container search-container">
+    </div>
+</search-popup>
+<div class="header__search-bg-overlay"></div>
+{% javascript %}
+class SearchPopup extends HTMLElement {
+    #abortController = null;
+    #form = null;
+    connectedCallback() {
+        this.#init();
+    }
+    #init(){
+        this.updateSearchContent();
+        this.#form = document.querySelector('.header__search-form')
+        document.querySelectorAll('.header__search-form').forEach(ele => {
+            ['click', 'focus'].forEach(eventType => {
+            ele.querySelector('.header__search-field').addEventListener(eventType, e => {
+                e.preventDefault();
+                document.body.classList.add('search-active');
+            })
+            });
+            ele.querySelector('.header__search-field').addEventListener('keyup', e => {
+                const value = ele.querySelector('.header__search-field').value;
+                this.#form.classList.toggle('activated', value)
+                this.updateSearchContent(value);
+            })
+        })
+        document.querySelectorAll('.header__search-form-close, .header__search-bg-overlay').forEach(ele => {
+            ele.addEventListener('click', e => {
+                e.preventDefault();
+                document.body.classList.remove('search-active');
+            })
+        })
+        document.querySelectorAll('.header__search-form-clear').forEach(ele => {
+            ele.addEventListener('click', e => {
+                e.preventDefault();
+                this.#form.querySelector('.header__search-field').value = '';
+                this.#form.classList.remove('activated')
+                this.updateSearchContent();
+            })
+        })
+        this.addEventListener('click', function (event) {
+            const target = event.target.closest('.header__search-keyword');
+            if (!target) return;
+            if (!target.dataset.keyword) return; // links without data-keyword (e.g. collections) navigate normally
+            event.preventDefault();
+            this.#form.querySelector('.header__search-field').value = target.dataset.keyword;
+            this.updateSearchContent(target.dataset.keyword);
+        });
+    }
+    async updateSearchContent(terms = null){
+        if (this.#abortController) {
+            this.#abortController.abort();
+        }
+        this.#abortController = new AbortController();
+        this.classList.add('ajax-loading');
+        try {
+            const [html, suggestions] = await Promise.all([
+                this.fetchSearch(terms),
+                this.fetchSuggestions(terms)
+            ]);
+            this.querySelector('.search-container').innerHTML = html.innerHTML;
+            if (suggestions !== null) {
+                const target = this.querySelector('[data-native-suggestions]');
+                if (target) target.innerHTML = suggestions;
+            }
+            this.classList.remove('ajax-loading');
+        } catch (e) {
+            if (e && e.name === 'AbortError') return;
+            this.classList.remove('ajax-loading');
+        }
+    }
+    fetchSearch(terms = null){
+        const signal = this.#abortController.signal;
+        const url = theme.routes.search_url + '?type=product&view=ajax-rehall' + (terms == null ? '' : '&q='+ encodeURIComponent(terms) );
+        return fetch(url, {signal}).
+        then((response) => {
+            if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        }).
+        then((response) => {
+            const parser = document.createElement('div');
+            parser.innerHTML = response;
+            const ajaxContainer = parser.querySelector('[data-ajax-container="search"]');
+            return ajaxContainer;
+        });
+    }
+    fetchSuggestions(terms = null){
+        // Native Shopify predictive search (query suggestions + collections)
+        if (!terms) return Promise.resolve(null);
+        const signal = this.#abortController.signal;
+        const url = theme.routes.predictive_search_url + '?q=' + encodeURIComponent(terms) + '&resources[type]=query,collection&resources[limit]=6&section_id=search-suggestions-native';
+        return fetch(url, {signal}).
+        then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        }).
+        then((response) => {
+            const parser = document.createElement('div');
+            parser.innerHTML = response;
+            const content = parser.querySelector('[data-native-suggestions-content]');
+            return content ? content.innerHTML : null;
+        }).
+        catch((e) => {
+            if (e && e.name === 'AbortError') throw e;
+            return null;
+        });
+    }
+}
+
+customElements.define('search-popup', SearchPopup);
+{% endjavascript %}
+{% style %}
+.header__search-popup{
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: calc(var(--theme-header-height) + 42px);
+    width: 100%;
+    z-index: 5555;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-50%);
+    transition: 0.2s ease-out;
+    transition-property: transform,opacity,visibility, padding,height;
+    background: #FFF;
+    height: calc(589px + var(--theme-header-height) + 42px);
+    max-height: 100vh;
+    overflow: visible auto;
+    overscroll-behavior: contain;
+    @media only screen and (max-width: 767px) {
+        height: 100vh;
+    }
+    .floating-header &{
+        height: calc(589px + var(--theme-sticky-header-height));
+        padding-top: var(--theme-sticky-header-height);
+        @media only screen and (max-width: 767px) {
+            height: 100vh;
+        }
+    }
+    .header__search_title{
+        font-weight: 600;
+        margin-bottom: 22px;
+        font-size: 18px;
+        line-height: 100%;
+        text-transform: none;
+        @media only screen and (max-width: 767px) {
+            font-size: 14px;
+        }
+    }
+    .header__search_title-wrap{
+        margin-bottom: 22px;
+        display: flex;
+        grid-gap: 30px;
+        justify-content: space-between;
+        .header__search_title{
+            margin-bottom: 0;
+        }
+        .header__serach_view-all{
+            font-family: var(--header-font-family);
+            font-size: 14px;
+            line-height: 100%;
+            .highlight{
+                font-weight: 600;
+            }
+        }
+    }
+    &.ajax-loading {
+        opacity: 1 !important;
+        /* transition: opacity 250ms; */
+        /* position: relative; */
+        min-height: 200px;
+        &::after {
+            content: "";
+            position: absolute;
+            top: 150px;
+            left: calc(50% - 40px / 2);
+            width: 40px;
+            height: 40px;
+            border-radius: 100%;
+            border: 1px solid transparent;
+            border-left-color: currentColor;
+            opacity: 0.75;
+            animation: filterLoadingSpinAnimation 1s linear infinite;
+            @media only screen and (max-width: 767px) {
+                top: 240px;
+            }
+        }
+    }
+    .header__search_res-wrap{
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: 30px 10px;
+        @media only screen and (max-width: 767px) {
+            margin: 0 -22px;
+            grid-gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    .product-block.custom{
+        .product__floating-bar,.product-block-options{
+            display: none;
+        }
+        /* DEED: productkaarten in de zoek-popup altijd 4:5; de foto vult het kader */
+        .inline-image__pad{
+            position: relative;
+            height: auto !important;
+            aspect-ratio: 4 / 5 !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+        .inline-image__pad img{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none;
+            object-fit: cover !important;
+            object-position: center top;
+        }
+        .product-info.info_alt.grid{
+            grid-template-columns: 1fr;
+            font-size: 14px;
+            color: #202020;
+            font-family: var(--header-font-family);
+            @media only screen and (max-width: 767px) {
+                padding: 18px 18px 28px;
+                margin: 0;
+                grid-gap: 10px;
+                color: #4A4A4A;
+            }
+        }
+        .product-block__price-row{
+            .product-price{
+                color: #1E1E1E;
+            }
+            .jdgm-prev-badge, .jdgm-star {
+                color: #4A4A4A;
+            }
+            @media screen and (max-width: 767px){
+                display: contents;
+                .jdgm-prev-badge{
+                    margin-top: 0;
+                    margin: 0;
+                    padding: 0;
+                    border: none;
+                }
+            }
+            .jdgm-prev-badge {
+                display: flex !important;
+                align-items: center;
+            }
+            .jdgm-prev-badge__stars{
+                /* color: #908F90; */
+                display: inline-flex;
+                font-size: 12px;
+            }
+        }
+    }
+    .search__empty-notice{
+        font-size: 16px;
+        text-transform: none;
+        font-weight: 500;
+        .header__search-kewords-wrap &{
+            font-weight: 400;
+            font-size: 14px;
+        }
+    }
+}
+.header__search-keyword mark{
+    background: none;
+    color: inherit;
+    font-weight: 600;
+}
+body.search-active .header__search-popup {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0%);
+}
+.header__search-head-wrap{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.header__search-head{
+    padding: 20px 0;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+}
+.header__search-popup .header__search-form{
+    width: 299px;
+    grid-column: 2;
+}
+.header__search-popup-close{
+  display: flex;
+  transition: 0.3s ease-out;
+  transition-property: opacity;
+  color: inherit;
+  z-index: 2;
+  opacity: 0.6;
+  /* width: 24px;
+    height: 24px; */
+    justify-self: end;
+}
+.header__search-popup-close:hover{
+    opacity: 1;
+}
+.header__search-popup-close svg{
+  width: 24px;
+    height: 24px;
+}
+.search-container{
+    padding-top: 48px;
+    padding-bottom: 48px;
+    @media only screen and (max-width: 767px) {
+        padding-top: 30px;
+        padding-bottom: calc(env(safe-area-inset-bottom,30px) + 130px);
+    }
+}
+.header__search-wrap{
+    display: grid;
+    grid-template-columns: 1fr minmax(500px, 1174px);
+    grid-gap: 40px;
+    font-family: var(--header-font-family);
+    @media only screen and (max-width: 767px) {
+        grid-template-columns: 100%;
+    }
+}
+.header__search-bg-overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    visibility: hidden;
+    opacity: 0;
+    transition: .4s ease-out;
+    transition-property: visibility, opacity;
+    /* background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(7.5px); */
+    z-index: 500;
+    background: rgba(0, 0, 0, 0.30);
+    backdrop-filter: blur(5px);
+}
+body.search-active .header__search-bg-overlay{
+    visibility: visible;
+    opacity: 1;
+}
+.header__search_categories-wrap{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 20px 10px;
+    @media only screen and (max-width: 767px) {
+        margin: 0 -22px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.header__search_category {
+    display: flex;
+    flex-direction: column;
+}
+.header__search_category-img{
+    height: 328px;
+    object-fit: cover;
+    object-position: top;
+    width: 100%;
+    @media only screen and (max-width: 767px) {
+        height: auto;
+        aspect-ratio: 1;
+        object-fit: contain;
+        background-color: #ece9ec;
+    }
+}
+.header__search-kewords{
+    display: flex;
+    flex-direction: column;
+    grid-gap: 22px;
+    text-transform: capitalize;
+    @media only screen and (max-width: 767px) {
+        font-size: 12px;
+        line-height: 150%; 
+    }
+}
+.header__search_category-title{
+    margin-top: 14px;
+    font-weight: 500;
+    line-height: 120%;
+    font-family: var(--header-font-family);
+    color: #202020;
+    text-transform: none;
+    font-size: 14px;
+    @media only screen and (max-width: 767px) {
+        font-size: 12px;
+        line-height: 100%;
+        padding: 0 10px;
+        margin: 14px 0 0;
+    }
+}
+{% endstyle %}
+{% schema %}
+{
+  "name": "Search Popup",
+  "class": "header__search-popup-wrap",
+  "tag": "div",
+  "enabled_on": {
+    "groups": ["aside"]
+  },
+  "settings": [
+    {
+        "type": "inline_richtext",
+        "id": "title",
+        "label": "Title",
+        "default": "Unique gloves from Oberammergau"
+    },
+  ]
+}
+{% endschema %}

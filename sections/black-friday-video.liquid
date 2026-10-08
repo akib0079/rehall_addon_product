@@ -1,0 +1,51 @@
+<div class="section-black-friday-video section-id-{{ section.id }}">
+  <div class="black-friday-video_wrap">
+    <div class="black-friday-video_content">
+      <h2 class="black-friday-video_title">{{ section.settings.title | highlight: section.settings.highlight }}</h2>
+      {% if section.settings.desc  != blank%}
+        <div class="black-friday-video_desc">
+          {{ section.settings.desc }}
+        </div>
+      {% endif %}
+    </div>
+    {% if section.settings.video  != blank%}
+      {{ section.settings.video | video_tag: class: 'black-friday-video_video', autoplay: true, muted: true, loop: true }}
+    {% endif %}
+  </div>
+</div>
+{% schema %}
+  {
+    "name": "Black Friday Video",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "info": "Enter <br/> for a line-break",
+        "default": "Unieke prints en kleuren"
+      },
+      {
+        "type": "text",
+        "id": "highlight",
+        "label": "Highlight",
+        "default": "Unieke"
+      },
+      {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Dummy paragraph</p>"
+      },
+      {
+        "type": "video",
+        "id": "video",
+        "label": "Video"
+      },
+    ],
+    "presets": [
+      {
+        "name": "Black Friday Video"
+      }
+    ]
+  }
+{% endschema %}

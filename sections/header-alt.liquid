@@ -1,0 +1,1291 @@
+{%- assign mobile_expand_with_entire_link = true -%}
+
+{% style %}
+  .logo img {
+    width: {{ section.settings.logo_img_width_int }}px;
+  }
+  .logo-area__middle--logo-image {
+    max-width: {{ section.settings.logo_img_width_int }}px;
+  }
+  @media (max-width: 767.98px) {
+    .logo img {
+      width: {{ section.settings.mobile_logo_img_width_int }}px;
+    }
+    .logo-area__middle--logo-image {
+      max-width: {{ section.settings.mobile_logo_img_width_int }}px;
+    }
+  }
+  {%- if section.settings.enable_sticky -%}
+  .section-header {
+    position: -webkit-sticky;
+    position: sticky;
+    top: var(--magic-margin);
+  }
+  {%- endif -%}
+{% endstyle %}
+
+<div data-section-type="header-alt" data-cc-animate>
+  {% for block in section.blocks %}
+    {% if block.type == 'top-header' %}
+      <div class="card-scheme--2" {{ block.shopify_attributes }}>
+        <div class="header__top wide-container">
+          <div class="header__top_col">
+            <h5 class="header__top_heading">
+              {{ block.settings.heading }}
+            </h5>
+            {%- assign top_links = block.settings.list | split: '|' -%}
+            {% if top_links.size > 0 %}
+              <ul class="header__top_list">
+                {% for link in top_links %}
+                  <li class="header__top_list-item">
+                    {% render 'svg-checked-circle' %}
+                    <span>{{ link | strip }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="header__top_col">
+            <div class="header__top_star-main">
+              {% render 'star-rating', rating: block.settings.rating, class: 'header__top__stars-wrap' %}
+              <h6 class="header__top_star_heading">{{ block.settings.rating | times: 1.0 | round: 1 }}</h6>
+            </div>
+            <p class="header__top_star_para">{{ block.settings.rating_text }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+
+  <div
+    id="pageheader"
+    class="pageheader pageheader--layout-{{ section.settings.menu_layout }} pageheader--layout-inline-permitted{% if section.settings.enable_sticky %} pageheader--sticky{% endif %}"
+  >
+    <div class="card header-alt__row">
+      <div class="logo" itemscope itemtype="http://schema.org/Organization">
+        <meta itemprop="name" content="{{ shop.name | escape }}">
+
+        {%- if request.page_type == 'index' and section.settings.logo_h1 -%}
+          <h1 class="logo__h1">
+        {%- endif -%}
+
+        <a class="logo__link{% if section.settings.logo_white != blank %} with-white{%- endif -%}" href="{{ routes.root_url }}" title="{{ shop.name }}" itemprop="url">
+          {%- if section.settings.logo != blank -%}
+            {%- capture img_size -%}{{ section.settings.logo_img_width_int | times: 2 }}x{%- endcapture -%}
+            <img
+              class="logo__image desktop-only"
+              src="{{ section.settings.logo | img_url: img_size }}"
+              alt="{{ section.settings.logo.alt | default: shop.name | escape }}"
+              width="{{ section.settings.logo.width }}"
+              height="{{ section.settings.logo.height }}"
+              itemprop="logo"
+            >
+            <img
+              class="logo__image mobile-only"
+              src="{{ section.settings.logo_mobile | default: section.settings.logo | img_url: img_size }}"
+              alt="{{ section.settings.logo.alt | default: shop.name | escape }}"
+              width="{{ section.settings.logo.width }}"
+              height="{{ section.settings.logo.height }}"
+              itemprop="logo"
+            >
+          {%- else -%}
+            <span class="logotext">{{ shop.name }}</span>
+          {%- endif -%}
+          {%- if section.settings.logo_white != blank -%}
+            {%- capture img_size -%}{{ section.settings.logo_img_width_int | times: 2 }}x{%- endcapture -%}
+            <img
+              class="logo__image logo-white desktop-only"
+              src="{{ section.settings.logo_white | img_url: img_size }}"
+              alt="{{ section.settings.logo.alt | default: shop.name | escape }}"
+              width="{{ section.settings.logo.width }}"
+              height="{{ section.settings.logo.height }}"
+              itemprop="logo"
+            >
+            <img
+              class="logo__image logo-white mobile-only"
+              src="{{ section.settings.logo_white_mobile | default: section.settings.logo_white | img_url: img_size }}"
+              alt="{{ section.settings.logo.alt | default: shop.name | escape }}"
+              width="{{ section.settings.logo.width }}"
+              height="{{ section.settings.logo.height }}"
+              itemprop="logo"
+            >
+          {%- endif -%}
+        </a>
+
+        {%- if request.page_type == 'index' and section.settings.logo_h1 -%}
+          </h1>
+        {%- endif -%}
+      </div>
+
+      <div class="header-alt__mid-col">
+        <div class="collection-mega-wrap">
+          {% for block in section.blocks %}
+            {% if block.type == 'megamenu' %}
+              <button
+                class="btn--icon header-alt__toggle-btn desktop-only"
+                aria-label="{{ 'general.navigation.menu_toggle_aria_label' | t }}"
+                data-toggle-target="megamenu-{{ block.id }}"
+              >
+                <span class="btn-text">{{ block.settings.label }}</span>
+                {% comment %} <div class="header-alt__toggle-ic">
+                {%- render 'svg-chevron-down' -%}
+                </div> {% endcomment %}
+              </button>
+            {% endif %}
+          {% endfor %}
+          <div class="header-alt__toggle-ic-mobile mobile-only">
+            {%- render 'svg-menu' -%}
+            {%- render 'svg-cross' -%}
+          </div>
+        </div>
+        {% if section.settings.left_menu != blank %}
+          <ul class="header-alt__mid-menu">
+            {% for link in section.settings.left_menu.links %}
+              <li class="header-alt__mid-menu_item">
+                <a class="header-alt__mid-menu_item-link" href="{{ link.url }}">
+                  <span>{{ link.title }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+
+      <div class="logo-area__right__inner">
+        
+        <div class="header__search-form-wrap">
+          <form class="header__search-form" action="{{ routes.search_url }}" method="get">
+            <a class="header__search-form-close" href="#"> 
+              <span class="mobile-only">{% render 'svg-chevron-left' %}</span>
+              <span class="desktop-only">{% render 'svg-cross' %}</span>
+            </a>
+            <a class="header__search-form-clear" href="#"> {% render 'svg-cross' %}</a>
+            <input type="text" class="header__search-field" placeholder="{{ 'general.header.search_placeholder' | t }}" name="q" value="{{ search.terms | escape }}" autocomplete="off">
+            <button type="submit" class="header__search-button">{% render 'svg-search-alt' %}</button>
+          </form>
+          
+        </div>
+          {% comment %} <a class="header-alt-link" href="{{ pages['black-friday'].url }}">
+            <span class="header-alt-link_text login-text">
+              Black Friday
+            </span>
+          </a> {% endcomment %}
+          {%- if section.settings.show_helpdesk -%}
+          <a class="header-alt-link" href="{{ section.settings.helpdesk_url | default: '#' }}">
+            <span class="header-alt-link_text">
+              {{section.settings.helpdesk}}
+            </span>
+          </a>
+          {%- endif -%}
+          <a class="header-alt-link login" href="{{ routes.account_url }}">
+            <span class="header-alt-link_icon">{% render 'svg-user-alt' %}</span>
+            <span class="header-alt-link_text login-text">
+              {%- if customer -%}
+                {%- if customer.first_name != blank -%}
+                   {{ customer.first_name }}{% render 'svg-dot' %}
+                {% else %}
+                  {{ 'customer.account.title' | t }}{% render 'svg-dot' %}
+                {%- endif -%}
+              {% else %}
+               {{ 'customer.login.title' | t }}
+              {%- endif -%}
+            </span>
+          </a>
+          <a class="header-alt-link cart inactive" href="{{ routes.cart_url }}">
+            <span class="header-alt-link_icon">{% render 'svg-cart-alt' %}</span>
+            <span class="header-alt-link_text">{{ 'layout.header.cart' | t }}</span>
+            {%- if cart.item_count > 0 -%}
+              <span class="cart__count">{{ cart.item_count }}</span>
+            {%- endif -%}
+          </a>
+      </div>
+    </div>
+  </div>
+
+  {% for block in section.blocks %}
+    {% if block.type == 'bottom-header' %}
+      <div class="card card-scheme--2" {{ block.shopify_attributes }}>
+        <div class="header__bottom wide-container">
+          <h6 class="header__bottom_text">
+            <span class="desktop-only">{{ block.settings.heading }}</span
+            ><span class="mobile-only">{{ block.settings.heading_mobile | default: block.settings.heading }}</span>
+          </h6>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+<div class="collection-mega-outer">
+  <button class="header-alt__close-btn mobile-only">{% render 'svg-cross' %}</button>
+  {% for block in section.blocks %}
+    {% if block.type == 'megamenu' %}
+      {% comment %} <button
+        class="btn--icon header-alt__toggle-btn mobile-only"
+        aria-label="{{ 'general.navigation.menu_toggle_aria_label' | t }}"
+        data-toggle-target="megamenu-{{ block.id }}"
+      >
+        <span class="btn-text">{{ block.settings.label }}</span>
+        {% render 'svg-megamenu-arrow' %}
+      </button> {% endcomment %}
+      {% assign megamenu = linklists[block.settings.menu].links %}
+      {% if megamenu != blank and request.design_mode != true %}
+        <div class="header-alt_megamenu{% if block.settings.show_in_mobile %} show-in-mobile{% endif %}" {{ block.shopify_attributes }} data-megamenu="megamenu-{{ block.id }}">
+          <div class="header-alt_megamenu-scroller">
+            <div class="header-alt_megamenu-inner">
+              {% assign second_level = '' %}
+              <div class="header-alt_megamenu-level header-alt_megamenu-first-level">
+                {% comment %} <a class="header-alt__megamenu-back-link mobile-only" href="#">
+                  {% render 'svg-chevron-left' %}
+                  {{ block.settings.back }}
+                </a> {% endcomment %}
+                {% assign highlight_item = block.settings.highlight_item | downcase %}
+                {% for link in megamenu %}
+                  {% assign item_sanitized = link.title | downcase %}
+                  <a class="header-alt_megamenu-top-link{% if item_sanitized == highlight_item %} highlighted{% endif %}" href="{{ link.url }}"{% if link.links != blank %} data-anchor="t-{{ link.handle }}"{% endif %}>
+                      <span>{{ link.title }}</span>
+                      {% if link.links != blank %}
+                        {% render 'svg-chevron-right' %}
+                        {% capture m_item %}
+                        <div class="header-alt_megamenu-level header-alt_megamenu-second-level" data-anchor="t-{{ link.handle }}">
+                            <button class="header-alt__close-btn mobile-only">{% render 'svg-cross' %}</button>
+                            <a class="header-alt__megamenu-back-link mobile-only" href="#">
+                              {% render 'svg-chevron-left' %}
+                              {{ block.settings.back }}
+                            </a>
+                            <h4 class="header-alt_megamenu-second-level_title">{{ link.title }}</h4>
+                            {% for link in link.links %}
+                              <a class="header-alt_megamenu-middle-link" href="{{ link.url }}"{% if link.links != blank %} data-anchor="m-{{ link.handle }}"{% endif %}>
+                                <span><span>{{ link.title }}</span></span>
+                                {% render 'svg-megamenu-arrow' %}
+                              </a>
+                            {% endfor %}
+                            {% if block.settings.show_in_mobile and block.settings.all_products_url != blank %}
+                              <a class="header-alt_megamenu-middle-link all-products-link mobile-only" href="{{ block.settings.all_products_url }}">
+                                <span><span>{{ block.settings.all_products_text }}</span></span>
+                                {% render 'svg-megamenu-arrow' %}
+                              </a>
+                            {% endif %}
+                        {% if section.settings.mobile_footer_menu != blank %}
+                          <div class="header-alt__mobile-footer-menu mobile-only">
+                            <div class="header-alt__mobile-footer-menu_inner">
+                            {% for link in section.settings.mobile_footer_menu.links %}
+                                <a class="header-alt__mobile-footer-item" href="{{ link.url }}">
+                                  <span>{{ link.title }}</span>
+                                </a>
+                            {% endfor %}
+                            </div>
+                          </div>
+                        {% endif %}
+                          </div>
+                        {% endcapture %}
+                        {% assign second_level = second_level | append: m_item %}
+                      {% endif %}
+                  </a>
+                {% endfor %}
+              </div>
+              <div class="header-alt_megamenu-second-level-wrap">
+                <div class="header-alt_megamenu-second-level-wrap-inner">
+                  {{second_level }}
+                </div>
+              </div>
+              {% if block.settings.block %}
+                <div class="header-alt_megamenu-block-wrap">
+                <div class="header-alt_megamenu-block-wrap-inner">
+                  <a class="header-alt_megamenu-block" href="{{block.settings.block_url }}">
+                    {% if block.settings.block_image != blank %}
+                    {{ block.settings.block_image | image_url: width: nil | image_tag: class: "header-alt_megamenu__block-img" }}
+                    {% else %}
+                      {{ 'collection-1' | placeholder_svg_tag: 'header-alt_megamenu__block-img' }}
+                    {% endif %}
+                    <div class="header-alt_megamenu-block-content-row">
+                      <div class="header-alt_megamenu-block-content">
+                        {% if block.settings.block_title != blank %}
+                          <h4 class="header-alt_megamenu__block-title">{{block.settings.block_title }}</h4>
+                        {% endif %}
+                        {% if block.settings.block_desc != blank %}
+                          <div class="header-alt_megamenu__block-desc">{{block.settings.block_desc }}</div>
+                        {% endif %}
+                      </div>
+                      {% if block.settings.block_url != blank %}
+                        <div class="header-alt_megamenu__block-link">{% render 'svg-megamenu-arrow' %}</div>
+                      {% endif %}
+                    </div>
+                  </a>
+                  <a class="header-alt_megamenu-block" href="{{ block.settings.block_url_2 }}">
+                    {% if block.settings.block_image_2 != blank %}
+                    {{ block.settings.block_image_2 | image_url: width: nil | image_tag: class: "header-alt_megamenu__block-img" }}
+                    {% else %}
+                      {{ 'collection-1' | placeholder_svg_tag: 'header-alt_megamenu__block-img' }}
+                    {% endif %}
+                    <div class="header-alt_megamenu-block-content-row">
+                      <div class="header-alt_megamenu-block-content">
+                        {% if block.settings.block_title_2 != blank %}
+                          <h4 class="header-alt_megamenu__block-title">{{block.settings.block_title_2 }}</h4>
+                        {% endif %}
+                        {% if block.settings.block_desc_2 != blank %}
+                          <div class="header-alt_megamenu__block-desc">{{block.settings.block_desc_2 }}</div>
+                        {% endif %}
+                      </div>
+                      {% if block.settings.block_url_2 != blank %}
+                        <div class="header-alt_megamenu__block-link">{% render 'svg-megamenu-arrow' %}</div>
+                      {% endif %}
+                    </div>
+                  </a>
+                  <a class="header-alt_megamenu-block" href="{{block.settings.block_url_3 }}">
+                    {% if block.settings.block_image_3 != blank %}
+                    {{ block.settings.block_image_3 | image_url: width: nil | image_tag: class: "header-alt_megamenu__block-img" }}
+                    {% else %}
+                      {{ 'collection-1' | placeholder_svg_tag: 'header-alt_megamenu__block-img' }}
+                    {% endif %}
+                    <div class="header-alt_megamenu-block-content-row">
+                      <div class="header-alt_megamenu-block-content">
+                        {% if block.settings.block_title_3 != blank %}
+                          <h4 class="header-alt_megamenu__block-title">{{block.settings.block_title_3 }}</h4>
+                        {% endif %}
+                        {% if block.settings.block_desc_3 != blank %}
+                          <div class="header-alt_megamenu__block-desc">{{block.settings.block_desc_3 }}</div>
+                        {% endif %}
+                      </div>
+                      {% if block.settings.block_url_3 != blank %}
+                        <div class="header-alt_megamenu__block-link">{% render 'svg-megamenu-arrow' %}</div>
+                      {% endif %}
+                    </div>
+                  </a>
+                </div>
+                {% assign megamenu_title = block.settings.label | downcase | strip %}
+                {% for block in section.blocks %}
+                  {% assign match_title = block.settings.megamenu_title | downcase | strip %}
+                  {% if block.type == 'megamenu_image' and match_title == megamenu_title and block.settings.menu_title != blank %}
+                    <div class="header-alt_megamenu-block-wrap-inner secondary" data-menu="{{ block.settings.menu_title | downcase }}">
+                      <a class="header-alt_megamenu-block" href="{{block.settings.block_url }}">
+                        {% if block.settings.block_image != blank %}
+                        {{ block.settings.block_image | image_url: width: nil | image_tag: class: "header-alt_megamenu__block-img" }}
+                        {% else %}
+                          {{ 'collection-1' | placeholder_svg_tag: 'header-alt_megamenu__block-img' }}
+                        {% endif %}
+                        <div class="header-alt_megamenu-block-content-row">
+                          <div class="header-alt_megamenu-block-content">
+                            {% if block.settings.block_title != blank %}
+                              <h4 class="header-alt_megamenu__block-title">{{block.settings.block_title }}</h4>
+                            {% endif %}
+                            {% if block.settings.block_desc != blank %}
+                              <div class="header-alt_megamenu__block-desc">{{block.settings.block_desc }}</div>
+                            {% endif %}
+                          </div>
+                          {% if block.settings.block_url != blank %}
+                            <div class="header-alt_megamenu__block-link">{% render 'svg-megamenu-arrow' %}</div>
+                          {% endif %}
+                        </div>
+                      </a>
+                      <a class="header-alt_megamenu-block"  href="{{ block.settings.block_url_2 }}">
+                        {% if block.settings.block_image_2 != blank %}
+                        {{ block.settings.block_image_2 | image_url: width: nil | image_tag: class: "header-alt_megamenu__block-img" }}
+                        {% else %}
+                          {{ 'collection-1' | placeholder_svg_tag: 'header-alt_megamenu__block-img' }}
+                        {% endif %}
+                        <div class="header-alt_megamenu-block-content-row">
+                          <div class="header-alt_megamenu-block-content">
+                            {% if block.settings.block_title_2 != blank %}
+                              <h4 class="header-alt_megamenu__block-title">{{block.settings.block_title_2 }}</h4>
+                            {% endif %}
+                            {% if block.settings.block_desc_2 != blank %}
+                              <div class="header-alt_megamenu__block-desc">{{block.settings.block_desc_2 }}</div>
+                            {% endif %}
+                          </div>
+                          {% if block.settings.block_url_2 != blank %}
+                            <div class="header-alt_megamenu__block-link">{% render 'svg-megamenu-arrow' %}</div>
+                          {% endif %}
+                        </div>
+                      </a>
+                      <a class="header-alt_megamenu-block" href="{{block.settings.block_url_3 }}">
+                        {% if block.settings.block_image_3 != blank %}
+                        {{ block.settings.block_image_3 | image_url: width: nil | image_tag: class: "header-alt_megamenu__block-img" }}
+                        {% else %}
+                          {{ 'collection-1' | placeholder_svg_tag: 'header-alt_megamenu__block-img' }}
+                        {% endif %}
+                        <div class="header-alt_megamenu-block-content-row">
+                          <div class="header-alt_megamenu-block-content">
+                            {% if block.settings.block_title_3 != blank %}
+                              <h4 class="header-alt_megamenu__block-title">{{block.settings.block_title_3 }}</h4>
+                            {% endif %}
+                            {% if block.settings.block_desc_3 != blank %}
+                              <div class="header-alt_megamenu__block-desc">{{block.settings.block_desc_3 }}</div>
+                            {% endif %}
+                          </div>
+                          {% if block.settings.block_url_3 != blank %}
+                            <div class="header-alt_megamenu__block-link">{% render 'svg-megamenu-arrow' %}</div>
+                          {% endif %}
+                        </div>
+                      </a>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% if section.settings.left_menu != blank %}
+    {% for link in section.settings.left_menu.links %}
+      <li class="header-alt__megamenu-item">
+        <a class="header-alt__megamenu-item-link" href="{{ link.url }}">
+          <span>{{ link.title }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  {% endif %}
+  {% if section.settings.left_menu != blank %}
+    {% for link in section.settings.left_menu.links %}
+      <li class="header-alt__megamenu-item">
+        <a class="header-alt__megamenu-item-link" href="{{ link.url }}">
+          <span>{{ link.title }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  {% endif %}
+  {% if section.settings.mobile_menu != blank %}
+    <div class="header-alt_megamenu-mobile-top-links mobile-only">
+      {% for link in section.settings.mobile_menu.links %}
+          <a class="header-alt_megamenu-top-link" href="{{ link.url }}">
+            <span>{{ link.title }}</span>
+          </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% if section.settings.mobile_footer_menu != blank %}
+    <div class="header-alt__mobile-footer-menu mobile-only">
+      <div class="header-alt__mobile-footer-menu_inner">
+      {% for link in section.settings.mobile_footer_menu.links %}
+          <a class="header-alt__mobile-footer-item" href="{{ link.url }}">
+            <span>{{ link.title }}</span>
+          </a>
+      {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+    {% comment %} <div class="alt_megamenu-footer-wrap mobile-only">
+      <div class="alt_megamenu-footer">
+        <a class="header-alt-link" href="{{ routes.account_url }}">
+          <span class="header-alt-link_icon">{% render 'svg-user-alt' %}</span>
+          <span class="header-alt-link_text">
+            {%- if customer -%}
+              {%- if customer.first_name != blank -%}
+                {{ customer.first_name }}{% render 'svg-dot' %}
+              {% else %}
+                {{ 'customer.account.title' | t }}{% render 'svg-dot' %}
+              {%- endif -%}
+            {% else %}
+            {{ 'customer.login.title' | t }}
+            {%- endif -%}
+          </span>
+        </a>
+        <a class="header-alt-link inactive" href="{{ routes.cart_url }}">
+          <span class="header-alt-link_icon">{% render 'svg-cart-alt' %}</span>
+          <span class="header-alt-link_text">{{ 'layout.header.cart' | t }}</span>
+        </a>
+      </div>
+    </div> {% endcomment %}
+</div>
+<div class="header-alt__megamenu-bg"></div>
+{% javascript %}
+
+  theme.HeaderSectionAlt = new function () {
+    this.onSectionLoad = function (container) {
+       this.$container = $(container);
+
+       // set anything that alters based on contents/viewport/scroll, etc
+       this.section = document.querySelector('.section-header');
+
+       this.functions.setSticky.call(this);
+       this.functions.setHeaderHeightProperty.call(this);
+       this.functions.setScrollClass.call(this);
+
+       $(window).on('scroll.headerSection', this.functions.afterScroll.bind(this));
+       $(window).on('debouncedresize.headerSection', this.functions.afterResize.bind(this));
+
+       // account / localization (after mobile nav initialises)
+       $('.disclosure', container).each(function () {
+         $(this).data('disclosure', new theme.Disclosure($(this)));
+       });
+
+       $('.mobile-navigation-drawer .disclosure').each(function () {
+         $(this).data('disclosure', new theme.Disclosure($(this)));
+       });
+
+       // reveal cart drawer
+       if (theme.settings.cart_type == 'drawer' && document.querySelector('.cart-drawer')) {
+         $(container).on('click', '.cart-link', (evt) => {
+           evt.preventDefault();
+           document.dispatchEvent(
+             new CustomEvent('theme:open-cart-drawer', { bubbles: true, cancelable: false })
+           );
+         });
+       }
+
+       // listen to cart changes
+       $(document).on('theme:cartchanged.headerSection', function () {
+         $.getJSON(location.origin + '?sections=header-alt', function (data) {
+           var cartSummarySelectors = ['#pageheader .header-alt-link.cart'];
+           for (var i = 0; i < cartSummarySelectors.length; i++) {
+             var $newCartObj = $('<div>' + data['header-alt'] + '</div>').find(cartSummarySelectors[i]).first();
+             var $currCart = $(cartSummarySelectors[i]);
+             $currCart.html($newCartObj.html());
+           }
+         });
+       });
+
+       // init mobile nav again if it's open and this is a reload
+       if (Shopify.designMode && $('body').hasClass('reveal-mobile-nav')) {
+         theme.openMobileNav();
+       }
+
+       // search
+       if ($('.header-search-template', container).length) {
+         $(container).on('click.headerSection', '.show-search-link', (evt) => {
+           evt.preventDefault();
+           evt.stopPropagation();
+
+           if (document.querySelector('.header-search-content:not(.hidden)')) {
+             this.functions.closeSearch.call(this);
+           } else {
+             this.functions.openSearch.call(this);
+           }
+         });
+       }
+     };
+
+     this.onSectionUnload = function (container) {
+       $(container).off('.headerSection');
+       $(document).off('.headerSection');
+       $(window).off('.headerSection');
+       $('.disclosure', container).each(function () {
+         $(this).data('disclosure').unload();
+       });
+       $('.mobile-navigation-drawer .disclosure').each(function () {
+         $(this).data('disclosure').unload();
+       });
+       theme.Navigation.destroy($('.navigation', container));
+     };
+
+
+     this.onBlockSelect = function (container) {
+       if(container.classList.contains('header-alt_megamenu'))
+         document.body.classList.add('megamenu-active')
+     }
+    this.onBlockDeselect = function (container) {
+       if(container.classList.contains('header-alt_megamenu'))
+         document.body.classList.remove('megamenu-active')
+     }
+
+
+     this.functions = {
+       afterScroll: function () {
+         this.functions.setScrollClass.call(this);
+       },
+
+       afterResize: function () {
+         this.functions.setSticky.call(this);
+         this.functions.setHeaderHeightProperty.call(this);
+       },
+
+       setSticky: function () {
+         this.isSticky = getComputedStyle(this.section).position === 'sticky' || getComputedStyle(this.section).position === '-webkit-sticky';
+       },
+
+       setHeaderHeightProperty: function () {
+         var headerHeight = 0,
+           stickyHeaderHeight = 0;
+         if (this.section) {
+           headerHeight = Math.ceil(this.section.clientHeight);
+           if (this.isSticky) {
+             stickyHeaderHeight = headerHeight;
+           }
+         }
+         theme.enqueueStyleUpdate(() => {
+           document.documentElement.style.setProperty('--theme-header-height', headerHeight + 'px');
+           document.documentElement.style.setProperty('--theme-sticky-header-height', stickyHeaderHeight + 'px');
+         });
+       },
+
+       setScrollClass: function () {
+         const p = getComputedStyle(document.querySelector('.section-header')).position,
+           ab = document.querySelector('.section-announcement-bar'),
+           t = ab ? ab.offsetTop + ab.clientHeight : 0;
+
+         theme.enqueueStyleUpdate(() => {
+           document.body.classList.toggle('floating-header', /*p === 'sticky' && */window.scrollY > t);
+         });
+       },
+
+     };
+  }()
+   theme.Sections.register('header-alt', theme.HeaderSectionAlt, { deferredLoad: false });
+{% endjavascript %}
+
+    <script>
+      {% comment %} document.querySelectorAll('.header-alt_megamenu-second-level').forEach(link => link.classList.add('to-be-animated')) {% endcomment %}
+      document.addEventListener("DOMContentLoaded", () => {
+        const mobile = window.matchMedia("(max-width: 767px)").matches;
+
+        document.querySelectorAll('.header-alt__toggle-ic-mobile').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.body.classList.toggle('megamenu-active');
+            if(document.body.classList.contains('megamenu-active')){
+              document.addEventListener('click', closeMegamenu)
+            }
+          })
+        })
+        document.querySelectorAll('.header-alt__megamenu-back-link').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            btn.closest('.active').classList.remove('active');
+            document.body.classList.remove('megamenu-second-level')
+          })
+        })
+        document.querySelectorAll('.header-alt__close-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            document.body.classList.remove('megamenu-active');
+            document.querySelectorAll('.header-alt_megamenu-second-level.active').forEach(item => item.classList.remove('active'));
+          })
+        })
+        
+        function closeMegamenu(e){
+          if (document.body.classList.contains('megamenu-active') && (e == null || (e.target.closest('.collection-mega-wrap') === null && e.target.closest('.collection-mega-outer') === null))) { // or use: event.target.closest(selector) === null
+            document.body.classList.remove('megamenu-active')
+            document.querySelector('.header-alt_megamenu.active').classList.remove('active')
+            document.querySelector('.header-alt__toggle-btn.active').classList.remove('active')
+            document.removeEventListener('click', closeMegamenu)
+          }
+        }
+        document.querySelectorAll('.header-alt__toggle-btn[data-toggle-target]').forEach(btn => {
+          const target = document.querySelector(`.header-alt_megamenu[data-megamenu="${btn.dataset.toggleTarget}"]`)
+          if(target){
+            btn.addEventListener('mouseenter', () => {
+              if(window.matchMedia("(pointer: fine)").matches)
+              {
+                closeMegamenu(null)
+                document.body.classList.add('megamenu-active')
+                document.addEventListener('click', closeMegamenu)
+                target.classList.add('active')
+                btn.classList.add('active')
+              }
+            })
+            btn.addEventListener('click', () => {
+              if(!mobile && document.body.classList.contains('megamenu-active')){
+                closeMegamenu(null)
+              }
+              else{
+                if(!mobile){
+                  document.addEventListener('click', closeMegamenu)
+                  document.body.classList.add('megamenu-active')
+                  btn.classList.add('active')
+                }
+                target.classList.add('active')
+              }
+              {% comment %} 
+              if(window.matchMedia("(pointer: fine)").matches) {
+                if(!document.body.classList.contains('megamenu-active')){
+                  document.removeEventListener('click', closeMegamenu)
+                  target.classList.remove('active')
+                  btn.classList.remove('active')
+                }
+                else{
+                  document.addEventListener('click', closeMegamenu)
+                  target.classList.add('active')
+                  btn.classList.add('active')
+                }
+              } {% endcomment %}
+            })
+          }
+        })
+        document.querySelectorAll('.header-alt_megamenu').forEach(megamenu => {
+          const midLevelWrap = megamenu.querySelector('.header-alt_megamenu-second-level-wrap');
+          megamenu.querySelectorAll('.header-alt_megamenu-top-link').forEach((link,i) => {
+            const level = megamenu.querySelector(`.header-alt_megamenu-second-level[data-anchor="${link.dataset.anchor}"]`)
+            const image = megamenu.querySelector(`.header-alt_megamenu-block-wrap-inner.secondary[data-menu="${link.querySelector("span").textContent.toLowerCase()}"]`)
+            
+            link.addEventListener('mouseenter', (e) => {
+              if(link.classList.contains('active') || mobile) return;
+              megamenu.querySelectorAll('.active').forEach(ele => ele.classList.remove('active'));
+              if(level){
+                level.classList.add('active')
+                midLevelWrap.style.setProperty('--height', level.scrollHeight + 'px');
+              }else{
+                midLevelWrap.style.setProperty('--height', '0px');
+              }
+              if(!mobile && image){
+                image.classList.add('active')
+              }
+              link.classList.add('active')
+              if (e.augmentedTrigger) return;
+            })
+            if(level){
+              link.addEventListener('click', (e) => {
+                e.preventDefault();
+                if(mobile){
+                  level.classList.add('active')
+                  document.body.classList.add('megamenu-second-level')
+                }
+              })
+            }
+            if(!mobile && i==0){
+              const event = new MouseEvent('mouseenter', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+              });
+              event.augmentedTrigger = true; 
+              link.dispatchEvent(event);
+            }
+          })
+        })
+      })
+        
+    </script>
+<script>
+  document.addEventListener('DOMContentLoaded', ()=>{
+    {% comment %} {% if template.name == 'index' %}
+      ScrollTrigger.create({
+        trigger:document.querySelector('.section-slideshow'),
+        start:"top top",
+        end:"bottom-=45px top",
+        onLeave: () => {
+          document.body.classList.remove('white-header')
+        },
+        onEnterBack: () => {
+          document.body.classList.add('white-header')
+        },
+      })
+
+    {% endif %} {% endcomment %}
+    
+    {% comment %} let abortController;
+    function fetchRehallSearch(){
+      if (abortController) {
+          abortController.abort();
+      }
+  
+      abortController = new AbortController();
+      const signal = abortController.signal;
+      $('.header__search-form-results').addClass('ajax-loading');
+      fetch(theme.routes.search_url+'?q='+$('.header__search-field').val()+'&type=product&view=ajax-rehall', {signal}).
+        then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.text();
+        }).
+        then((response) => {
+          const $parsed = $(`<div>${response}</div>`);
+          $('.header__search-form-results').html($parsed.find('[data-ajax-container="products"]').html());
+          $('.header__search-form-results').removeClass('ajax-loading');
+
+          new Swiper('.pageheader .search_sugg-wrap .swiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 20,
+            freeMode: {
+              enabled: true,
+              sticky: true,
+              momentumRatio: 0.8,
+            },
+            speed: 400,
+            scrollbar: {
+              el: '.pageheader .search_sugg-wrap .swiper-scrollbar',
+              draggable: true
+            },
+          });
+          document.querySelectorAll('.search_sugg-wrap .swiper-slide').forEach(item => {
+            item.addEventListener('click', ()=>{
+              if(item.classList.contains('link') && !item.dataset.link.endsWith('#')){
+                const link = item.dataset.link;
+                if(link.startsWith('/')) window.location.href = `${window.location.origin}${link}`;
+                else window.location.href = link;
+              } else{
+                window.location.href = `${window.location.origin}{{ routes.search_url }}?q=${item.innerText.toLowerCase()}`;
+              }
+            })
+          })
+          theme.initAnimateOnScroll();
+        });
+    } {% endcomment %}
+    {% comment %} document.querySelectorAll('.header__search-form-wrap').forEach(formWrap => {
+      const field = formWrap.querySelector('.header__search-field');
+      const form = formWrap.querySelector('.header__search-form');
+      const popup = formWrap.querySelector('.header__search-form-results-container');
+      const closeBtn = formWrap.querySelector('.header__search-form-close');
+      function closePopup(e){
+        if(e.target == formWrap || formWrap.contains(e.target)) return;
+        formWrap.classList.remove('active');
+        document.body.classList.remove('search-popup-active');
+        document.removeEventListener('click', closePopup);
+      }
+      closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        formWrap.classList.remove('active');
+        document.body.classList.remove('search-popup-active');
+        document.removeEventListener('click', closePopup);
+      })
+      formWrap.querySelector('.header__search-field');
+      field.addEventListener('focus', () => {
+        formWrap.classList.add('active');
+        document.body.classList.add('search-popup-active');
+        document.addEventListener('click', closePopup);
+      })
+      
+      $(field).keyup(function(e){
+        if (e.key !== 'Enter') {
+            fetchRehallSearch();
+        }
+      });
+      $(form).submit(function(e){
+        e.preventDefault();
+      });
+    })
+    fetchRehallSearch(); {% endcomment %}
+  })
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "class": "section-header",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo",
+      "info": "520 x 200px (recommended)"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_mobile",
+      "label": "Logo mobile"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_white",
+      "label": "Logo white",
+      "info": "520 x 200px (recommended)"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_white_mobile",
+      "label": "Logo white mobile"
+    },
+    {
+      "type": "range",
+      "id": "logo_img_width_int",
+      "min": 30,
+      "max": 500,
+      "step": 5,
+      "unit": "px",
+      "label": "Logo width",
+      "default": 180
+    },
+    {
+      "type": "range",
+      "id": "mobile_logo_img_width_int",
+      "min": 30,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Mobile logo width",
+      "default": 100
+    },
+    {
+      "type": "link_list",
+      "id": "left_menu",
+      "label": "Left Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "link_list",
+      "id": "right_linklist",
+      "label": "Right Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_helpdesk",
+      "label": "Show helpdesk link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "helpdesk",
+      "label": "Helpdesk text",
+      "default": "Helpdesk",
+      "visible_if": "{{ section.settings.show_helpdesk }}"
+    },
+    {
+      "type": "url",
+      "id": "helpdesk_url",
+      "label": "Helpdesk url",
+      "visible_if": "{{ section.settings.show_helpdesk }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_portal",
+      "label": "Show Portal link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "portal",
+      "label": "Portal text",
+      "default": "Business Portal",
+      "visible_if": "{{ section.settings.show_portal }}"
+    },
+    {
+      "type": "url",
+      "id": "portal_url",
+      "label": "Portal url",
+      "visible_if": "{{ section.settings.show_portal }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "logo_h1",
+      "label": "Enable logo <h1> on home page",
+      "info": "For SEO. Deselect only if another section on the home page contains a primary page heading. [Learn more](https://cleancanvas.co.uk/support/mode/section-h1-setting)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky",
+      "label": "Enable sticky header",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Mobile Menu",
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_menu",
+      "label": "Mobile Nav Menu",
+    },
+    {
+      "type": "link_list",
+      "id": "mobile_footer_menu",
+      "label": "Mobile Footer Menu",
+    },
+  ],
+  "blocks": [
+    {
+      "type": "top-header",
+      "limit": 1,
+      "name": "Top header",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "ENJOY YOUR RIDES"
+        },
+        {
+          "type": "textarea",
+          "id": "list",
+          "label": "List",
+          "default": "Binnen 1 dag geleverd | Retourneren binnen 30 dagen | Gratis verzending"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "label": "Rating",
+          "min": 0,
+          "max": 5,
+          "step": 0.1,
+          "default": 5.0
+        },
+        {
+          "type": "inline_richtext",
+          "id": "rating_text",
+          "label": "Rating text",
+          "default": "(Op basis van <strong>10.000 reviews</strong>)"
+        }
+      ]
+    },
+    {
+      "type": "bottom-header",
+      "limit": 1,
+      "name": "Bottom header",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "WINTER DEALS"
+        },
+        {
+          "type": "text",
+          "id": "heading_mobile",
+          "label": "Heading Mobile",
+          "default": "WINTER ACTIE"
+        }
+      ]
+    },
+    {
+      "type": "megamenu",
+      "name": "Megamenu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Shop by category"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Megamenu",
+          "default": "main-menu"
+        },
+        {
+          "type": "text",
+          "id": "shop_all_text",
+          "label": "Shop all text",
+          "default": "Shop alles"
+        },
+        {
+          "type": "text",
+          "id": "back",
+          "label": "Back Button text",
+          "default": "Terug naar menu"
+        },
+        {
+          "type": "text",
+          "id": "highlight_item",
+          "label": "Highlight Menu Item",
+          "default": "Sale"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_in_mobile",
+          "label": "Show in mobile",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "all_products_text",
+          "label": "All Products text",
+          "default": "All products",
+          "visible_if": "{{ block.settings.show_in_mobile }}"
+        },
+        {
+          "type": "url",
+          "id": "all_products_url",
+          "label": "All Products url",
+          "visible_if": "{{ block.settings.show_in_mobile }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "block",
+          "label": "Block",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "First block",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "block_title",
+          "label": "Block title",
+          "default": "Winter Deals!",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "richtext",
+          "id": "block_desc",
+          "label": "Block Description",
+          "default": "<p>30% Discount for black Friday valid till 30th November only.</p>",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "image_picker",
+          "id": "block_image",
+          "label": "Block Background Image",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "url",
+          "id": "block_url",
+          "label": "Block URL",
+          "visible_if": "{{ block.settings.block }}",
+          "default": "/collections/all"
+        },
+        {
+          "type": "header",
+          "content": "Second block",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "block_title_2",
+          "label": "Block title 2",
+          "default": "Winter Deals!",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "richtext",
+          "id": "block_desc_2",
+          "label": "Block Description 2",
+          "default": "<p>30% Discount for black Friday valid till 30th November only.</p>",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "image_picker",
+          "id": "block_image_2",
+          "label": "Block Background Image 2",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "url",
+          "id": "block_url_2",
+          "label": "Block URL 2",
+          "visible_if": "{{ block.settings.block }}",
+          "default": "/collections/all"
+        },
+        {
+          "type": "header",
+          "content": "Third block",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "block_title_3",
+          "label": "Block title 3",
+          "default": "Winter Deals!",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "richtext",
+          "id": "block_desc_3",
+          "label": "Block Description 3",
+          "default": "<p>30% Discount for black Friday valid till 30th November only.</p>",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "image_picker",
+          "id": "block_image_3",
+          "label": "Block Background Image 3",
+          "visible_if": "{{ block.settings.block }}"
+        },
+        {
+          "type": "url",
+          "id": "block_url_3",
+          "label": "Block URL 3",
+          "visible_if": "{{ block.settings.block }}",
+          "default": "/collections/all"
+        },
+      ]
+    },
+    {
+      "type": "megamenu_image",
+      "name": "Megamenu Images",
+      "settings": [
+        {
+          "type": "text",
+          "id": "megamenu_title",
+          "label": "Megamenu Title",
+          "default": "Shop"
+        },
+        {
+          "type": "text",
+          "id": "menu_title",
+          "label": "Menu Title",
+          "default": "Men"
+        },
+        {
+          "type": "header",
+          "content": "First block",
+        },
+        {
+          "type": "inline_richtext",
+          "id": "block_title",
+          "label": "Block title",
+          "default": "Winter Deals!",
+        },
+        {
+          "type": "richtext",
+          "id": "block_desc",
+          "label": "Block Description",
+          "default": "<p>30% Discount for black Friday valid till 30th November only.</p>",
+        },
+        {
+          "type": "image_picker",
+          "id": "block_image",
+          "label": "Block Background Image",
+        },
+        {
+          "type": "url",
+          "id": "block_url",
+          "label": "Block URL",
+          "default": "/collections/all"
+        },
+        {
+          "type": "header",
+          "content": "Second block",
+        },
+        {
+          "type": "inline_richtext",
+          "id": "block_title_2",
+          "label": "Block title 2",
+          "default": "Winter Deals!",
+        },
+        {
+          "type": "richtext",
+          "id": "block_desc_2",
+          "label": "Block Description 2",
+          "default": "<p>30% Discount for black Friday valid till 30th November only.</p>",
+        },
+        {
+          "type": "image_picker",
+          "id": "block_image_2",
+          "label": "Block Background Image 2",
+        },
+        {
+          "type": "url",
+          "id": "block_url_2",
+          "label": "Block URL 2",
+          "default": "/collections/all"
+        },
+        {
+          "type": "header",
+          "content": "Third block",
+        },
+        {
+          "type": "inline_richtext",
+          "id": "block_title_3",
+          "label": "Block title 3",
+          "default": "Winter Deals!",
+        },
+        {
+          "type": "richtext",
+          "id": "block_desc_3",
+          "label": "Block Description 3",
+          "default": "<p>30% Discount for black Friday valid till 30th November only.</p>",
+        },
+        {
+          "type": "image_picker",
+          "id": "block_image_3",
+          "label": "Block Background Image 3",
+        },
+        {
+          "type": "url",
+          "id": "block_url_3",
+          "label": "Block URL 3",
+          "default": "/collections/all"
+        },
+      ]
+    },
+  ]
+}
+{% endschema %}

@@ -1,0 +1,127 @@
+<div class="related-products"
+    data-section-id="{{ section.id }}"
+    data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&limit={{ section.settings.grid }}&product_id={{ product.id }}"
+    data-cc-animate>
+  {% if recommendations.performed and recommendations.products_count > 0 %}
+    {% if section.settings.title != blank %}
+      <h2 class="section-title{% unless section.settings.show_title %} visually-hidden{% endunless %}">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+
+    <cc-carousel class="cc-carousel cc-carousel--off-edge-mobile card-margin" allow-mouse-drag data-cc-animate="cc-fade-in-up">
+      <div class="cc-carousel-buttons cc-carousel-buttons--overlay-top">
+        <button class="cc-carousel-button cc-carousel-button--prev tap-target" aria-label="{{ 'general.accessibility_labels.previous' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-left' %}</span></button>
+        <button class="cc-carousel-button cc-carousel-button--next tap-target" aria-label="{{ 'general.accessibility_labels.next' | t }}"><span class="icon--small ltr-icon">{% render 'svg-chevron-right' %}</span></button>
+      </div>
+      <div class="cc-carousel__scroll-outer">
+        <div class="product-list product-list--per-row-{{ section.settings.grid }} product-list--per-row-mob-{{ settings.prod_thumb_mob_per_row }} product-list--image-shape-{{ settings.prod_thumb_shape }} cc-carousel__scroll-area">
+          {%- liquid
+            if settings.prod_thumb_shape == 'portrait-23'
+              assign chosen_aspect_ratio = 0.67
+            elsif settings.prod_thumb_shape == 'portrait-45'
+              assign chosen_aspect_ratio = 0.8
+            elsif settings.prod_thumb_shape == 'square'
+              assign chosen_aspect_ratio = 1.0
+            elsif settings.prod_thumb_shape == 'landscape-54'
+              assign chosen_aspect_ratio = 1.25
+            elsif settings.prod_thumb_shape == 'landscape-32'
+              assign chosen_aspect_ratio = 1.50
+            elsif settings.prod_thumb_shape == 'tallest'
+              assign chosen_aspect_ratio = 99
+              for product in recommendations.products
+                if product.featured_media.preview_image.aspect_ratio < chosen_aspect_ratio
+                  assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                endif
+              endfor
+            else
+              assign chosen_aspect_ratio = 0
+              for product in recommendations.products
+                if product.featured_media.preview_image.aspect_ratio > chosen_aspect_ratio
+                  assign chosen_aspect_ratio = product.featured_media.preview_image.aspect_ratio
+                endif
+              endfor
+            endif
+          -%}
+          {%- for product in recommendations.products -%}
+            {% render 'product-block', product: product, custom_aspect_ratio: chosen_aspect_ratio %}
+          {%- endfor -%}
+        </div>
+      </div>
+    </cc-carousel>
+  {% endif %}
+</div>
+
+
+{% javascript %}
+var loadRelatedProductsIntoSection = function() {
+  // Look for an element with class 'related-products'
+  var relatedProductsSection = document.querySelector('.related-products');
+  if (relatedProductsSection === null) { return; }
+  // Create request and submit it using Ajax
+  var request = new XMLHttpRequest();
+  request.open("GET", relatedProductsSection.dataset.url);
+  request.onload = function() {
+    if (request.status >= 200 && request.status < 300) {
+      var container = document.createElement("div");
+      container.innerHTML = request.response;
+      relatedProductsSection.innerHTML = container.querySelector('.related-products').innerHTML;
+      theme.initAnimateOnScroll();
+    }
+  };
+  request.send();
+};
+// Fetch when section reloads in editor
+document.addEventListener("shopify:section:load", function(event) {
+  if (document.querySelector('[data-section-id="' + event.detail.sectionId + '"].related-products')) {
+    loadRelatedProductsIntoSection();
+  }
+});
+// Fetch the products on page load
+loadRelatedProductsIntoSection();
+{% endjavascript %}
+
+
+{% schema %}
+  {
+    "name": "Related products",
+    "class": "section-related-products",
+    "disabled_on": {
+      "groups": [
+        "aside"
+      ]
+    },
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Dynamic recommendations use order and product information to change and improve over time. [Learn more](https://help.shopify.com/en/themes/development/recommended-products)"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "You may also like"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show heading",
+        "info": "A hidden heading will still be readable by search engines and screen readers",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      }
+    ]
+  }
+{% endschema %}

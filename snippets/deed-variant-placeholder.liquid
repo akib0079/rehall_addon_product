@@ -1,0 +1,144 @@
+{%- comment -%}
+  DEED: placeholder-afbeelding voor kleuren/varianten zonder eigen foto.
+  Afbeelding staat in Shopify > Content > Bestanden: rehall-image-coming-soon.jpg
+  Wordt geladen vanuit snippets/head-tag.liquid.
+  Werkt op:
+  1. kleurfotootjes onder productkaarten (CSS)
+  2. kleurkeuze op de productpagina (JS: .deed-no-image)
+  3. grote productfoto op de productpagina als de gekozen kleur geen foto heeft (JS)
+  4. Globo-kaarten op collectiepagina's die per kleur gesplitst zijn (JS)
+  Let op: snippets/product-block.liquid en product-block-alt.liquid zijn aangepast zodat kleuren zonder foto niet meer worden overgeslagen.
+{%- endcomment -%}
+{%- liquid
+  assign deed_ph_img = images['rehall-image-coming-soon.jpg']
+  assign deed_ph_small = deed_ph_img | image_url: width: 300
+  assign deed_ph_card = deed_ph_img | image_url: width: 720
+  assign deed_ph_large = deed_ph_img | image_url: width: 1200
+-%}
+<style>
+  /* 1. Kleurfotootjes onder productkaarten zonder eigen foto */
+  .product-block-options--method-image .product-block-options__item:not(.background-image) {
+    background: #f3f3f3 url('{{ deed_ph_small }}') center center / cover no-repeat !important;
+  }
+  @media (min-width: 768px) {
+    .product-block-options--method-image .product-block-options__item:not(.background-image) {
+      aspect-ratio: 18 / 25 !important;
+      height: auto !important;
+    }
+  }
+  /* 2. Kleurkeuze op de productpagina zonder eigen foto */
+  .opt-label.deed-no-image::before {
+    background-image: url('{{ deed_ph_small }}') !important;
+  }
+  /* 3. Grote productfoto op de productpagina */
+  .deed-gallery-placeholder {
+    display: none;
+    position: absolute;
+    z-index: 3;
+    background: #f3f3f3 url('{{ deed_ph_large }}') center center / contain no-repeat;
+    pointer-events: none;
+  }
+  .deed-ph-active .deed-gallery-placeholder {
+    display: block;
+  }
+  .deed-ph-active .main-product-swiper {
+    visibility: hidden !important;
+  }
+</style>
+<script>
+  (function () {
+    var PH_CARD = {{ deed_ph_card | prepend: 'https:' | json }};
+
+    /* 2. Kleurkeuze op de productpagina */
+    function markNoImageSwatches() {
+      document.querySelectorAll('label.opt-label[data-swatch]:not(.deed-no-image)').forEach(function (label) {
+        var bg = window.getComputedStyle(label, '::before').backgroundImage || '';
+        if (bg.indexOf('no-image') !== -1) {
+          label.classList.add('deed-no-image');
+        }
+      });
+    }
+
+    /* 3. Grote productfoto op de productpagina */
+    function updateGallery() {
+      document.querySelectorAll('.prodcut__images-con').forEach(function (con) {
+        var swipers = con.querySelectorAll('.main-product-swiper[data-swatch-anchor]');
+        if (!swipers.length) return;
+        var scope = con.closest('.product-detail') || document;
+        var checked = scope.querySelector('.option-selector--swatch input.js-option:checked');
+        if (!checked) return;
+        var value = (checked.value || '').trim().toUpperCase();
+        var hasPhotos = false;
+        swipers.forEach(function (s) {
+          if ((s.getAttribute('data-swatch-anchor') || '').trim().toUpperCase() === value) hasPhotos = true;
+        });
+        var ph = con.querySelector('.deed-gallery-placeholder');
+        if (!ph) {
+          ph = document.createElement('div');
+          ph.className = 'deed-gallery-placeholder';
+          ph.setAttribute('aria-hidden', 'true');
+          con.appendChild(ph);
+        }
+        if (hasPhotos) {
+          con.classList.remove('deed-ph-active');
+        } else {
+          var ref = swipers[0];
+          ph.style.top = ref.offsetTop + 'px';
+          ph.style.left = ref.offsetLeft + 'px';
+          ph.style.width = ref.offsetWidth + 'px';
+          ph.style.height = ref.offsetHeight + 'px';
+          con.classList.add('deed-ph-active');
+        }
+      });
+    }
+
+    /* 4. Globo-kaarten die per kleur gesplitst zijn */
+    function updateSplitCards() {
+      document.querySelectorAll('.spf-product-card product-block:not([data-deed-ph-checked])').forEach(function (block) {
+        block.setAttribute('data-deed-ph-checked', '1');
+        var dataEl = block.querySelector('.rebuy-prod-data');
+        if (!dataEl) return;
+        var data;
+        try { data = JSON.parse(dataEl.textContent); } catch (e) { return; }
+        if (!data || !data.is_splited) return;
+        var v = data.selected_or_first_available_variant;
+        if (!v || v.featured_image || v.image || v.image_id) return;
+        var main = block.querySelector('.spf-product-card__image-main');
+        if (!main) return;
+        main.removeAttribute('srcset');
+        main.removeAttribute('data-srcset');
+        main.src = PH_CARD;
+        main.alt = '';
+        var secondary = block.querySelector('.spf-product-card__image-secondary');
+        if (secondary) secondary.remove();
+      });
+    }
+
+    function run() {
+      markNoImageSwatches();
+      updateGallery();
+      updateSplitCards();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run);
+    } else {
+      run();
+    }
+    window.addEventListener('load', run);
+    window.addEventListener('resize', function () { updateGallery(); });
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.matches && e.target.matches('input.js-option')) {
+        setTimeout(updateGallery, 50);
+      }
+    });
+    /* Ook voor later ingeladen content, zoals Globo-filters en de quickbuy-popup */
+    document.addEventListener('DOMContentLoaded', function () {
+      var t;
+      new MutationObserver(function () {
+        clearTimeout(t);
+        t = setTimeout(run, 150);
+      }).observe(document.body, { childList: true, subtree: true });
+    });
+  })();
+</script>

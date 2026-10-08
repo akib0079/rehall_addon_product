@@ -1,0 +1,88 @@
+<div class="landing-blog-banner-1-section section-id-{{ section.id }}{% if section.settings.second_layout %} second-layout{% endif %}">
+    <div class="section-container">
+        <h2 class="lbb1__title">
+            {% if section.settings.title_1 != blank %}
+                <span>{{ section.settings.title_1 }}</span>
+            {% endif %}
+            {% if section.settings.title_2 != blank %}
+                <span>{{ section.settings.title_2 }}</span>
+            {% endif %}
+        </h2>
+        {% if section.settings.desc != blank %}
+            <div class="lbb1__desc">{{ section.settings.desc }}</div>
+        {% endif %}
+        {% if section.settings.trustpilot != blank %}
+            {{ section.settings.trustpilot | image_url: width: nil | image_tag: class: 'lbb1__img-trustpilot' }}
+        {% endif %}
+    </div>
+    {% unless section.settings.second_layout %}
+    {% if section.settings.img_1 != blank %}
+        {{ section.settings.img_1 | image_url: width: nil | image_tag: class: 'lbb1__img-1' }}
+    {% endif %}
+    
+    {% if section.settings.img_2 != blank %}
+        {{ section.settings.img_2 | image_url: width: nil | image_tag: class: 'lbb1__img-2' }}
+    {% endif %}
+    {% endunless %}
+    {% if section.settings.decor != blank %}
+        {{ section.settings.decor | image_url: width: nil | image_tag: class: 'lbb1__img-decor' }}
+    {% endif %}
+</div>
+{% schema %}
+  {
+    "name": "Landing - Blog Banner 1",
+    "settings": [
+      {
+        "type": "inline_richtext",
+        "id": "title_1",
+        "label": "Title 1",
+        "default": "Conquer the mountain"
+      },
+      {
+        "type": "inline_richtext",
+        "id": "title_2",
+        "label": "Title 2",
+        "default": " with rehall"
+      },
+        {
+        "type": "richtext",
+        "id": "desc",
+        "label": "Description",
+        "default": "<p>Description</p>"
+        },
+      {
+        "type": "image_picker",
+        "id": "trustpilot",
+        "label": "Trustpilot Image"
+      },
+      {
+        "type": "checkbox",
+        "id": "second_layout",
+        "label": "2nd Layout",
+        "default": false
+      },
+      {
+        "type": "image_picker",
+        "id": "img_1",
+        "label": "Image 1",
+        "visible_if": "{{ section.settings.second_layout == false }}"
+      },
+      {
+        "type": "image_picker",
+        "id": "img_2",
+        "label": "Image 2",
+        "visible_if": "{{ section.settings.second_layout == false }}"
+      },
+      {
+        "type": "image_picker",
+        "id": "decor",
+        "label": "Decor Image"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Landing - Blog Banner 1"
+      }
+    ]
+  }
+{% endschema %}

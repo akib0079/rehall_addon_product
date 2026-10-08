@@ -1,0 +1,61 @@
+{%- if paginate.pages > 1 -%}
+  <div class="pagination-row" data-next="{{ paginate.next.url }}">
+    {% if paginate.current_page != 1%}
+      <div class="pagination">
+      {% if paginate.previous %}
+        <a class="prev" href="{{ paginate.previous.url }}">&laquo; {{ 'general.pagination.previous' | t }}</a>
+        <span class="pagination__sep">&middot;</span>
+      {% endif %}
+
+      {% for part in paginate.parts %}
+        <span class="pagination__number {% if paginate.current_page == part.title %}active{% endif %}">
+          {% if part.is_link %}
+            {{ part.title | link_to: part.url }}
+          {% else %}
+            {{ part.title }}
+          {% endif %}
+        </span>
+      {% endfor %}
+
+      {% if paginate.next %}
+        <span class="pagination__sep">&middot;</span>
+        <a class="next" href="{{ paginate.next.url }}">{{ 'general.pagination.next' | t }} &raquo;</a>
+      {% endif %}
+    </div>
+    {% else %}
+      <button class="pagination__load-btn">Load more <span class="load-count">({{ paginate.items | minus: paginate.current_offset | minus: paginate.page_size | at_most: paginate.page_size  }})</span></button>
+      <div class="pagination__loader-wrap"><div class="pagination__loader"></div></div>
+      <script type="text/javascript">
+        let nextPage = "{{paginate.next.url}}"
+        const loadBtn = document.querySelector('.pagination__load-btn')
+        const loader = document.querySelector('.pagination__loader-wrap')
+        loadBtn.addEventListener('click', () => {
+          loadBtn.style.display = 'none'
+          if (!nextPage) return
+          loader.style.display = 'flex'
+          fetch(nextPage)
+          .then(response => {return response.text()})
+          .then(html => {
+            const dom = new DOMParser().parseFromString(html, "text/html")
+            nextPage = dom.querySelector('.pagination-row').dataset.next
+            dom.querySelectorAll('.product-list [data-cc-animate]').forEach(prod => {
+              prod.removeAttribute("data-cc-animate")
+            })
+            loader.style.display = 'none'
+            document.querySelector('.product-list').append(...dom.querySelector('.product-list').children)
+            document.querySelectorAll('.result-count').forEach(el => {
+              el.innerHTML = parseInt(el.innerHTML) + parseInt(dom.querySelector('.result-count').innerHTML);
+            })
+            if (nextPage) {
+              loadBtn.querySelector('.load-count').innerText = dom.querySelector('.load-count').innerText
+              loadBtn.style.display = 'inline-block'
+            }
+          })
+          .catch(function(err) {  
+              console.log('Failed to fetch page: ', err);  
+          });
+        })
+      </script>
+    {% endif %}
+  </div>
+{%- endif -%}

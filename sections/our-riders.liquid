@@ -1,0 +1,375 @@
+{% style %}
+  #shopify-section-{{ section.id }}{
+    margin: {{section.settings.margin}};
+  }
+  @media (max-width: 767px){
+    #shopify-section-{{ section.id }}{
+      margin: {{section.settings.margin_mobile}};
+    }
+  }
+{% endstyle %}
+
+<div class="section-container">
+  <div class="riders__title-wrap">
+  {% if section.settings.title != blank %}
+    <h2 class="section-title riders__title hl-style{% unless section.settings.show_title %} visually-hidden{% endunless %}">{{ section.settings.title | escape }}</h2>
+  {% endif %}
+    <div class="riders__view-icons mobile-only">
+      <div class="riders__view view-slide">
+        {% render 'svg-rider-slide' %}
+      </div>
+      <div class="riders__view view-grid">
+        {% render 'svg-rider-grid' %}
+      </div>
+    </div>
+  </div>
+  <div class="riders-grid swiper">
+    
+    <div class="product-list swiper-wrapper">
+      {% assign riders = shop.metaobjects.riders.values %}
+      {% if riders == blank %}
+        {% for i in (1..4) %}
+          {% render 'onboarding-product-block', forloop: forloop %}
+        {% endfor %}
+      {% else %}
+        {% for rider in riders %}
+          <a class="swiper-slide" href="#" data-slide-id="{{ rider.system.handle }}">
+            {% render 'rider-slide', rider: rider, joined_text: section.settings.join_text %}
+          </a>
+        {% endfor %}
+      {% endif %}
+    </div>
+    <div class="product-slider__nav-row mobile-only">
+      <div class="product-slider__nav-wrap">
+        <div class="product-slider__nav prev">
+          {% render 'svg-slider-arrow' %}
+        </div>
+        <div class="product-slider__nav next">
+          {% render 'svg-slider-arrow' %}
+        </div>
+      </div>
+    </div>
+    <div class="swiper-scrollbar" style="--swiper-scrollbar-sides-offset: 0%; --swiper-scrollbar-size: 1px; --swiper-scrollbar-bottom 0px; --swiper-scrollbar-bg-color: rgba(0, 0, 0, 0.50); --swiper-scrollbar-drag-bg-color: #000;"></div>
+  </div>
+</div>
+<div class="rider_bg-slider swiper mobile-only">
+  <div class="swiper-wrapper">
+    {% for rider in riders %}
+      <div class="swiper-slide">
+        {{ rider.background_image | default: rider.image | image_url: width: nil | image_tag: class:  'rider_popup-bg-img' }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="rider_popup preload">
+  <div class="rider_popup-bg swiper">
+    <div class="swiper-wrapper">
+      {% for rider in riders %}
+        <div class="swiper-slide">
+          {{ rider.background_image | default: rider.image | image_url: width: nil | image_tag: class:  'rider_popup-bg-img' }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="rider_popup-front">
+    <div class="rider_popup-front-container">
+      <div class="rider_popup-top-row">
+        <div class="rider_popup-close">
+          <div class="rider_popup-back-icon">
+            {% render 'svg-slider-arrow' %}
+          </div>
+          <span class="rider_popup-close-text desktop-only">{{ section.settings.back_to_text }}</span>
+        </div>
+        {% if section.settings.title != blank %}
+          <h2 class="section-title riders__title desktop-only hl-style{% unless section.settings.show_title %} visually-hidden{% endunless %}">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+      </div>
+      <div class="rider_popup-front-slider swiper">
+        <div class="swiper-wrapper">
+          {% for rider in riders %}
+            <div class="swiper-slide" data-slide-id="{{ rider.system.handle }}">
+              <div class="rider_popup-inner-wrap">
+                <div class="rider_popup-inner-grid">
+                  <div class="rider_popup-meta-box swiper-no-swiping">
+                    <h4 class="rider-slide-title">{{ rider.name }}</h4>
+                    {% if rider.start_date != blank %}
+                      <p class="rider-slide-join">{{ section.settings.join_text }} {{ rider.start_date | date: "%Y" }}</p>
+                    {% endif %}
+                    <table class="rider_popup-meta-table">
+                      <tr>
+                        <th scope="row">{{ settings.rider_age }}:</th>
+                        <td>{{ rider.age }}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">{{ settings.rider_nationality }}:</th>
+                        <td>{{ rider.nationality }}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">{{ settings.rider_set_up }}:</th>
+                        <td>{{ rider.set_up }}</td>
+                      </tr>
+                      {% comment %}
+                      <tr>
+                        <th scope="row">Best slope(s):</th>
+                        <td>{{ rider.best_slope_s.value | join: ", " }}</td>
+                      </tr>
+                      {% endcomment %}
+                    </table>
+                    <h4 class="rider_popup-story-title">{{ settings.rider_story }}</h4>
+                    <div class="rider_popup-desc">{{ rider.story | metafield_tag }}</div>
+                    {% if rider.instagram_link or rider.facebook_link %}
+                      <div class="rider_popup-social-wrap desktop-only">
+                        {% if rider.instagram_link %}
+                          <a class="rider_popup-social-link" href="{{ rider.instagram_link }}" target="_blank">{% render 'svg-instagram' %}</a>
+                        {% endif %}
+                        {% if rider.facebook_link %}
+                          <a class="rider_popup-social-link" href="{{ rider.facebook_link }}" target="_blank">{% render 'svg-facebook' %}</a>
+                        {% endif %}
+                        {% if rider.tiktok_link %}
+                          <a class="rider_popup-social-link" href="{{ rider.tiktok_link }}" target="_blank">{% render 'svg-tiktok' %}</a>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  {{ rider.image | image_url: width: nil | image_tag: class:  'rider_popup-img' }}
+                  <div class="rider_popup-desc-wrap swiper-no-swiping">
+                    {% comment %}
+                    <h2 class="rider_popup-title h1-style">Rider story</h2>
+                    <div class="rider_popup-desc">{{ rider.story | metafield_tag }}</div>
+                    {% endcomment %}
+                    <div class="cc-accordion" data-allow-multi-open="{{ allow_multi_open }}">
+                      {%- liquid
+                        for faq in rider.fa_qs.value
+                          if faq != blank
+                            if forloop.first
+                              assign item_open = true
+                            else
+                              assign item_open = false
+                            endif
+                            assign parts = faq | split: '||'
+                              assign title = parts.first | escape
+                  
+                            render 'accordion-item', title: title, content: parts.last, item_open: item_open
+                          endif
+                        endfor
+                      -%}
+                    </div>
+                    {% if rider.instagram_link or rider.facebook_link %}
+                      <div class="rider_popup-social-wrap mobile-only">
+                        {% if rider.instagram_link %}
+                          <a class="rider_popup-social-link" href="{{ rider.instagram_link }}" target="_blank">{% render 'svg-instagram' %}</a>
+                        {% endif %}
+                        {% if rider.facebook_link %}
+                          <a class="rider_popup-social-link" href="{{ rider.facebook_link }}" target="_blank">{% render 'svg-facebook' %}</a>
+                        {% endif %}
+                        {% if rider.tiktok_link %}
+                          <a class="rider_popup-social-link" href="{{ rider.tiktok_link }}" target="_blank">{% render 'svg-tiktok' %}</a>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="rider_popup-nav-wrap desktop-only">
+          <div class="rider_popup-nav prev">
+            <div class="rider_popup-nav-icon">
+              {% render 'svg-slider-arrow' %}
+            </div>
+          </div>
+          <div class="rider_popup-numeric-index"><span class="current">1</span>/<span class="total"></span></div>
+          <div class="rider_popup-nav next">
+            <div class="rider_popup-nav-icon">
+              {% render 'svg-slider-arrow' %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+     if (window.matchMedia("(max-width: 767px)").matches) {
+     const gridContainer = document.querySelector('.riders-grid')
+      const gridSlider = new Swiper(gridContainer, {
+        slidesPerView: 1,
+        spaceBetween: 22,
+        freeMode: {
+          enabled: true,
+          sticky: true,
+          momentumRatio: 0.8,
+        },
+        speed: 400,
+        navigation: {
+          nextEl: '.product-slider__nav.next',
+          prevEl: '.product-slider__nav.prev',
+        },
+        /*pagination: {
+          el: ".swiper-pagination",
+        },*/
+        scrollbar: {
+          el: '.swiper-scrollbar',
+          draggable: true
+        },
+      });
+       const bgSlider = new Swiper('.rider_bg-slider', {
+        slidesPerView: 1,
+        speed: 600,
+      });
+      gridSlider.controller.control = bgSlider;
+       document.querySelectorAll('.riders__view').forEach(view => {
+         view.addEventListener('click', () => {
+           if(!view.classList.contains('active')){
+             if(view.classList.contains('view-slide')){
+               gridSlider.enable();
+               gridContainer.classList.remove('grid-view');
+             }else if (view.classList.contains('view-grid')){
+               gridSlider.slideTo(0, 0);
+               gridSlider.disable();
+               gridContainer.classList.add('grid-view');
+             }
+             document.querySelector('.riders__view.active')?.classList.remove('active')
+             view.classList.add('active');
+           } 
+         })
+       })
+    }
+    document.querySelector('.rider_popup-numeric-index .total').innerText = document.querySelectorAll('.rider_popup-front-slider .swiper-slide').length;
+    const popupSlider = new Swiper('.rider_popup-front-slider', {
+      slidesPerView: 1,
+      speed: 600,
+      effect: 'fade',
+      navigation: {
+        nextEl: '.rider_popup-nav.next',
+        prevEl: '.rider_popup-nav.prev',
+      },
+      on: {
+        slideChange: swiper => {
+          document.querySelector('.rider_popup-numeric-index .current').innerText = swiper.realIndex + 1;
+        }
+      }, 
+    });
+    const popupBgSlider = new Swiper('.rider_popup-bg', {
+      slidesPerView: 1,
+      speed: 600,
+    });
+    popupSlider.controller.control = popupBgSlider;
+   document.querySelectorAll('.riders-grid .swiper-slide').forEach((ele) => {
+     ele.addEventListener('click', function(e) {
+       const slide = this;
+       e.preventDefault();
+       popupSlider.slideTo(popupSlider.slides.findIndex(slide => slide.dataset.slideId === ele.dataset.slideId), 0);
+       if (window.matchMedia("(max-width: 767px)").matches) {
+         const popupEle = document.querySelector('.rider_popup');
+         popupEle.querySelector('.swiper-slide-active .rider_popup-img').style.opacity = 0;
+         gsap.from(".swiper-slide-active .rider_popup-meta-box, .swiper-slide-active .rider_popup-desc-wrap, .rider_popup-bg.swiper", 
+              { 
+                opacity: 0,
+                duration: 0.5,
+                onStart: function() {
+                  popupEle.style.display = "block"; if (popupEle.classList.contains('preload')) popupEle.classList.remove('preload')
+                  const pos = slide.querySelector('.rider-slider-img').getBoundingClientRect()
+                  const posCurr = document.querySelector('.swiper-slide-active .rider_popup-img').getBoundingClientRect()
+                  gsap.from('.swiper-slide-active .rider_popup-img',{
+                    x: pos.left - posCurr.left,
+                    y: pos.top - posCurr.top,
+                    width: pos.width,
+                    height: pos.height,
+                    borderRadius: 10,
+                    duration: 0.5,
+                    onStart: () => popupEle.querySelector('.swiper-slide-active .rider_popup-img').style.opacity = 1
+                  })
+                },
+                onComplete: () => document.body.classList.add('rider_popup-open'),
+              }
+             );
+       }
+       else{
+         gsap.to(".rider_popup", 
+              { 
+                opacity: 1,
+                duration: 0.5,
+                onStart: function() {
+                  this.targets().forEach(ele => {ele.style.display = "block"; if (ele.classList.contains('preload')) ele.classList.remove('preload')})
+                },
+                onComplete: () => document.body.classList.add('rider_popup-open'),
+              }
+             );
+       }
+       
+       
+     })
+   })
+    document.querySelector('.rider_popup-close').addEventListener('click', () => {
+      gsap.to(".rider_popup", 
+              { 
+                opacity: 0,
+                duration: 0.5,
+                onStart: () => document.body.classList.remove('rider_popup-open'),
+                onComplete: function() {
+                  this.targets().forEach(ele => {
+                    ele.style.display = "none"
+                    ele.style.opacity = 1
+                  })
+                }
+              }
+             );
+    })
+  });     
+</script>
+{% schema %}
+  {
+    "name": "Our riders",
+    "class": "section-our-rider",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "OUR RIDERS"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show heading",
+        "info": "A hidden heading will still be readable by search engines and screen readers",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "back_to_text",
+        "label": "Back button text",
+        "default": "Back to overview"
+      },
+      {
+        "type": "text",
+        "id": "join_text",
+        "label": "Joined text",
+        "default": "Rehall Rider Since"
+      },
+      {
+        "type": "text",
+        "id": "margin",
+        "label": "Margin",
+        "default": "39px auto 208px",
+      },
+      {
+        "type": "text",
+        "id": "margin_mobile",
+        "label": "Margin",
+        "default": "27px auto 48px",
+      }
+    ],
+    "presets": [
+      {
+        "name": "Our riders"
+      }
+    ]
+  }
+{% endschema %}

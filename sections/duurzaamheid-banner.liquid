@@ -1,0 +1,76 @@
+<section class="duur-banner-section" style="--height:{{ section.settings.height }};--height-mobile:{{ section.settings.height_mobile }};">
+  <div class="duur-banner-container">
+    {% if section.settings.subtitle != blank %}
+      <li class="duur-section-subtitle"><span>{{ section.settings.subtitle }}</span></li>
+    {% endif %}
+    {% if section.settings.title != blank %}
+      <h1 class="duur-banner-title">{{ section.settings.title }}</h1>
+    {% endif %}
+  </div>
+  {% if section.settings.bg != blank %}
+    {{ section.settings.bg_wide | default: section.settings.bg | image_url: width: nil | image_tag: class: 'duur-banner-bg wide-only'  }}
+    {{ section.settings.bg | image_url: width: nil | image_tag: class: 'duur-banner-bg desktop-only'  }}
+    {{ section.settings.bg_mobile | default: section.settings.bg | image_url: width: nil | image_tag: class: 'duur-banner-bg mobile-only'  }}
+  {% endif %}
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    gsap.fromTo('.duur-banner-section .duur-section-subtitle', {opacity: 0, x: -50}, {opacity: 1, x: 0})
+    gsap.fromTo('.duur-banner-section .duur-banner-title', {opacity: 0, y: 50}, {opacity: 1, y: 0, delay: 0.3})
+  })
+</script>
+{% schema %}
+  {
+    "name": "Duurzaamheid Banner",
+    "settings": [
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "Sub title",
+        "default": "duurzaamheid",
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Title",
+        "default": "Our ride to green slopes",
+      },
+      {
+        "type": "image_picker",
+        "id": "bg",
+        "label": "Background image"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_mobile",
+        "label": "Background image mobile"
+      },
+      {
+        "type": "image_picker",
+        "id": "bg_wide",
+        "label": "Background image mobile"
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Height",
+        "default": "944px",
+      },
+      {
+        "type": "text",
+        "id": "height_mobile",
+        "label": "Height mobile",
+        "default": "945px",
+      },
+    ],
+    "presets": [
+      {
+        "name": "Duurzaamheid Banner"
+      }
+    ]
+  }
+{% endschema %}

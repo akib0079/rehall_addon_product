@@ -1,0 +1,112 @@
+{% if product.metafields.custom.details != blank %}
+  {% style %}
+    #shopify-section-{{ section.id }}{
+      margin-top: {{section.settings.margin_top}};
+    }
+    #shopify-section-{{ section.id }} .product-details__grid{
+      grid-template-columns: repeat({{section.settings.grid}}, 1fr);
+      grid-gap: {{section.settings.product_gap}}px;
+    }
+    @media (max-width: 767px){
+      #shopify-section-{{ section.id }}{
+        margin-top: {{section.settings.margin_top_mobile}};
+      }
+      #shopify-section-{{ section.id }} .product-details__grid{
+        display: flex;
+        grid-gap: 0px;
+      }
+    }
+  {% endstyle %}
+  
+  {% if section.settings.title != blank %}
+    <h2 class="section-title product-details__title hl-style{% unless section.settings.show_title %} visually-hidden{% endunless %}">{{ section.settings.title | escape }}</h2>
+  {% endif %}
+  <div class="product-details__swiper">
+    <div class="product-details__grid swiper-wrapper">
+      {% for detail in product.metafields.custom.details.value %}
+        <div class="product-details__single swiper-slide">
+          {% if detail.image != blank %}
+            {{ detail.image | image_url: width: nil | image_tag: class: 'product-details_item__img' }}
+          {% else %}
+          {{ 'image' | placeholder_svg_tag: 'product-details_item__img placeholder' }}
+          {% endif %}
+          <h4 class="product-details_item__title">{{ detail.title }}</h4>
+          {% if detail.description != blank %}
+            <p class="product-details_item__desc">{{ detail.description }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+  </div>
+  </div>
+{% endif %}
+{% javascript %}
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      new Swiper('.product-details__swiper', {
+        slidesPerView: 1.4,
+        spaceBetween: 8,
+      });
+    } 
+{% endjavascript %}
+
+{% schema %}
+  {
+    "name": "Product details",
+    "class": "section-product-details card",
+    "enabled_on": {
+      "templates": [
+        "product"
+      ]
+    },
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "DETAILS"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show heading",
+        "info": "A hidden heading will still be readable by search engines and screen readers",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "margin_top",
+        "label": "Margin top",
+        "default": "91px"
+      },
+      {
+        "type": "text",
+        "id": "margin_top_mobile",
+        "label": "Margin top mobile",
+        "default": "87px"
+      },
+      {
+        "type": "range",
+        "id": "product_gap",
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "unit": "px",
+        "label": "Products gap",
+        "default": 10
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Number of columns on desktop",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 4
+      }
+    ],
+    "presets": [
+      {
+        "name": "Product details"
+      }
+    ]
+  }
+{% endschema %}
