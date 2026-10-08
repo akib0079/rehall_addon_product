@@ -1757,6 +1757,15 @@
                 {%- endif -%}
               </cc-fetched-content>
 
+            {%- when 'complementary_outfit' -%}
+              {%- comment -%} Native "Complete your outfit" (replaces the Rebuy widget). The wrapper is only output when the snippet renders something, so an empty list leaves no empty element behind. {%- endcomment -%}
+              {%- capture complementary_outfit_content -%}
+                {%- render 'complementary-outfit', product: product, block: block, section: section -%}
+              {%- endcapture -%}
+              {%- if complementary_outfit_content != blank -%}
+                <div class="{% unless block.settings.show_in_quickbuy %}not-in-quickbuy{% endunless %}">{{ complementary_outfit_content }}</div>
+              {%- endif -%}
+
           {% endcase %}
         {% endfor %}
 
@@ -3958,6 +3967,78 @@
             "step": 1,
             "label": "Maximum products to show",
             "default": 10
+          },
+          {
+            "type": "checkbox",
+            "id": "show_in_quickbuy",
+            "label": "Show in quick buy",
+            "default": false
+          }
+        ]
+      },
+      {
+        "type": "complementary_outfit",
+        "name": "Complete outfit (native)",
+        "limit": 1,
+        "settings": [
+          {
+            "type": "paragraph",
+            "content": "Shows the products from the product metafield Complementary products (custom.complementary_products). Edit them per product in Admin → Products → Metafields."
+          },
+          {
+            "type": "text",
+            "id": "heading",
+            "label": "Heading",
+            "info": "Leave empty to use the translated default 'Complete your outfit'"
+          },
+          {
+            "type": "range",
+            "id": "max_products",
+            "min": 1,
+            "max": 8,
+            "step": 1,
+            "label": "Maximum products",
+            "default": 3
+          },
+          {
+            "type": "checkbox",
+            "id": "use_discovery_fallback",
+            "label": "Fall back to Search & Discovery complementary products",
+            "info": "Used when none of the metafield products can be shown.",
+            "default": true
+          },
+          {
+            "type": "select",
+            "id": "image_click",
+            "label": "Clicking the product image",
+            "options": [
+              {
+                "value": "reveal",
+                "label": "Show sizes"
+              },
+              {
+                "value": "link",
+                "label": "Open product page"
+              }
+            ],
+            "default": "reveal"
+          },
+          {
+            "type": "range",
+            "id": "swatch_size",
+            "min": 24,
+            "max": 56,
+            "step": 2,
+            "unit": "px",
+            "label": "Colour swatch image width",
+            "info": "Swatch images use the 4:5 product photo ratio.",
+            "default": 40
+          },
+          {
+            "type": "checkbox",
+            "id": "zoom_on_hover",
+            "label": "Zoom product image on hover",
+            "default": true
           },
           {
             "type": "checkbox",

@@ -260,6 +260,15 @@
     },
     "grid": {
       "add_to_cart": "In winkelmandje"
+    },
+    "complementary": {
+      "title": "Complete your outfit",
+      "add": "+ Add",
+      "choose_size": "Kies een maat voor {{ title }}",
+      "add_to_cart_label": "{{ title }} – {{ size }} toevoegen aan winkelwagen",
+      "added": "{{ title }} – {{ size }} toegevoegd aan winkelwagen",
+      "error": "Toevoegen aan winkelwagen is mislukt. Probeer het opnieuw.",
+      "editor_placeholder": "Voeg producten toe aan het metaveld 'Complementary products' van dit product om ze hier te tonen."
     }
   },
   "homepage": {

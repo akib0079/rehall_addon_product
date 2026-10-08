@@ -210,6 +210,15 @@
     },
     "grid": {
       "add_to_cart": "Agregar al carrito"
+    },
+    "complementary": {
+      "title": "Completa tu outfit",
+      "add": "+ Agregar",
+      "choose_size": "Elige una talla para {{ title }}",
+      "add_to_cart_label": "Agregar {{ title }} – {{ size }} al carrito",
+      "added": "{{ title }} – {{ size }} se agregó al carrito",
+      "error": "No se pudo agregar al carrito. Inténtalo de nuevo.",
+      "editor_placeholder": "Agrega productos al metacampo 'Complementary products' de este producto para mostrarlos aquí."
     }
   },
   "homepage": {

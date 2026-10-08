@@ -210,6 +210,15 @@
     },
     "grid": {
       "add_to_cart": "Tilføj til Kurv"
+    },
+    "complementary": {
+      "title": "Fuldend dit outfit",
+      "add": "+ Tilføj",
+      "choose_size": "Vælg en størrelse til {{ title }}",
+      "add_to_cart_label": "Læg {{ title }} – {{ size }} i kurven",
+      "added": "{{ title }} – {{ size }} er lagt i kurven",
+      "error": "Varen kunne ikke lægges i kurven. Prøv igen.",
+      "editor_placeholder": "Tilføj produkter til metafeltet 'Complementary products' på dette produkt for at vise dem her."
     }
   },
   "homepage": {

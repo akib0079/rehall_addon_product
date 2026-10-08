@@ -1,0 +1,544 @@
+{%- comment -%}
+  Complete your outfit (native) - replaces the Rebuy "Complete your outfit" widget.
+  Server-rendered cards for the `complementary_outfit` block in sections/main-product.liquid.
+  Styles: assets/complementary-outfit.css / behaviour: assets/complementary-outfit.js (<complementary-outfit>).
+
+  Accepts:
+  - product: {Object} Current product
+  - block: {Object} The complementary_outfit block (heading, max_products, use_discovery_fallback,
+    image_click, swatch_size, zoom_on_hover)
+  - section: {Object} Parent section (reserved)
+
+  Data:
+  - product.metafields.custom.complementary_products (list.product_reference); when it renders no card
+    (empty, sold out, ...) and enabled, the Search & Discovery complementary list is used instead (never mixed).
+  - rec.metafields.custom.priority_variant (variant reference): preferred colour of a recommended product.
+
+  Only purchasable options are shown (variant.available): a sold-out size gets no button, a colour without an
+  available variant gets no swatch, a product without an available variant gets no card.
+
+  Card modes (data-mode):
+  - single: only the default variant -> one "+ Add" button.
+  - one-step: no colour option, or the priority colour is purchasable -> sizes shown directly.
+  - two-step: colour swatches first, then the sizes of the chosen colour.
+
+  Usage:
+  {% render 'complementary-outfit', product: product, block: block, section: section %}
+{%- endcomment -%}
+{%- liquid
+  assign cyo_max = block.settings.max_products | default: 3 | plus: 0
+  if cyo_max < 1
+    assign cyo_max = 3
+  endif
+
+  assign cyo_image_click = 'reveal'
+  if block.settings.image_click == 'link'
+    assign cyo_image_click = 'link'
+  endif
+
+  assign cyo_swatch_size = block.settings.swatch_size | default: 40 | plus: 0
+  if cyo_swatch_size < 16
+    assign cyo_swatch_size = 40
+  endif
+  assign cyo_swatch_size_mobile = cyo_swatch_size | at_most: 36
+
+  assign cyo_add_text = 'products.complementary.add' | t
+
+  # Colour option names ('|'-delimited for exact matching): theme swatch setting + common fallbacks
+  assign cyo_colour_names = '|color|colour|kleur|farbe|couleur|colore|cor|farve|'
+  assign cyo_setting_names = settings.swatch_option_name | downcase | split: ','
+  for cyo_setting_name in cyo_setting_names
+    assign cyo_name = cyo_setting_name | strip
+    if cyo_name != blank
+      assign cyo_needle = cyo_name | prepend: '|' | append: '|'
+      unless cyo_colour_names contains cyo_needle
+        assign cyo_colour_names = cyo_colour_names | append: cyo_name | append: '|'
+      endunless
+    endif
+  endfor
+
+  # Theme colour list (Settings > Swatches) for colour chips without a variant image; same gate as assets/swatches.css.liquid
+  assign cyo_swatch_lines = nil
+  if settings.swatch_enabled and settings.swatch_value_list != blank
+    assign cyo_swatch_lines = settings.swatch_value_list | newline_to_br | strip_newlines | split: '<br />'
+  endif
+
+  # Sources in order; the Search & Discovery list is only used when the product's own list renders no card
+  assign cyo_source_keys = 'primary'
+  if block.settings.use_discovery_fallback
+    assign cyo_source_keys = 'primary,discovery'
+  endif
+  assign cyo_source_keys = cyo_source_keys | split: ','
+
+  assign cyo_count = 0
+-%}
+
+{%- capture cyo_items -%}
+  {%- for cyo_source_key in cyo_source_keys -%}
+    {%- liquid
+      # Stop after the first source that rendered at least one card (sources are never mixed)
+      if cyo_count > 0
+        break
+      endif
+      if cyo_source_key == 'discovery'
+        assign cyo_source = product.metafields['shopify--discovery--product_recommendation'].complementary_products.value
+      else
+        assign cyo_source = product.metafields.custom.complementary_products.value
+      endif
+      assign cyo_count = 0
+      assign cyo_seen_ids = '|'
+    -%}
+  {%- comment -%} Card loop body kept at its original indentation: its markup whitespace is output verbatim {%- endcomment -%}
+  {%- for rec in cyo_source -%}
+    {%- liquid
+      if cyo_count >= cyo_max
+        break
+      endif
+      if rec.id == blank or rec.id == product.id
+        continue
+      endif
+      # Sold-out products are never shown (the variant count below re-checks this)
+      if rec.available == false
+        continue
+      endif
+      # Skip duplicate references (ids in the markup must stay unique)
+      assign cyo_needle = rec.id | prepend: '|' | append: '|'
+      if cyo_seen_ids contains cyo_needle
+        continue
+      endif
+      assign cyo_seen_ids = cyo_seen_ids | append: rec.id | append: '|'
+
+      assign cyo_opts_id = 'cyo-opts-' | append: block.id | append: '-' | append: rec.id
+      assign cyo_title_id = 'cyo-title-' | append: block.id | append: '-' | append: rec.id
+
+      # Colour option (first match) + names of the remaining ("size") options
+      assign cyo_colour_idx = -1
+      assign cyo_colour_opt = nil
+      assign cyo_rest_names = ''
+      for cyo_opt in rec.options_with_values
+        assign cyo_needle = cyo_opt.name | strip | downcase | prepend: '|' | append: '|'
+        if cyo_colour_idx == -1 and cyo_colour_names contains cyo_needle
+          assign cyo_colour_idx = cyo_opt.position | minus: 1
+          assign cyo_colour_opt = cyo_opt
+        else
+          if cyo_rest_names != ''
+            assign cyo_rest_names = cyo_rest_names | append: ' / '
+          endif
+          assign cyo_rest_names = cyo_rest_names | append: cyo_opt.name
+        endif
+      endfor
+      if rec.has_only_default_variant or cyo_rest_names == ''
+        assign cyo_rest_names = rec.title
+      endif
+
+      # One pass over the variants: number of purchasable variants, colour + image of the priority variant, and
+      # the colour of the first variant (sold-out ones included) whose media is the product's featured media.
+      # Media ids are compared (featured_media.preview_image has no id); variant images are the fallback key.
+      assign cyo_pv_id = rec.metafields.custom.priority_variant.value.id
+      assign cyo_priority_colour = nil
+      assign cyo_pv_img = nil
+      assign cyo_featured_colour = nil
+      assign cyo_feat_media_id = rec.featured_media.id
+      assign cyo_feat_image_id = rec.featured_image.id
+      assign cyo_avail_count = 0
+      for cyo_v in rec.variants
+        if cyo_colour_idx >= 0
+          assign cyo_v_colour = cyo_v.options[cyo_colour_idx]
+          if cyo_pv_id != blank and cyo_v.id == cyo_pv_id
+            assign cyo_priority_colour = cyo_v_colour
+            assign cyo_pv_img = cyo_v.featured_image | default: cyo_v.featured_media.preview_image
+          endif
+          if cyo_featured_colour == blank
+            assign cyo_v_media_id = cyo_v.featured_media.id
+            if cyo_v_media_id != blank and cyo_feat_media_id != blank
+              if cyo_v_media_id == cyo_feat_media_id
+                assign cyo_featured_colour = cyo_v_colour
+              endif
+            elsif cyo_feat_image_id != blank and cyo_v.featured_image.id == cyo_feat_image_id
+              assign cyo_featured_colour = cyo_v_colour
+            endif
+          endif
+        endif
+        unless cyo_v.available
+          continue
+        endunless
+        assign cyo_avail_count = cyo_avail_count | plus: 1
+      endfor
+
+      # No purchasable variant: no card (whatever product.available says)
+      if cyo_avail_count == 0
+        continue
+      endif
+      assign cyo_count = cyo_count | plus: 1
+
+      # Purchasable colours as an array of strings: `contains` on it is an exact match (any '|' or other
+      # character in a colour name is safe). The featured colour only counts when it is purchasable.
+      assign cyo_avail_list = nil
+      assign cyo_featured_soldout = false
+      if cyo_colour_idx >= 0
+        assign cyo_opt_key = 'option' | append: cyo_colour_opt.position
+        assign cyo_avail_list = rec.variants | where: 'available' | map: cyo_opt_key | uniq
+        unless cyo_avail_list contains cyo_featured_colour
+          if cyo_featured_colour != blank
+            assign cyo_featured_soldout = true
+          endif
+          assign cyo_featured_colour = nil
+        endunless
+      endif
+
+      # Card mode
+      assign cyo_fixed_colour = nil
+      if rec.has_only_default_variant
+        assign cyo_mode = 'single'
+      elsif cyo_colour_idx == -1
+        assign cyo_mode = 'one-step'
+      else
+        assign cyo_mode = 'two-step'
+        if cyo_priority_colour != blank and cyo_avail_list contains cyo_priority_colour
+          assign cyo_mode = 'one-step'
+          assign cyo_fixed_colour = cyo_priority_colour
+        endif
+      endif
+
+      # Initial colour: (1) the purchasable priority colour (one-step), (2) the purchasable colour shown in the
+      # featured image, (3) the first purchasable colour in option order. Kept as a string.
+      assign cyo_selected_colour = cyo_fixed_colour
+      if cyo_mode == 'two-step'
+        assign cyo_selected_colour = cyo_featured_colour
+        if cyo_selected_colour == blank
+          for cyo_value in cyo_colour_opt.values
+            assign cyo_needle = cyo_value | append: ''
+            if cyo_avail_list contains cyo_needle
+              assign cyo_selected_colour = cyo_needle
+              break
+            endif
+          endfor
+        endif
+      endif
+
+      if cyo_colour_idx == -1
+        assign cyo_group_values = 'cyo-all' | split: ','
+      else
+        assign cyo_group_values = cyo_colour_opt.values
+      endif
+
+      assign cyo_swatches_html = ''
+      assign cyo_groups_html = ''
+      assign cyo_price = ''
+      assign cyo_compare = ''
+      assign cyo_selected_img = nil
+    -%}
+
+    {%- for cyo_value in cyo_group_values -%}
+      {%- liquid
+        # Colour value as a string (option values are drops): all colour comparisons below are string ones
+        assign cyo_value_s = cyo_value | append: ''
+        if cyo_colour_idx >= 0
+          if cyo_mode == 'two-step'
+            unless cyo_avail_list contains cyo_value_s
+              continue
+            endunless
+          elsif cyo_value_s != cyo_fixed_colour
+            continue
+          endif
+        endif
+
+        assign cyo_g_count = 0
+        assign cyo_g_maxlen = 0
+        assign cyo_g_first = nil
+        assign cyo_g_img = nil
+      -%}
+
+      {%- capture cyo_g_buttons -%}
+        {%- for cyo_v in rec.variants -%}
+          {%- liquid
+            if cyo_colour_idx >= 0 and cyo_v.options[cyo_colour_idx] != cyo_value_s
+              continue
+            endif
+
+            # Colour image: first variant image of this colour (sold-out sizes included)
+            unless cyo_g_img
+              assign cyo_g_img = cyo_v.featured_image | default: cyo_v.featured_media.preview_image
+            endunless
+
+            # Out-of-stock sizes get no button: count, columns, label length and price use purchasable ones only
+            unless cyo_v.available
+              continue
+            endunless
+            assign cyo_g_count = cyo_g_count | plus: 1
+            unless cyo_g_first
+              assign cyo_g_first = cyo_v
+            endunless
+
+            # Label = non-colour option values ("M", "M / Long"); "+ Add" when there are none
+            assign cyo_label = ''
+            unless rec.has_only_default_variant
+              for cyo_option_value in cyo_v.options
+                if forloop.index0 != cyo_colour_idx
+                  if cyo_label != ''
+                    assign cyo_label = cyo_label | append: ' / '
+                  endif
+                  assign cyo_label = cyo_label | append: cyo_option_value
+                endif
+              endfor
+            endunless
+
+            assign cyo_aria = nil
+            assign cyo_add_only = false
+            if cyo_label == ''
+              assign cyo_label = cyo_add_text
+              assign cyo_add_only = true
+              if cyo_colour_idx >= 0
+                assign cyo_aria = 'products.complementary.add_to_cart_label' | t: title: rec.title, size: cyo_value_s
+              endif
+            else
+              # Sizes of a colour are announced with it ("Black / M")
+              assign cyo_aria_size = cyo_label
+              if cyo_colour_idx >= 0
+                assign cyo_aria_size = cyo_value_s | append: ' / ' | append: cyo_label
+              endif
+              assign cyo_aria = 'products.complementary.add_to_cart_label' | t: title: rec.title, size: cyo_aria_size
+            endif
+
+            if cyo_label.size > cyo_g_maxlen
+              assign cyo_g_maxlen = cyo_label.size
+            endif
+          -%}
+          <button type="button" class="cyo-size" data-variant-id="{{ cyo_v.id }}"{% if cyo_add_only %} data-add-only{% endif %}{% if cyo_aria != blank %} aria-label="{{ cyo_aria | escape_once }}"{% else %} aria-describedby="{{ cyo_title_id }}"{% endif %}><span class="cyo-size__label">{{ cyo_label | escape }}</span></button>
+        {%- endfor -%}
+      {%- endcapture -%}
+
+      {%- liquid
+        if cyo_g_count == 0
+          continue
+        endif
+
+        # Balanced grid columns, computed here so the layout never depends on JS: the longest label sets the
+        # column limit, rows are then balanced (7 sizes -> 4+3, 9 -> 5+4, 10 -> 5+5, 6 -> 6, 3 -> 3, 1 -> 1).
+        # Integer divided_by floors: ceil(a/b) = (a+b-1)/b
+        if cyo_g_maxlen <= 4
+          assign cyo_max_cols = 6
+        elsif cyo_g_maxlen <= 7
+          assign cyo_max_cols = 5
+        elsif cyo_g_maxlen <= 12
+          assign cyo_max_cols = 3
+        else
+          assign cyo_max_cols = 2
+        endif
+        if cyo_g_maxlen <= 3
+          assign cyo_max_cols_c = 6
+        elsif cyo_g_maxlen == 4
+          assign cyo_max_cols_c = 5
+        elsif cyo_g_maxlen <= 6
+          assign cyo_max_cols_c = 4
+        elsif cyo_g_maxlen == 7
+          assign cyo_max_cols_c = 3
+        else
+          assign cyo_max_cols_c = 2
+        endif
+        assign cyo_rows = cyo_g_count | plus: cyo_max_cols | minus: 1 | divided_by: cyo_max_cols
+        assign cyo_cols = cyo_g_count | plus: cyo_rows | minus: 1 | divided_by: cyo_rows
+        assign cyo_rows_c = cyo_g_count | plus: cyo_max_cols_c | minus: 1 | divided_by: cyo_max_cols_c
+        assign cyo_cols_c = cyo_g_count | plus: cyo_rows_c | minus: 1 | divided_by: cyo_rows_c
+
+        # Price of this colour: its first purchasable variant (theme money convention)
+        assign cyo_g_variant = cyo_g_first
+        if settings.product_currency_code_enabled
+          assign cyo_g_price = cyo_g_variant.price | money_with_currency
+        else
+          assign cyo_g_price = cyo_g_variant.price | money
+        endif
+        assign cyo_g_compare = ''
+        if cyo_g_variant.compare_at_price > cyo_g_variant.price
+          assign cyo_g_compare = cyo_g_variant.compare_at_price | money
+        endif
+
+        assign cyo_g_selected = false
+        if cyo_colour_idx == -1 or cyo_value_s == cyo_selected_colour
+          assign cyo_g_selected = true
+          assign cyo_price = cyo_g_price
+          assign cyo_compare = cyo_g_compare
+          assign cyo_selected_img = cyo_g_img
+        endif
+      -%}
+
+      {%- capture cyo_group_html -%}
+        <div class="cyo-step cyo-step--sizes{% if cyo_mode != 'two-step' %} is-current{% endif %}" data-color-value="{% if cyo_colour_idx >= 0 %}{{ cyo_value | escape }}{% endif %}" data-price="{{ cyo_g_price | escape_once }}" data-compare-price="{{ cyo_g_compare | escape_once }}" role="group" aria-label="{{ cyo_rest_names | escape }}" style="--cyo-cols: {{ cyo_cols }}; --cyo-cols-compact: {{ cyo_cols_c }};">
+          {{- cyo_g_buttons -}}
+        </div>
+      {%- endcapture -%}
+      {%- assign cyo_groups_html = cyo_groups_html | append: cyo_group_html -%}
+
+      {%- if cyo_mode == 'two-step' -%}
+        {%- capture cyo_swatch_html -%}
+          {%- if cyo_g_img -%}
+            {%- liquid
+              assign cyo_sw_ar = cyo_g_img.aspect_ratio | default: 0.8 | at_least: 0.1
+              assign cyo_sw_height = 72 | divided_by: cyo_sw_ar | round
+            -%}
+            <button type="button" class="cyo-swatch{% if cyo_g_selected %} is-selected{% endif %}" aria-pressed="{{ cyo_g_selected }}" aria-label="{{ cyo_value | escape }}" title="{{ cyo_value | escape }}" data-color-value="{{ cyo_value | escape }}" data-image-src="{{ cyo_g_img | image_url: width: 300 | escape }}" data-image-srcset="{{ cyo_g_img | image_url: width: 100 | escape }} 100w, {{ cyo_g_img | image_url: width: 200 | escape }} 200w, {{ cyo_g_img | image_url: width: 300 | escape }} 300w"><img class="cyo-swatch__img" src="{{ cyo_g_img | image_url: width: 72 | escape }}" srcset="{{ cyo_g_img | image_url: width: 72 | escape }} 72w, {{ cyo_g_img | image_url: width: 144 | escape }} 144w" sizes="72px" width="72" height="{{ cyo_sw_height }}" alt="" loading="lazy"></button>
+          {%- else -%}
+            {%- liquid
+              # Colour chip, computed here (never via the theme's [data-swatch] vars: inside the product form the
+              # main product's variant picker overrides those). 1) native option-value swatch, 2) theme colour list
+              # parsed like assets/swatches.css.liquid (a later matching line wins, as in its CSS), 3) CSS default chip.
+              assign cyo_chip_color = ''
+              assign cyo_chip_image = ''
+              # Only real values are written: an empty --cyo-chip-color would void the CSS fallback colour.
+              # Images go into a quoted url("...") (a '"' in the URL is percent-encoded); gradients stay unquoted.
+              if cyo_value.swatch.color
+                assign cyo_chip_rgb = cyo_value.swatch.color.rgb
+                if cyo_chip_rgb != blank
+                  assign cyo_chip_color = 'rgb(' | append: cyo_chip_rgb | append: ')'
+                endif
+              endif
+              if cyo_value.swatch.image
+                assign cyo_chip_image = cyo_value.swatch.image | image_url: width: 72 | replace: '"', '%22' | prepend: 'url("' | append: '")'
+              endif
+              if cyo_chip_color == '' and cyo_chip_image == ''
+                assign cyo_chip_key = cyo_value | replace: '"', '' | downcase
+                for cyo_line in cyo_swatch_lines
+                  assign cyo_line_split = cyo_line | split: ':'
+                  assign cyo_line_key = cyo_line_split.first | replace: '"', '' | downcase
+                  if cyo_line_key != cyo_chip_key
+                    continue
+                  endif
+                  assign cyo_line_value = cyo_line_split.last | strip
+                  if cyo_line_value contains '#'
+                    assign cyo_hexes = cyo_line_value | split: '#'
+                    if cyo_hexes.size == 2
+                      assign cyo_chip_color = cyo_line_value
+                    else
+                      assign cyo_chip_image = 'linear-gradient(to right, #' | append: cyo_hexes[1] | append: ', '
+                      if cyo_hexes.size == 3
+                        assign cyo_chip_image = cyo_chip_image | append: '#' | append: cyo_hexes[1] | append: ' 50%, #' | append: cyo_hexes[2] | append: ' 50%, '
+                      elsif cyo_hexes.size >= 4
+                        assign cyo_chip_image = cyo_chip_image | append: '#' | append: cyo_hexes[1] | append: ' 33.3%, #' | append: cyo_hexes[2] | append: ' 33.3%, '
+                        assign cyo_chip_image = cyo_chip_image | append: '#' | append: cyo_hexes[2] | append: ' 66.6%, #' | append: cyo_hexes[3] | append: ' 66.6%, '
+                      endif
+                      assign cyo_chip_image = cyo_chip_image | append: '#' | append: cyo_hexes.last | append: ')'
+                    endif
+                  else
+                    assign cyo_chip_image = cyo_line_value | file_img_url: '128x128', crop: settings.swatch_crop_align | replace: '"', '%22' | prepend: 'url("' | append: '")'
+                  endif
+                endfor
+              endif
+              assign cyo_chip_style = ''
+              if cyo_chip_color != ''
+                assign cyo_chip_style = '--cyo-chip-color: ' | append: cyo_chip_color | append: ';'
+              endif
+              if cyo_chip_image != ''
+                assign cyo_chip_style = cyo_chip_style | append: ' --cyo-chip-image: ' | append: cyo_chip_image | append: ';' | strip
+              endif
+            -%}
+            <button type="button" class="cyo-swatch{% if cyo_g_selected %} is-selected{% endif %}" aria-pressed="{{ cyo_g_selected }}" aria-label="{{ cyo_value | escape }}" title="{{ cyo_value | escape }}" data-color-value="{{ cyo_value | escape }}"{% if cyo_chip_style != '' %} style="{{ cyo_chip_style | escape }}"{% endif %}></button>
+          {%- endif -%}
+        {%- endcapture -%}
+        {%- assign cyo_swatches_html = cyo_swatches_html | append: cyo_swatch_html -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- liquid
+      # Card image: the product's featured image (as the live widget; the initial colour matches it), except
+      # - a priority card (one-step with the priority colour): priority variant image > that colour's image;
+      # - a two-step card whose featured image shows a sold-out colour: the initial colour's image, so the
+      #   photo never shows a colour that is not offered. (A featured image not tied to any variant, e.g. a
+      #   lifestyle shot, is kept, as on the live widget.)
+      assign cyo_card_img = nil
+      if cyo_fixed_colour != blank
+        if cyo_pv_img
+          assign cyo_card_img = cyo_pv_img
+        else
+          assign cyo_card_img = cyo_selected_img
+        endif
+      elsif cyo_mode == 'two-step' and cyo_featured_soldout
+        assign cyo_card_img = cyo_selected_img
+      endif
+      unless cyo_card_img
+        assign cyo_card_img = rec.featured_media.preview_image | default: rec.featured_image
+      endunless
+    -%}
+
+    {%- capture cyo_media_html -%}
+      {%- if cyo_card_img -%}
+        {%- liquid
+          assign cyo_ar = cyo_card_img.aspect_ratio | default: 0.8 | at_least: 0.1
+          assign cyo_img_height = 300 | divided_by: cyo_ar | round
+          assign cyo_img_alt = cyo_card_img.alt | default: rec.title
+        -%}
+        <img class="cyo-card__img" src="{{ cyo_card_img | image_url: width: 200 | escape }}" srcset="{{ cyo_card_img | image_url: width: 100 | escape }} 100w, {{ cyo_card_img | image_url: width: 200 | escape }} 200w, {{ cyo_card_img | image_url: width: 300 | escape }} 300w" sizes="100px" width="300" height="{{ cyo_img_height }}" alt="{{ cyo_img_alt | escape }}" loading="lazy">
+      {%- else -%}
+        {{- 'product-1' | placeholder_svg_tag: 'cyo-card__img' -}}
+      {%- endif -%}
+    {%- endcapture -%}
+
+    <li class="cyo__item">
+      <div class="cyo-card" data-mode="{{ cyo_mode }}" data-step="{% if cyo_mode == 'two-step' %}1{% else %}2{% endif %}" data-product-id="{{ rec.id }}" data-product-title="{{ rec.title | escape }}">
+        <div class="cyo-card__media">
+          {%- if cyo_image_click == 'link' -%}
+            <a class="cyo-card__media-link" href="{{ rec.url }}" tabindex="-1">{{ cyo_media_html }}</a>
+          {%- else -%}
+            <button type="button" class="cyo-card__media-btn" aria-controls="{{ cyo_opts_id }}" aria-expanded="false" aria-label="{{ 'products.complementary.choose_size' | t: title: rec.title | escape_once }}">{{ cyo_media_html }}</button>
+          {%- endif -%}
+        </div>
+        <div class="cyo-card__body">
+          <h3 class="cyo-card__heading"><a class="cyo-card__title"{% if cyo_mode == 'single' %} id="{{ cyo_title_id }}"{% endif %} href="{{ rec.url }}">{{ rec.title | escape }}</a></h3>
+          {%- if cyo_fixed_colour != blank -%}
+            <div class="cyo-card__fixed-option"><span class="cyo-card__fixed-label">{{ cyo_colour_opt.name | escape }} :</span><span class="cyo-card__fixed-value">{{ cyo_fixed_colour | escape }}</span></div>
+          {%- endif -%}
+          <div class="cyo-card__price">
+            {%- if cyo_compare != '' -%}
+              <span class="cyo-card__price-current is-sale">{{ cyo_price }}</span><s class="cyo-card__price-compare">{{ cyo_compare }}</s>
+            {%- else -%}
+              <span class="cyo-card__price-current">{{ cyo_price }}</span>
+            {%- endif -%}
+          </div>
+          <div class="cyo-card__options" id="{{ cyo_opts_id }}">
+            <div class="cyo-card__steps">
+              {%- if cyo_mode == 'two-step' -%}
+                <div class="cyo-step cyo-step--swatches is-current" role="group" aria-label="{{ cyo_colour_opt.name | escape }}">
+                  {{- cyo_swatches_html -}}
+                </div>
+              {%- endif -%}
+              {{- cyo_groups_html -}}
+            </div>
+          </div>
+          <p class="cyo-card__error" role="alert" hidden></p>
+        </div>
+      </div>
+    </li>
+  {%- endfor -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if cyo_count > 0 or request.design_mode -%}
+  <link rel="stylesheet" href="{{ 'complementary-outfit.css' | asset_url }}">
+  <script src="{{ 'complementary-outfit.js' | asset_url }}" defer></script>
+  <complementary-outfit
+    class="cyo{% if block.settings.zoom_on_hover %} cyo--zoom{% endif %}"
+    data-image-click="{{ cyo_image_click }}"
+    data-added-text="{{ 'products.complementary.added' | t: title: '[title]', size: '[size]' | escape_once }}"
+    data-error-text="{{ 'products.complementary.error' | t | escape_once }}"
+    {{ block.shopify_attributes }}
+    style="--cyo-swatch-size: {{ cyo_swatch_size }}px; --cyo-swatch-size-mobile: {{ cyo_swatch_size_mobile }}px;"
+  >
+    <div class="cyo__header">
+      <svg class="cyo__icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true" focusable="false"><path d="M18.3373 20.1673H3.67057C3.16432 20.1673 2.75391 19.7569 2.75391 19.2507V2.75065C2.75391 2.24439 3.16432 1.83398 3.67057 1.83398H18.3373C18.8435 1.83398 19.2539 2.24439 19.2539 2.75065V19.2507C19.2539 19.7569 18.8435 20.1673 18.3373 20.1673ZM17.4206 18.334V3.66732H4.58724V18.334H17.4206ZM8.25391 5.50065V7.33398C8.25391 8.85276 9.4851 10.084 11.0039 10.084C12.5227 10.084 13.7539 8.85276 13.7539 7.33398V5.50065H15.5873V7.33398C15.5873 9.86527 13.5352 11.9173 11.0039 11.9173C8.47261 11.9173 6.42057 9.86527 6.42057 7.33398V5.50065H8.25391Z" fill="currentColor"/></svg>
+      <h2 class="cyo__title">
+        {%- if block.settings.heading != blank -%}
+          {{- block.settings.heading | escape -}}
+        {%- else -%}
+          {{- 'products.complementary.title' | t -}}
+        {%- endif -%}
+      </h2>
+    </div>
+    {%- if cyo_count > 0 -%}
+      <ul class="cyo__list" role="list">
+        {{- cyo_items -}}
+      </ul>
+      <p class="cyo__status visually-hidden" aria-live="polite"></p>
+    {%- else -%}
+      <div class="cyo__placeholder">{{ 'products.complementary.editor_placeholder' | t }}</div>
+    {%- endif -%}
+  </complementary-outfit>
+{%- endif -%}

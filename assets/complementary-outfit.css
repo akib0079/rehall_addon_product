@@ -1,0 +1,508 @@
+/* =====================================================================
+   Complete your outfit (native) - block `complementary_outfit`
+   Markup: snippets/complementary-outfit.liquid  |  JS: complementary-outfit.js
+   Everything is scoped under `.cyo` so the doubled class (0,2,0) beats the
+   theme's element rules (button, a, h2/h3, ul/li, p, s, img, svg) without
+   !important. Rules that must beat `.js body:not(.tab-used) *:focus`
+   (0,3,1) use `.cyo .cyo-card|.cyo-step ...` (0,4,0).
+   ===================================================================== */
+
+/* ---------- Root ---------- */
+.cyo {
+  display: block;
+  margin-top: 40px;
+  text-align: left;
+  font-family: Assistant, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 24px;
+  color: #000;
+}
+
+/* ---------- Header ---------- */
+.cyo .cyo__header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 20px;
+  color: #202020;
+}
+.cyo .cyo__icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+}
+.cyo .cyo__title {
+  margin: 0;
+  padding: 0;
+  font-family: Roundo, Assistant, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 18px;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: #202020;
+}
+
+/* ---------- List + card ---------- */
+.cyo .cyo__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cyo .cyo__item {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cyo .cyo-card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #F3F3F3;
+  background: #fff;
+}
+
+/* ---------- Media column ---------- */
+.cyo .cyo-card__media {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  overflow: hidden;
+  background: #F3F3F3;
+}
+/* The trigger fills the whole column so the grey area is clickable too. */
+.cyo .cyo-card__media-btn,
+.cyo .cyo-card__media-link {
+  position: relative;
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cyo .cyo-card__img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  mix-blend-mode: darken;
+}
+
+/* ---------- Body: title, price, fixed option ---------- */
+.cyo .cyo-card__body {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  padding: 20px 30px 20px 5px;
+  container-type: inline-size;
+  container-name: cyo-body;
+}
+.cyo .cyo-card__heading {
+  margin: 0;
+  padding: 0;
+  font-family: Roundo, Assistant, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 18px;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: #232323;
+  overflow-wrap: break-word;
+}
+.cyo .cyo-card__title {
+  color: #232323;
+  text-decoration: none;
+}
+.cyo .cyo-card__fixed-option {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.cyo .cyo-card__fixed-value {
+  font-weight: 600;
+}
+/* Flex + wrap: a long sale price drops the compare price to a new line
+   instead of overflowing the card (the two spans are each nowrap). */
+.cyo .cyo-card__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  margin-top: 5px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #000;
+}
+.cyo .cyo-card__price-current,
+.cyo .cyo-card__price-compare {
+  white-space: nowrap;
+}
+.cyo .cyo-card__price-current.is-sale {
+  color: #f50100;
+}
+.cyo .cyo-card__price-compare {
+  margin: 0;
+  font-weight: 400;
+  color: #9a9a9a;
+  text-decoration: line-through;
+}
+
+/* ---------- Options panel (always occupies its space) ---------- */
+.cyo .cyo-card__options {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease-out, visibility .3s ease-out;
+}
+/* `is-dismissed` (set by JS on an explicit close while focus stays inside the
+   card) lets Esc / image toggle win over :focus-within. */
+.cyo .cyo-card.is-open .cyo-card__options,
+.cyo .cyo-card:focus-within:not(.is-dismissed) .cyo-card__options {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ---------- Steps ----------
+   Visual gap above = 8px (4px margin + 4px padding). The 4px padding stops
+   overflow:hidden from clipping swatch outlines / focus rings; the negative
+   side + bottom margins cancel it so content stays aligned with the title.
+   --cyo-sw (active swatch width) lives here so the swatches and the
+   two-step min-height below share it. */
+.cyo .cyo-card__steps {
+  --cyo-sw: var(--cyo-swatch-size, 40px);
+  box-sizing: border-box;
+  margin: 4px -4px -4px;
+  padding: 4px;
+  overflow: hidden;
+  transition: height .3s ease-out;
+}
+/* Two-step cards keep the swatch step's height (one swatch row + 2 x 4px
+   padding, border-box) so a one-row size grid doesn't shrink the card. */
+.cyo .cyo-card[data-mode="two-step"] .cyo-card__steps {
+  min-height: calc(var(--cyo-sw) * 1.25 + 8px);
+}
+.cyo .cyo-step:not(.is-current) {
+  display: none;
+}
+
+/* ---------- Step 1: colour swatches ---------- */
+.cyo .cyo-step--swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+.cyo .cyo-swatch {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: var(--cyo-sw);
+  height: calc(var(--cyo-sw) * 1.25);
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, .1);
+  border-radius: 0;
+  /* Colour-chip fallback (no <img>): the snippet writes --cyo-chip-color /
+     --cyo-chip-image inline on the button. The theme's swatch vars are NOT
+     used: variant-picker.liquid sets them per main-product colour on every
+     swatch inside .product-form, which would show the wrong colour/image. */
+  background-color: var(--cyo-chip-color, #e5e5e5);
+  background-image: var(--cyo-chip-image, none);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-clip: padding-box;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cyo .cyo-swatch__img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+  background-color: #F3F3F3;
+}
+.cyo .cyo-step .cyo-swatch.is-selected {
+  outline: 1px solid #000;
+  outline-offset: 2px;
+}
+
+/* ---------- Step 2: size grid ----------
+   Columns come from Liquid (--cyo-cols / --cyo-cols-compact). Borders
+   collapse: every cell overlaps its right/bottom neighbour by 1px and the
+   grid's 1px right/bottom padding absorbs the overhang of the last col/row. */
+.cyo .cyo-step--sizes {
+  display: grid;
+  grid-template-columns: repeat(var(--cyo-cols, 1), minmax(0, 1fr));
+  padding: 0 1px 1px 0;
+}
+.cyo .cyo-size {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 36px;
+  margin: 0 -1px -1px 0;
+  padding: 4px 6px;
+  border: 1px solid #F3F3F3;
+  border-radius: 0;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color .15s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.cyo .cyo-size__label {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cyo .cyo-size:not(.is-unavailable):active {
+  background: #F4F4F4;
+}
+.cyo .cyo-size.is-unavailable {
+  color: #C0C0C0;
+  cursor: default;
+}
+.cyo .cyo-size.is-unavailable::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 1px;
+  background: currentColor;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.cyo .cyo-card.is-busy .cyo-step--sizes {
+  cursor: progress;
+}
+.cyo .cyo-card.is-busy .cyo-size,
+.cyo .cyo-size.is-loading,
+.cyo .cyo-size.is-success {
+  pointer-events: none;
+}
+.cyo .cyo-size.is-loading,
+.cyo .cyo-size.is-success {
+  background: #F4F4F4;
+}
+.cyo .cyo-size.is-loading .cyo-size__label {
+  animation: cyo-pulse .9s ease-in-out infinite;
+}
+@keyframes cyo-pulse {
+  50% {
+    opacity: .3;
+  }
+}
+/* Same look as the theme's .btn--cart-success */
+.cyo .cyo-size.is-success {
+  color: transparent;
+}
+.cyo .cyo-size.is-success::before {
+  --cyo-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6.66647 10.1136L12.7947 3.98535L13.7375 4.92816L6.66647 11.9992L2.42383 7.7566L3.36664 6.8138L6.66647 10.1136Z'/%3E%3C/svg%3E");
+  content: "";
+  position: absolute;
+  top: calc(50% - .8em);
+  left: calc(50% - .8em);
+  width: 1.6em;
+  height: 1.6em;
+  background-color: #000;
+  pointer-events: none;
+  -webkit-mask: var(--cyo-check) center / contain no-repeat;
+  mask: var(--cyo-check) center / contain no-repeat;
+}
+
+/* ---------- Hover (real pointers only) ---------- */
+@media (hover: hover) {
+  .cyo .cyo-card:hover .cyo-card__options {
+    opacity: 1;
+    visibility: visible;
+  }
+  .cyo .cyo-swatch:not(.is-selected):hover {
+    outline: 1px solid rgba(0, 0, 0, .35);
+    outline-offset: 2px;
+  }
+  .cyo .cyo-size:not(.is-unavailable):hover {
+    background: #F4F4F4;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .cyo.cyo--zoom .cyo-card__img {
+    transition: transform .4s ease;
+  }
+  .cyo.cyo--zoom .cyo-card__media:hover .cyo-card__img {
+    transform: scale(1.06);
+  }
+}
+
+/* ---------- Focus rings ---------- */
+.cyo .cyo-card .cyo-card__title:focus-visible,
+.cyo .cyo-card .cyo-swatch:focus-visible,
+.cyo .cyo-card .cyo-size:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+.cyo .cyo-card .cyo-size:focus-visible {
+  z-index: 1;
+}
+/* Media column clips overflow, so its ring is drawn inset on a pseudo
+   element that paints above the (possibly zoomed) image. */
+.cyo .cyo-card .cyo-card__media-btn:focus-visible {
+  outline: none;
+}
+.cyo .cyo-card__media-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+.cyo .cyo-card .cyo-card__media-btn:focus-visible::after {
+  outline: 2px solid #000;
+  outline-offset: -2px;
+}
+
+/* ---------- Error, status, editor placeholder ---------- */
+.cyo .cyo-card__error {
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #c20000;
+}
+.cyo .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cyo__placeholder {
+  margin: 40px 0 0;
+  padding: 16px;
+  border: 1px dashed #ccc;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  color: #555;
+}
+.cyo .cyo__placeholder {
+  margin: 0;
+}
+
+/* ---------- Narrow card body -> compact size columns ---------- */
+@container cyo-body (max-width: 299px) {
+  .cyo .cyo-step--sizes {
+    grid-template-columns: repeat(var(--cyo-cols-compact, var(--cyo-cols, 1)), minmax(0, 1fr));
+  }
+  .cyo .cyo-size {
+    padding-right: 1px;
+    padding-left: 1px;
+    letter-spacing: -.02em;
+  }
+}
+@supports not (container-type: inline-size) {
+  @media (max-width: 400px) {
+    .cyo .cyo-step--sizes {
+      grid-template-columns: repeat(var(--cyo-cols-compact, var(--cyo-cols, 1)), minmax(0, 1fr));
+    }
+    .cyo .cyo-size {
+      padding-right: 1px;
+      padding-left: 1px;
+      letter-spacing: -.02em;
+    }
+  }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767.98px) {
+  .cyo .cyo-card {
+    gap: 12px;
+  }
+  .cyo .cyo-card__body {
+    padding: 16px 16px 16px 4px;
+  }
+  .cyo .cyo-card__heading {
+    font-size: 13px;
+    line-height: 17px;
+  }
+  .cyo .cyo-card__steps {
+    --cyo-sw: var(--cyo-swatch-size-mobile, 36px);
+  }
+}
+
+/* ---------- Touch: comfortable tap targets ---------- */
+@media (pointer: coarse) {
+  .cyo .cyo-size {
+    min-height: 40px;
+  }
+  /* Invisible hit area of at least 32x32 around small swatches */
+  .cyo .cyo-swatch::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    min-width: 32px;
+    min-height: 32px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .cyo .cyo-card__options,
+  .cyo .cyo-card__steps,
+  .cyo .cyo-size {
+    transition: none;
+  }
+  .cyo .cyo-size.is-loading .cyo-size__label {
+    animation: none;
+    opacity: .5;
+  }
+}
