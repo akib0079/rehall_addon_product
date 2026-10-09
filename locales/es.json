@@ -218,7 +218,7 @@
       "add_to_cart_label": "Agregar {{ title }} – {{ size }} al carrito",
       "added": "{{ title }} – {{ size }} se agregó al carrito",
       "error": "No se pudo agregar al carrito. Inténtalo de nuevo.",
-      "editor_placeholder": "Agrega productos al metacampo 'Complementary products' de este producto para mostrarlos aquí."
+      "editor_placeholder": "Agrega variantes al metacampo 'Complete your outfit' de este producto para mostrarlas aquí."
     }
   },
   "homepage": {

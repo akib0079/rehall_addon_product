@@ -268,7 +268,7 @@
       "add_to_cart_label": "{{ title }} – {{ size }} toevoegen aan winkelwagen",
       "added": "{{ title }} – {{ size }} toegevoegd aan winkelwagen",
       "error": "Toevoegen aan winkelwagen is mislukt. Probeer het opnieuw.",
-      "editor_placeholder": "Voeg producten toe aan het metaveld 'Complementary products' van dit product om ze hier te tonen."
+      "editor_placeholder": "Voeg varianten toe aan het metaveld 'Complete your outfit' van dit product om ze hier te tonen."
     }
   },
   "homepage": {

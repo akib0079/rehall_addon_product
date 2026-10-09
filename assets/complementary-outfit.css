@@ -1,15 +1,19 @@
 /* =====================================================================
    Complete your outfit (native) - block `complementary_outfit`
    Markup: snippets/complementary-outfit.liquid  |  JS: complementary-outfit.js
+   One card = one product in one colour, its in-stock sizes in one grid.
    Everything is scoped under `.cyo` so the doubled class (0,2,0) beats the
    theme's element rules (button, a, h2/h3, ul/li, p, s, img, svg) without
-   !important. Rules that must beat `.js body:not(.tab-used) *:focus`
-   (0,3,1) use `.cyo .cyo-card|.cyo-step ...` (0,4,0).
+   !important. Focus rings that must beat `.js body:not(.tab-used) *:focus`
+   (0,3,1) use `.cyo .cyo-card ...` (0,4,0).
    ===================================================================== */
 
-/* ---------- Root ---------- */
+/* ---------- Root ----------
+   Query container `cyo-root`: the compact card tuning (end of file) follows
+   the block's own width, not the viewport (tablet product columns are narrow). */
 .cyo {
   display: block;
+  container: cyo-root / inline-size;
   margin-top: 40px;
   text-align: left;
   font-family: Assistant, sans-serif;
@@ -93,6 +97,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -101,23 +106,26 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+/* Fixed 4:5 box (100 x 125): landscape or square variant photos never
+   change the card height. */
 .cyo .cyo-card__img {
   display: block;
   width: 100%;
   max-width: 100%;
   height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
   mix-blend-mode: darken;
 }
 
-/* ---------- Body: title, price, fixed option ---------- */
+/* ---------- Body: title, price ---------- */
 .cyo .cyo-card__body {
   display: flex;
   flex-direction: column;
   width: 100%;
   min-width: 0;
   padding: 20px 30px 20px 5px;
-  container-type: inline-size;
-  container-name: cyo-body;
+  container: cyo-body / inline-size;
 }
 .cyo .cyo-card__heading {
   margin: 0;
@@ -135,17 +143,6 @@
 .cyo .cyo-card__title {
   color: #232323;
   text-decoration: none;
-}
-.cyo .cyo-card__fixed-option {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 5px;
-  font-size: 12px;
-  line-height: 1.4;
-}
-.cyo .cyo-card__fixed-value {
-  font-weight: 600;
 }
 /* Flex + wrap: a long sale price drops the compare price to a new line
    instead of overflowing the card (the two spans are each nowrap). */
@@ -176,92 +173,27 @@
 
 /* ---------- Options panel (always occupies its space) ---------- */
 .cyo .cyo-card__options {
+  margin-top: 6px;
   opacity: 0;
   visibility: hidden;
   transition: opacity .3s ease-out, visibility .3s ease-out;
 }
 /* `is-dismissed` (set by JS on an explicit close while focus stays inside the
-   card) lets Esc / image toggle win over :focus-within. */
+   card) lets Esc / the image button win over :focus-within. */
 .cyo .cyo-card.is-open .cyo-card__options,
 .cyo .cyo-card:focus-within:not(.is-dismissed) .cyo-card__options {
   opacity: 1;
   visibility: visible;
 }
 
-/* ---------- Steps ----------
-   Visual gap above = 8px (4px margin + 4px padding). The 4px padding stops
-   overflow:hidden from clipping swatch outlines / focus rings; the negative
-   side + bottom margins cancel it so content stays aligned with the title.
-   --cyo-sw (active swatch width) lives here so the swatches and the
-   two-step min-height below share it. */
-.cyo .cyo-card__steps {
-  --cyo-sw: var(--cyo-swatch-size, 40px);
-  box-sizing: border-box;
-  margin: 4px -4px -4px;
-  padding: 4px;
-  overflow: hidden;
-  transition: height .3s ease-out;
-}
-/* Two-step cards keep the swatch step's height (one swatch row + 2 x 4px
-   padding, border-box) so a one-row size grid doesn't shrink the card. */
-.cyo .cyo-card[data-mode="two-step"] .cyo-card__steps {
-  min-height: calc(var(--cyo-sw) * 1.25 + 8px);
-}
-.cyo .cyo-step:not(.is-current) {
-  display: none;
-}
-
-/* ---------- Step 1: colour swatches ---------- */
-.cyo .cyo-step--swatches {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 8px;
-}
-.cyo .cyo-swatch {
-  position: relative;
-  display: block;
-  flex: 0 0 auto;
-  box-sizing: border-box;
-  width: var(--cyo-sw);
-  height: calc(var(--cyo-sw) * 1.25);
-  margin: 0;
-  padding: 0;
-  border: 1px solid rgba(0, 0, 0, .1);
-  border-radius: 0;
-  /* Colour-chip fallback (no <img>): the snippet writes --cyo-chip-color /
-     --cyo-chip-image inline on the button. The theme's swatch vars are NOT
-     used: variant-picker.liquid sets them per main-product colour on every
-     swatch inside .product-form, which would show the wrong colour/image. */
-  background-color: var(--cyo-chip-color, #e5e5e5);
-  background-image: var(--cyo-chip-image, none);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-clip: padding-box;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.cyo .cyo-swatch__img {
-  display: block;
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  object-fit: cover;
-  background-color: #F3F3F3;
-}
-.cyo .cyo-step .cyo-swatch.is-selected {
-  outline: 1px solid #000;
-  outline-offset: 2px;
-}
-
-/* ---------- Step 2: size grid ----------
-   Columns come from Liquid (--cyo-cols / --cyo-cols-compact). Borders
+/* ---------- Size grid ----------
+   Columns come from Liquid (--cyo-cols / -compact / -narrow). Borders
    collapse: every cell overlaps its right/bottom neighbour by 1px and the
    grid's 1px right/bottom padding absorbs the overhang of the last col/row. */
-.cyo .cyo-step--sizes {
+.cyo .cyo-sizes {
   display: grid;
   grid-template-columns: repeat(var(--cyo-cols, 1), minmax(0, 1fr));
+  margin: 0;
   padding: 0 1px 1px 0;
 }
 .cyo .cyo-size {
@@ -270,6 +202,7 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
+  height: auto;
   min-height: 36px;
   margin: 0 -1px -1px 0;
   padding: 4px 6px;
@@ -288,30 +221,22 @@
   transition: background-color .15s ease-out;
   -webkit-tap-highlight-color: transparent;
 }
+/* Labels never break: the column counts leave room for the longest label;
+   the ellipsis is only a last-resort guard against overflowing the cell. */
 .cyo .cyo-size__label {
   display: block;
   min-width: 0;
-  overflow-wrap: anywhere;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-.cyo .cyo-size:not(.is-unavailable):active {
+.cyo .cyo-size:active {
   background: #F4F4F4;
 }
-.cyo .cyo-size.is-unavailable {
-  color: #C0C0C0;
-  cursor: default;
-}
-.cyo .cyo-size.is-unavailable::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 50%;
-  height: 1px;
-  background: currentColor;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-.cyo .cyo-card.is-busy .cyo-step--sizes {
+
+/* ---------- Add to cart: loading, success ---------- */
+.cyo .cyo-card.is-busy .cyo-sizes {
   cursor: progress;
 }
 .cyo .cyo-card.is-busy .cyo-size,
@@ -324,11 +249,26 @@
   background: #F4F4F4;
 }
 .cyo .cyo-size.is-loading .cyo-size__label {
-  animation: cyo-pulse .9s ease-in-out infinite;
+  visibility: hidden;
 }
-@keyframes cyo-pulse {
-  50% {
-    opacity: .3;
+.cyo .cyo-size.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: cyo-spin .6s linear infinite;
+}
+@keyframes cyo-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 /* Same look as the theme's .btn--cart-success */
@@ -349,21 +289,17 @@
   mask: var(--cyo-check) center / contain no-repeat;
 }
 
-/* ---------- Hover (real pointers only) ---------- */
-@media (hover: hover) {
+/* ---------- Desktop mouse: reveal on hover, hover states, zoom ---------- */
+@media (hover: hover) and (pointer: fine) {
   .cyo .cyo-card:hover .cyo-card__options {
     opacity: 1;
     visibility: visible;
   }
-  .cyo .cyo-swatch:not(.is-selected):hover {
-    outline: 1px solid rgba(0, 0, 0, .35);
-    outline-offset: 2px;
-  }
-  .cyo .cyo-size:not(.is-unavailable):hover {
+  .cyo .cyo-size:hover {
     background: #F4F4F4;
   }
 }
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .cyo.cyo--zoom .cyo-card__img {
     transition: transform .4s ease;
   }
@@ -372,9 +308,21 @@
   }
 }
 
+/* ---------- Touch (phones, tablets): sizes always visible ---------- */
+@media (hover: none), (pointer: coarse) {
+  .cyo .cyo-card__options {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+@media (pointer: coarse) {
+  .cyo .cyo-size {
+    min-height: 40px;
+  }
+}
+
 /* ---------- Focus rings ---------- */
 .cyo .cyo-card .cyo-card__title:focus-visible,
-.cyo .cyo-card .cyo-swatch:focus-visible,
 .cyo .cyo-card .cyo-size:focus-visible {
   outline: 2px solid #000;
   outline-offset: 2px;
@@ -409,6 +357,9 @@
   line-height: 1.4;
   color: #c20000;
 }
+.cyo .cyo-card__error[hidden] {
+  display: none;
+}
 .cyo .visually-hidden {
   position: absolute;
   width: 1px;
@@ -434,9 +385,42 @@
   margin: 0;
 }
 
-/* ---------- Narrow card body -> compact size columns ---------- */
-@container cyo-body (max-width: 299px) {
-  .cyo .cyo-step--sizes {
+/* ---------- Compact card: phones and narrow product columns ----------
+   Viewport rule (all browsers) + the same values for any block narrower
+   than 420px (container cyo-root): the tablet product column (iPad portrait
+   253-293px, iPad landscape 343px) gets it too; the 490px desktop column
+   does not. */
+@media (max-width: 767.98px) {
+  .cyo .cyo-card {
+    gap: 12px;
+  }
+  .cyo .cyo-card__body {
+    padding: 16px 12px 16px 4px;
+  }
+  .cyo .cyo-card__heading {
+    font-size: 13px;
+    line-height: 17px;
+  }
+}
+@container cyo-root (max-width: 419.98px) {
+  .cyo .cyo-card {
+    gap: 12px;
+  }
+  .cyo .cyo-card__body {
+    padding: 16px 12px 16px 4px;
+  }
+  .cyo .cyo-card__heading {
+    font-size: 13px;
+    line-height: 17px;
+  }
+}
+
+/* ---------- Narrow card body -> compact / narrow size columns ----------
+   Card body content box < 300px -> --cyo-cols-compact, < 180px ->
+   --cyo-cols-narrow (iPad portrait 119-159px, 320px phones ~150px). The
+   Liquid column counts leave room for every label at these widths. */
+@container cyo-body (max-width: 299.98px) {
+  .cyo .cyo-sizes {
     grid-template-columns: repeat(var(--cyo-cols-compact, var(--cyo-cols, 1)), minmax(0, 1fr));
   }
   .cyo .cyo-size {
@@ -445,9 +429,18 @@
     letter-spacing: -.02em;
   }
 }
+@container cyo-body (max-width: 179.98px) {
+  .cyo .cyo-sizes {
+    grid-template-columns: repeat(var(--cyo-cols-narrow, var(--cyo-cols-compact, var(--cyo-cols, 1))), minmax(0, 1fr));
+  }
+}
+/* Browsers without container queries (e.g. iOS 15): viewport approximation
+   of the product column width (block < 420px below 1280px viewports,
+   < 440px below 1440px, 253-340px on 768-1023px viewports, 280px on 320px
+   phones). Fewer columns only add rows, so the ranges err on that side. */
 @supports not (container-type: inline-size) {
-  @media (max-width: 400px) {
-    .cyo .cyo-step--sizes {
+  @media (max-width: 1439.98px) {
+    .cyo .cyo-sizes {
       grid-template-columns: repeat(var(--cyo-cols-compact, var(--cyo-cols, 1)), minmax(0, 1fr));
     }
     .cyo .cyo-size {
@@ -456,52 +449,32 @@
       letter-spacing: -.02em;
     }
   }
-}
-
-/* ---------- Mobile ---------- */
-@media (max-width: 767.98px) {
-  .cyo .cyo-card {
-    gap: 12px;
+  @media (max-width: 1279.98px) {
+    .cyo .cyo-card {
+      gap: 12px;
+    }
+    .cyo .cyo-card__body {
+      padding: 16px 12px 16px 4px;
+    }
+    .cyo .cyo-card__heading {
+      font-size: 13px;
+      line-height: 17px;
+    }
   }
-  .cyo .cyo-card__body {
-    padding: 16px 16px 16px 4px;
-  }
-  .cyo .cyo-card__heading {
-    font-size: 13px;
-    line-height: 17px;
-  }
-  .cyo .cyo-card__steps {
-    --cyo-sw: var(--cyo-swatch-size-mobile, 36px);
-  }
-}
-
-/* ---------- Touch: comfortable tap targets ---------- */
-@media (pointer: coarse) {
-  .cyo .cyo-size {
-    min-height: 40px;
-  }
-  /* Invisible hit area of at least 32x32 around small swatches */
-  .cyo .cyo-swatch::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    min-width: 32px;
-    min-height: 32px;
-    transform: translate(-50%, -50%);
+  @media (max-width: 340px), (min-width: 768px) and (max-width: 1023.98px) {
+    .cyo .cyo-sizes {
+      grid-template-columns: repeat(var(--cyo-cols-narrow, var(--cyo-cols-compact, var(--cyo-cols, 1))), minmax(0, 1fr));
+    }
   }
 }
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .cyo .cyo-card__options,
-  .cyo .cyo-card__steps,
   .cyo .cyo-size {
     transition: none;
   }
-  .cyo .cyo-size.is-loading .cyo-size__label {
+  .cyo .cyo-size.is-loading::after {
     animation: none;
     opacity: .5;
   }

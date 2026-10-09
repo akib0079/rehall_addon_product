@@ -218,7 +218,7 @@
       "add_to_cart_label": "Læg {{ title }} – {{ size }} i kurven",
       "added": "{{ title }} – {{ size }} er lagt i kurven",
       "error": "Varen kunne ikke lægges i kurven. Prøv igen.",
-      "editor_placeholder": "Tilføj produkter til metafeltet 'Complementary products' på dette produkt for at vise dem her."
+      "editor_placeholder": "Tilføj varianter til metafeltet 'Complete your outfit' på dette produkt for at vise dem her."
     }
   },
   "homepage": {

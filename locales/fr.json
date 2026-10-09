@@ -218,7 +218,7 @@
       "add_to_cart_label": "Ajouter {{ title }} – {{ size }} au panier",
       "added": "{{ title }} – {{ size }} a été ajouté au panier",
       "error": "Impossible d'ajouter au panier. Veuillez réessayer.",
-      "editor_placeholder": "Ajoutez des produits au champ méta 'Complementary products' de ce produit pour les afficher ici."
+      "editor_placeholder": "Ajoutez des variantes au champ méta 'Complete your outfit' de ce produit pour les afficher ici."
     }
   },
   "homepage": {

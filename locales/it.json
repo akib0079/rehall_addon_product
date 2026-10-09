@@ -218,7 +218,7 @@
       "add_to_cart_label": "Aggiungi {{ title }} – {{ size }} al carrello",
       "added": "{{ title }} – {{ size }} aggiunto al carrello",
       "error": "Impossibile aggiungere al carrello. Riprova.",
-      "editor_placeholder": "Aggiungi prodotti al metacampo 'Complementary products' di questo prodotto per mostrarli qui."
+      "editor_placeholder": "Aggiungi varianti al metacampo 'Complete your outfit' di questo prodotto per mostrarle qui."
     }
   },
   "homepage": {

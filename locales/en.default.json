@@ -268,7 +268,7 @@
       "add_to_cart_label": "Add {{ title }} – {{ size }} to cart",
       "added": "{{ title }} – {{ size }} added to cart",
       "error": "Could not add to cart. Please try again.",
-      "editor_placeholder": "Add products to the 'Complementary products' metafield of this product to show them here."
+      "editor_placeholder": "Add variants to the 'Complete your outfit' metafield of this product to show them here."
     }
   },
   "homepage": {
